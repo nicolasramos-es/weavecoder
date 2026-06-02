@@ -1,0 +1,23 @@
+# Secrets and sensitive data
+config/.env
+**/secrets/
+*.key
+*.pem
+
+# Large conversation dumps
+gemini-conversations/raw/
+chatgpt-conversations/raw/
+chatgpt-conversations/conversations-*.json
+
+# Cron outputs - too noisy for git
+cron/output/
+
+# Cache and temp
+.tmp/
+.cache/
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
+Thumbs.db

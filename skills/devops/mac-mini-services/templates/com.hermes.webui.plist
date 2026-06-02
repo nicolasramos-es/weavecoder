@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.hermes.webui</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-c</string>
+        <string>cd /Users/nramos/.hermes-webui && HERMES_WEBUI_HOST=0.0.0.0 HERMES_WEBUI_PASSWORD=hermes2026 python3 bootstrap.py --no-browser >> /tmp/hermes-webui-launchd.log 2>&1</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>WorkingDirectory</key>
+    <string>/Users/nramos/.hermes-webui</string>
+    <key>StandardOutPath</key>
+    <string>/tmp/hermes-webui-launchd.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/hermes-webui-launchd.log</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/nramos/.local/bin:/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin</string>
+        <key>HOME</key>
+        <string>/Users/nramos</string>
+        <key>HERMES_WEBUI_HOST</key>
+        <string>0.0.0.0</string>
+        <key>HERMES_WEBUI_PASSWORD</key>
+        <string>hermes2026</string>
+    </dict>
+</dict>
+</plist>

@@ -1,0 +1,253 @@
+{
+  "jobs": [
+    {
+      "id": "0325253b46b7",
+      "name": "The Time Gazer - Short autom\u00e1tico cada 2h",
+      "prompt": "",
+      "skills": [],
+      "skill": null,
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": "run_short_cron.sh",
+      "no_agent": true,
+      "context_from": null,
+      "schedule": {
+        "kind": "interval",
+        "minutes": 120,
+        "display": "every 120m"
+      },
+      "schedule_display": "every 120m",
+      "repeat": {
+        "times": null,
+        "completed": 126
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-05-22T20:06:54.722368+01:00",
+      "next_run_at": "2026-06-02T13:56:30.074332+01:00",
+      "last_run_at": "2026-06-02T11:56:30.074332+01:00",
+      "last_status": "error",
+      "last_error": "Script exited with code 1\nstdout:\n\ud83c\udfac The Time Gazer - Orquestador [2026-06-02 11:56]\n==================================================\n  \u274c JSON inv\u00e1lido: apollo11.json\n  \u274c JSON inv\u00e1lido: misterios_dyatlov.json\n  \u2705 V\u00e1lidos: 378, inv\u00e1lidos: 89\n  \ud83d\udccb No publicados a\u00fan: 278\n\ud83d\udcc2 Scripts disponibles: 278\n\ud83c\udfaf Seleccionado: expediente_dyatlov_v14.json (serie: expediente)\n\ud83d\udcdd T\u00edtulo mejorado: 9 Excursionistas Encontrados Muertos en la Nieve.... \ud83d\udd0d\n\u2705 Script procesado guardado\n\ud83c\udfac Ejecutando productor... (cat: 27)\n\u26a0\ufe0f Falta texto en escena(s): [1, 2, 3, 4, 5]. Abortando generaci\u00f3n.\n\n\u274c Error: FFMPEG: /opt/homebrew/opt/ffmpeg-full/bin/ffmpeg",
+      "last_delivery_error": null,
+      "deliver": "local",
+      "origin": null,
+      "enabled_toolsets": null,
+      "workdir": null,
+      "profile": null
+    },
+    {
+      "id": "36a5c6334520",
+      "name": "The Time Gazer - Resumen diario",
+      "prompt": "",
+      "skills": [],
+      "skill": null,
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": "daily_summary.sh",
+      "no_agent": true,
+      "context_from": null,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 7 * * *",
+        "display": "0 7 * * *"
+      },
+      "schedule_display": "0 7 * * *",
+      "repeat": {
+        "times": null,
+        "completed": 11
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-05-22T20:06:54.999552+01:00",
+      "next_run_at": "2026-06-03T07:00:00+01:00",
+      "last_run_at": "2026-06-02T07:00:38.951106+01:00",
+      "last_status": "ok",
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "telegram:27970741",
+      "origin": null,
+      "enabled_toolsets": null,
+      "workdir": null,
+      "profile": null
+    },
+    {
+      "id": "75523a5ec203",
+      "name": "NR Music Pop - Generar + subir cada 2h",
+      "prompt": "",
+      "skills": [],
+      "skill": null,
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": "run_nrpop_v3.sh",
+      "no_agent": true,
+      "context_from": null,
+      "schedule": {
+        "kind": "interval",
+        "minutes": 120,
+        "display": "every 120m"
+      },
+      "schedule_display": "every 120m",
+      "repeat": {
+        "times": null,
+        "completed": 32
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-05-27T19:16:28.363737+01:00",
+      "next_run_at": "2026-06-02T13:59:01.465271+01:00",
+      "last_run_at": "2026-06-02T11:59:01.465271+01:00",
+      "last_status": "ok",
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "local",
+      "origin": {
+        "platform": "telegram",
+        "chat_id": "27970741",
+        "chat_name": "Nicol\u00e1s Ramos",
+        "thread_id": null
+      },
+      "enabled_toolsets": null,
+      "workdir": null,
+      "profile": null
+    },
+    {
+      "id": "4b106c85ffc8",
+      "name": "NR Music Rock - Generar + subir cada 2h",
+      "prompt": "",
+      "skills": [],
+      "skill": null,
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": "run_nrrock_v3.sh",
+      "no_agent": true,
+      "context_from": null,
+      "schedule": {
+        "kind": "interval",
+        "minutes": 120,
+        "display": "every 120m"
+      },
+      "schedule_display": "every 120m",
+      "repeat": {
+        "times": null,
+        "completed": 32
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-05-27T19:18:43.618851+01:00",
+      "next_run_at": "2026-06-02T14:01:03.642283+01:00",
+      "last_run_at": "2026-06-02T12:01:03.642283+01:00",
+      "last_status": "ok",
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "local",
+      "origin": {
+        "platform": "telegram",
+        "chat_id": "27970741",
+        "chat_name": "Nicol\u00e1s Ramos",
+        "thread_id": null
+      },
+      "enabled_toolsets": null,
+      "workdir": null,
+      "profile": null
+    },
+    {
+      "id": "c273c84e8426",
+      "name": "NR Music Hip-Hop - Generar + subir cada 2h",
+      "prompt": "",
+      "skills": [],
+      "skill": null,
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": "run_nrhiphop_v3.sh",
+      "no_agent": true,
+      "context_from": null,
+      "schedule": {
+        "kind": "interval",
+        "minutes": 120,
+        "display": "every 120m"
+      },
+      "schedule_display": "every 120m",
+      "repeat": {
+        "times": null,
+        "completed": 32
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-05-27T19:26:01.903278+01:00",
+      "next_run_at": "2026-06-02T15:32:30.029971+01:00",
+      "last_run_at": "2026-06-02T13:32:30.029971+01:00",
+      "last_status": "ok",
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "local",
+      "origin": {
+        "platform": "telegram",
+        "chat_id": "27970741",
+        "chat_name": "Nicol\u00e1s Ramos",
+        "thread_id": null
+      },
+      "enabled_toolsets": null,
+      "workdir": null,
+      "profile": null
+    },
+    {
+      "id": "64a9a832e9d7",
+      "name": "NR Music Latino - Generar + subir cada 2h",
+      "prompt": "",
+      "skills": [],
+      "skill": null,
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": "run_nrlatino_v3.sh",
+      "no_agent": true,
+      "context_from": null,
+      "schedule": {
+        "kind": "interval",
+        "minutes": 120,
+        "display": "every 120m"
+      },
+      "schedule_display": "every 120m",
+      "repeat": {
+        "times": null,
+        "completed": 31
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-05-27T19:37:57.947811+01:00",
+      "next_run_at": "2026-06-02T13:55:29.698153+01:00",
+      "last_run_at": "2026-06-02T11:55:29.698153+01:00",
+      "last_status": "ok",
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "local",
+      "origin": {
+        "platform": "telegram",
+        "chat_id": "27970741",
+        "chat_name": "Nicol\u00e1s Ramos",
+        "thread_id": null
+      },
+      "enabled_toolsets": null,
+      "workdir": null,
+      "profile": null
+    }
+  ],
+  "updated_at": "2026-06-02T13:32:30.030398+01:00"
+}
