@@ -1,0 +1,590 @@
+model: local-coding
+provider: litellm
+providers:
+  litellm:
+    api: https://litellm.51.38.254.149.sslip.io/v1
+    key_env: LITELLM_API_KEY
+    models:
+      audio-speech:
+        display_name: Audio Speech
+        id: audio-speech
+      audio-speech-fallback:
+        display_name: Audio Speech Fallback
+        id: audio-speech-fallback
+      audio-transcription:
+        display_name: Audio Transcription
+        id: audio-transcription
+      audio-transcription-fallback:
+        display_name: Audio Transcription Fallback
+        id: audio-transcription-fallback
+      chat-fast-local:
+        display_name: Chat Fast Local
+        id: chat-fast-local
+      chat-general:
+        display_name: Chat General
+        id: chat-general
+      chat-general-fallback:
+        display_name: Chat General Fallback
+        id: chat-general-fallback
+      chat-small-local:
+        display_name: Chat Small Local
+        id: chat-small-local
+      embed-fallback:
+        display_name: Embed Fallback
+        id: embed-fallback
+      embed-main:
+        display_name: Embed Main
+        id: embed-main
+      embed-small:
+        display_name: Embed Small
+        id: embed-small
+      gemma-26b:
+        display_name: Gemma 26B
+        id: gemma-26b
+      gemma-e4b-oq4:
+        display_name: Gemma E4B Oq4
+        id: gemma-e4b-oq4
+      litellm/audio-speech:
+        display_name: Audio Speech
+        id: audio-speech
+      litellm/audio-speech-fallback:
+        display_name: Audio Speech Fallback
+        id: audio-speech-fallback
+      litellm/audio-transcription:
+        display_name: Audio Transcription
+        id: audio-transcription
+      litellm/audio-transcription-fallback:
+        display_name: Audio Transcription Fallback
+        id: audio-transcription-fallback
+      litellm/chat-fast-local:
+        display_name: Chat Fast Local
+        id: chat-fast-local
+      litellm/chat-general:
+        display_name: Chat General
+        id: chat-general
+      litellm/chat-general-fallback:
+        display_name: Chat General Fallback
+        id: chat-general-fallback
+      litellm/chat-small-local:
+        display_name: Chat Small Local
+        id: chat-small-local
+      litellm/embed-fallback:
+        display_name: Embed Fallback
+        id: embed-fallback
+      litellm/embed-main:
+        display_name: Embed Main
+        id: embed-main
+      litellm/embed-small:
+        display_name: Embed Small
+        id: embed-small
+      litellm/gemma-26b:
+        display_name: Gemma 26B
+        id: gemma-26b
+      litellm/gemma-e4b-oq4:
+        display_name: Gemma E4B Oq4
+        id: gemma-e4b-oq4
+      litellm/local-coding:
+        display_name: Local Coding
+        id: local-coding
+      litellm/local-coding-27b-speed:
+        display_name: Local Coding 27B Speed
+        id: local-coding-27b-speed
+      litellm/local-coding-35b-balance:
+        display_name: Local Coding 35B Balance
+        id: local-coding-35b-balance
+      litellm/local-coding-35b-speed:
+        display_name: Local Coding 35B Speed
+        id: local-coding-35b-speed
+      litellm/local-coding-dense:
+        display_name: Local Coding Dense
+        id: local-coding-dense
+      litellm/local-coding-fallback:
+        display_name: Local Coding Fallback
+        id: local-coding-fallback
+      litellm/local-coding-quality:
+        display_name: Local Coding Quality
+        id: local-coding-quality
+      litellm/local-coding-qwen3-coder-a3b:
+        display_name: Local Coding Qwen3 Coder A3B
+        id: local-coding-qwen3-coder-a3b
+      litellm/local-coding-refactor:
+        display_name: Local Coding Refactor
+        id: local-coding-refactor
+      litellm/local-llama-1b:
+        display_name: Local Llama 1B
+        id: local-llama-1b
+      litellm/local-llama-3b:
+        display_name: Local Llama 3B
+        id: local-llama-3b
+      litellm/local-qwen35-08b:
+        display_name: Local Qwen35 08B
+        id: local-qwen35-08b
+      litellm/local-qwen35-08b-4bit:
+        display_name: Local Qwen35 08B 4Bit
+        id: local-qwen35-08b-4bit
+      litellm/local-qwen35-08b-8bit:
+        display_name: Local Qwen35 08B 8Bit
+        id: local-qwen35-08b-8bit
+      litellm/m4-bge-small:
+        display_name: M4 Bge Small
+        id: m4-bge-small
+      litellm/m4-lfm-1b-4bit:
+        display_name: M4 Lfm 1B 4Bit
+        id: m4-lfm-1b-4bit
+      litellm/m4-lfm-8b:
+        display_name: M4 Lfm 8B
+        id: m4-lfm-8b
+      litellm/m4-llama-1b-4bit:
+        display_name: M4 Llama 1B 4Bit
+        id: m4-llama-1b-4bit
+      litellm/m4-llama-3b-4bit:
+        display_name: M4 Llama 3B 4Bit
+        id: m4-llama-3b-4bit
+      litellm/m4-minicpm5-1b:
+        display_name: M4 Minicpm5 1B
+        id: m4-minicpm5-1b
+      litellm/m4-qwen-tts-06b-bf16:
+        display_name: M4 Qwen Tts 06B Bf16
+        id: m4-qwen-tts-06b-bf16
+      litellm/m4-qwen25-7b:
+        display_name: M4 Qwen25 7B
+        id: m4-qwen25-7b
+      litellm/m4-qwen25-vl-3b:
+        display_name: M4 Qwen25 Vl 3B
+        id: m4-qwen25-vl-3b
+      litellm/m4-whisper:
+        display_name: M4 Whisper
+        id: m4-whisper
+      litellm/ornith-35b:
+        display_name: Ornith 35B
+        id: ornith-35b
+      litellm/ornith-9b:
+        display_name: Ornith 9B
+        id: ornith-9b
+      litellm/u1-gemma-26b:
+        display_name: Ultra A Gemma 26B
+        id: u1-gemma-26b
+      litellm/u1-gemma-e4b-oq4:
+        display_name: Ultra A Gemma E4B Oq4
+        id: u1-gemma-e4b-oq4
+      litellm/u1-lfm-12b-4bit:
+        display_name: Ultra A Lfm 12B 4Bit
+        id: u1-lfm-12b-4bit
+      litellm/u1-lfm-12b-8bit:
+        display_name: Ultra A Lfm 12B 8Bit
+        id: u1-lfm-12b-8bit
+      litellm/u1-lfm-12b-mlx:
+        display_name: Ultra A Lfm 12B Mlx
+        id: u1-lfm-12b-mlx
+      litellm/u1-lfm-8b-a1b:
+        display_name: Ultra A Lfm 8B A1B
+        id: u1-lfm-8b-a1b
+      litellm/u1-llama-1b-4bit:
+        display_name: Ultra A Llama 1B 4Bit
+        id: u1-llama-1b-4bit
+      litellm/u1-llama-3b-4bit:
+        display_name: Ultra A Llama 3B 4Bit
+        id: u1-llama-3b-4bit
+      litellm/u1-minicpm5:
+        display_name: Ultra A Minicpm5
+        id: u1-minicpm5
+      litellm/u1-odooclaw-minicpm5:
+        display_name: Ultra A Odooclaw Minicpm5
+        id: u1-odooclaw-minicpm5
+      litellm/u1-ornith-35b:
+        display_name: Ultra A Ornith 35B
+        id: u1-ornith-35b
+      litellm/u1-ornith-9b:
+        display_name: Ultra A Ornith 9B
+        id: u1-ornith-9b
+      litellm/u1-qwen-27b-oq4e-mtp:
+        display_name: Ultra A Qwen 27B Oq4E Mtp
+        id: u1-qwen-27b-oq4e-mtp
+      litellm/u1-qwen-35b-oq4-fp16-mtp:
+        display_name: Ultra 1 Qwen 35B
+        id: u1-qwen-35b-oq4-fp16-mtp
+      litellm/u1-qwen-embedding-4b:
+        display_name: Ultra A Qwen Embedding 4B
+        id: u1-qwen-embedding-4b
+      litellm/u1-qwen-tts-06b-8bit:
+        display_name: Ultra A Qwen Tts 06B 8Bit
+        id: u1-qwen-tts-06b-8bit
+      litellm/u1-qwen-tts-17b-8bit:
+        display_name: Ultra A Qwen Tts 17B 8Bit
+        id: u1-qwen-tts-17b-8bit
+      litellm/u1-qwen-tts-17b-bf16:
+        display_name: Ultra A Qwen Tts 17B Bf16
+        id: u1-qwen-tts-17b-bf16
+      litellm/u1-qwen3-coder-a3b:
+        display_name: Ultra A Qwen3 Coder A3B
+        id: u1-qwen3-coder-a3b
+      litellm/u1-qwen3-coder-next:
+        display_name: Ultra A Qwen3 Coder Next
+        id: u1-qwen3-coder-next
+      litellm/u1-qwen35-08b:
+        display_name: Ultra A Qwen35 08B
+        id: u1-qwen35-08b
+      litellm/u1-qwen35-08b-4bit:
+        display_name: Ultra A Qwen35 08B 4Bit
+        id: u1-qwen35-08b-4bit
+      litellm/u1-qwen35-08b-8bit:
+        display_name: Ultra A Qwen35 08B 8Bit
+        id: u1-qwen35-08b-8bit
+      litellm/u1-whisper:
+        display_name: Ultra A Whisper
+        id: u1-whisper
+      litellm/u2-gemma-26b:
+        display_name: Ultra B Gemma 26B
+        id: u2-gemma-26b
+      litellm/u2-gemma-e4b-oq4:
+        display_name: Ultra B Gemma E4B Oq4
+        id: u2-gemma-e4b-oq4
+      litellm/u2-lfm-12b-4bit:
+        display_name: Ultra B Lfm 12B 4Bit
+        id: u2-lfm-12b-4bit
+      litellm/u2-lfm-12b-8bit:
+        display_name: Ultra B Lfm 12B 8Bit
+        id: u2-lfm-12b-8bit
+      litellm/u2-lfm-12b-mlx:
+        display_name: Ultra B Lfm 12B Mlx
+        id: u2-lfm-12b-mlx
+      litellm/u2-lfm-8b-a1b:
+        display_name: Ultra B Lfm 8B A1B
+        id: u2-lfm-8b-a1b
+      litellm/u2-llama-1b-4bit:
+        display_name: Ultra B Llama 1B 4Bit
+        id: u2-llama-1b-4bit
+      litellm/u2-llama-3b-4bit:
+        display_name: Ultra B Llama 3B 4Bit
+        id: u2-llama-3b-4bit
+      litellm/u2-minicpm5:
+        display_name: Ultra B Minicpm5
+        id: u2-minicpm5
+      litellm/u2-odooclaw-minicpm5:
+        display_name: Ultra B Odooclaw Minicpm5
+        id: u2-odooclaw-minicpm5
+      litellm/u2-ornith-35b:
+        display_name: Ultra B Ornith 35B
+        id: u2-ornith-35b
+      litellm/u2-ornith-9b:
+        display_name: Ultra B Ornith 9B
+        id: u2-ornith-9b
+      litellm/u2-qwen-27b-oq4e-mtp:
+        display_name: Ultra B Qwen 27B Oq4E Mtp
+        id: u2-qwen-27b-oq4e-mtp
+      litellm/u2-qwen-35b-oq4-fp16-mtp:
+        display_name: Ultra B Qwen 35B Oq4 Fp16 Mtp
+        id: u2-qwen-35b-oq4-fp16-mtp
+      litellm/u2-qwen-embedding-4b:
+        display_name: Ultra B Qwen Embedding 4B
+        id: u2-qwen-embedding-4b
+      litellm/u2-qwen-tts-06b-8bit:
+        display_name: Ultra B Qwen Tts 06B 8Bit
+        id: u2-qwen-tts-06b-8bit
+      litellm/u2-qwen-tts-17b-8bit:
+        display_name: Ultra B Qwen Tts 17B 8Bit
+        id: u2-qwen-tts-17b-8bit
+      litellm/u2-qwen-tts-17b-bf16:
+        display_name: Ultra B Qwen Tts 17B Bf16
+        id: u2-qwen-tts-17b-bf16
+      litellm/u2-qwen3-coder-a3b:
+        display_name: Ultra B Qwen3 Coder A3B
+        id: u2-qwen3-coder-a3b
+      litellm/u2-qwen3-coder-next:
+        display_name: Ultra B Qwen3 Coder Next
+        id: u2-qwen3-coder-next
+      litellm/u2-qwen35-08b:
+        display_name: Ultra B Qwen35 08B
+        id: u2-qwen35-08b
+      litellm/u2-qwen35-08b-4bit:
+        display_name: Ultra B Qwen35 08B 4Bit
+        id: u2-qwen35-08b-4bit
+      litellm/u2-qwen35-08b-8bit:
+        display_name: Ultra B Qwen35 08B 8Bit
+        id: u2-qwen35-08b-8bit
+      litellm/u2-whisper:
+        display_name: Ultra B Whisper
+        id: u2-whisper
+      local-agents-a1-4b:
+        display_name: Local Agents A1 4B (balanceado)
+        id: local-agents-a1-4b
+      local-coding:
+        display_name: Local Coding
+        id: local-coding
+      local-coding-27b-speed:
+        display_name: Local Coding 27B Speed
+        id: local-coding-27b-speed
+      local-coding-35b-balance:
+        display_name: Local Coding 35B Balance
+        id: local-coding-35b-balance
+      local-coding-35b-speed:
+        display_name: Local Coding 35B Speed
+        id: local-coding-35b-speed
+      local-coding-dense:
+        display_name: Local Coding Dense
+        id: local-coding-dense
+      local-coding-fallback:
+        display_name: Local Coding Fallback
+        id: local-coding-fallback
+      local-coding-quality:
+        display_name: Local Coding Quality
+        id: local-coding-quality
+      local-coding-qwen3-coder-a3b:
+        display_name: Local Coding Qwen3 Coder A3B
+        id: local-coding-qwen3-coder-a3b
+      local-coding-refactor:
+        display_name: Local Coding Refactor
+        id: local-coding-refactor
+      local-llama-1b:
+        display_name: Local Llama 1B
+        id: local-llama-1b
+      local-llama-3b:
+        display_name: Local Llama 3B
+        id: local-llama-3b
+      local-qwen35-08b:
+        display_name: Local Qwen35 08B
+        id: local-qwen35-08b
+      local-qwen35-08b-4bit:
+        display_name: Local Qwen35 08B 4Bit
+        id: local-qwen35-08b-4bit
+      local-qwen35-08b-8bit:
+        display_name: Local Qwen35 08B 8Bit
+        id: local-qwen35-08b-8bit
+      m4-bge-small:
+        display_name: M4 Bge Small
+        id: m4-bge-small
+      m4-lfm-1b-4bit:
+        display_name: M4 Lfm 1B 4Bit
+        id: m4-lfm-1b-4bit
+      m4-lfm-8b:
+        display_name: M4 Lfm 8B
+        id: m4-lfm-8b
+      m4-llama-1b-4bit:
+        display_name: M4 Llama 1B 4Bit
+        id: m4-llama-1b-4bit
+      m4-llama-3b-4bit:
+        display_name: M4 Llama 3B 4Bit
+        id: m4-llama-3b-4bit
+      m4-minicpm5-1b:
+        display_name: M4 Minicpm5 1B
+        id: m4-minicpm5-1b
+      m4-qwen-tts-06b-bf16:
+        display_name: M4 Qwen Tts 06B Bf16
+        id: m4-qwen-tts-06b-bf16
+      m4-qwen25-7b:
+        display_name: M4 Qwen25 7B
+        id: m4-qwen25-7b
+      m4-qwen25-vl-3b:
+        display_name: M4 Qwen25 Vl 3B
+        id: m4-qwen25-vl-3b
+      m4-whisper:
+        display_name: M4 Whisper
+        id: m4-whisper
+      ornith-35b:
+        display_name: Ornith 35B
+        id: ornith-35b
+      ornith-9b:
+        display_name: Ornith 9B
+        id: ornith-9b
+      u1-agents-a1-4b-oqe4:
+        display_name: Ultra A Agents A1 4B
+        id: u1-agents-a1-4b-oqe4
+      u1-agents-a1-oq4e:
+        display_name: Ultra A Agents A1 oQ4e
+        id: u1-agents-a1-oq4e
+      u1-gemma-26b:
+        display_name: Ultra A Gemma 26B
+        id: u1-gemma-26b
+      u1-gemma-e4b-oq4:
+        display_name: Ultra A Gemma E4B Oq4
+        id: u1-gemma-e4b-oq4
+      u1-lfm-12b-4bit:
+        display_name: Ultra A Lfm 12B 4Bit
+        id: u1-lfm-12b-4bit
+      u1-lfm-12b-8bit:
+        display_name: Ultra A Lfm 12B 8Bit
+        id: u1-lfm-12b-8bit
+      u1-lfm-12b-mlx:
+        display_name: Ultra A Lfm 12B Mlx
+        id: u1-lfm-12b-mlx
+      u1-lfm-8b-a1b:
+        display_name: Ultra A Lfm 8B A1B
+        id: u1-lfm-8b-a1b
+      u1-llama-1b-4bit:
+        display_name: Ultra A Llama 1B 4Bit
+        id: u1-llama-1b-4bit
+      u1-llama-3b-4bit:
+        display_name: Ultra A Llama 3B 4Bit
+        id: u1-llama-3b-4bit
+      u1-minicpm5:
+        display_name: Ultra A Minicpm5
+        id: u1-minicpm5
+      u1-odooclaw-minicpm5:
+        display_name: Ultra A Odooclaw Minicpm5
+        id: u1-odooclaw-minicpm5
+      u1-ornith-35b:
+        display_name: Ultra A Ornith 35B
+        id: u1-ornith-35b
+      u1-ornith-9b:
+        display_name: Ultra A Ornith 9B
+        id: u1-ornith-9b
+      u1-qwen-27b-oq4e-mtp:
+        display_name: Ultra A Qwen 27B Oq4E Mtp
+        id: u1-qwen-27b-oq4e-mtp
+      u1-qwen-35b-oq4-fp16-mtp:
+        display_name: Ultra 1 Qwen 35B
+        id: u1-qwen-35b-oq4-fp16-mtp
+      u1-qwen-embedding-4b:
+        display_name: Ultra A Qwen Embedding 4B
+        id: u1-qwen-embedding-4b
+      u1-qwen-tts-06b-8bit:
+        display_name: Ultra A Qwen Tts 06B 8Bit
+        id: u1-qwen-tts-06b-8bit
+      u1-qwen-tts-17b-8bit:
+        display_name: Ultra A Qwen Tts 17B 8Bit
+        id: u1-qwen-tts-17b-8bit
+      u1-qwen-tts-17b-bf16:
+        display_name: Ultra A Qwen Tts 17B Bf16
+        id: u1-qwen-tts-17b-bf16
+      u1-qwen3-coder-a3b:
+        display_name: Ultra A Qwen3 Coder A3B
+        id: u1-qwen3-coder-a3b
+      u1-qwen3-coder-next:
+        display_name: Ultra A Qwen3 Coder Next
+        id: u1-qwen3-coder-next
+      u1-qwen35-08b:
+        display_name: Ultra A Qwen35 08B
+        id: u1-qwen35-08b
+      u1-qwen35-08b-4bit:
+        display_name: Ultra A Qwen35 08B 4Bit
+        id: u1-qwen35-08b-4bit
+      u1-qwen35-08b-8bit:
+        display_name: Ultra A Qwen35 08B 8Bit
+        id: u1-qwen35-08b-8bit
+      u1-whisper:
+        display_name: Ultra A Whisper
+        id: u1-whisper
+      u2-agents-a1-4b-oqe4:
+        display_name: Ultra B Agents A1 4B
+        id: u2-agents-a1-4b-oqe4
+      u2-agents-a1-oq4e:
+        display_name: Ultra B Agents A1 oQ4e
+        id: u2-agents-a1-oq4e
+      u2-gemma-26b:
+        display_name: Ultra B Gemma 26B
+        id: u2-gemma-26b
+      u2-gemma-e4b-oq4:
+        display_name: Ultra B Gemma E4B Oq4
+        id: u2-gemma-e4b-oq4
+      u2-lfm-12b-4bit:
+        display_name: Ultra B Lfm 12B 4Bit
+        id: u2-lfm-12b-4bit
+      u2-lfm-12b-8bit:
+        display_name: Ultra B Lfm 12B 8Bit
+        id: u2-lfm-12b-8bit
+      u2-lfm-12b-mlx:
+        display_name: Ultra B Lfm 12B Mlx
+        id: u2-lfm-12b-mlx
+      u2-lfm-8b-a1b:
+        display_name: Ultra B Lfm 8B A1B
+        id: u2-lfm-8b-a1b
+      u2-llama-1b-4bit:
+        display_name: Ultra B Llama 1B 4Bit
+        id: u2-llama-1b-4bit
+      u2-llama-3b-4bit:
+        display_name: Ultra B Llama 3B 4Bit
+        id: u2-llama-3b-4bit
+      u2-minicpm5:
+        display_name: Ultra B Minicpm5
+        id: u2-minicpm5
+      u2-odooclaw-minicpm5:
+        display_name: Ultra B Odooclaw Minicpm5
+        id: u2-odooclaw-minicpm5
+      u2-ornith-35b:
+        display_name: Ultra B Ornith 35B
+        id: u2-ornith-35b
+      u2-ornith-9b:
+        display_name: Ultra B Ornith 9B
+        id: u2-ornith-9b
+      u2-qwen-27b-oq4e-mtp:
+        display_name: Ultra B Qwen 27B Oq4E Mtp
+        id: u2-qwen-27b-oq4e-mtp
+      u2-qwen-35b-oq4-fp16-mtp:
+        display_name: Ultra B Qwen 35B Oq4 Fp16 Mtp
+        id: u2-qwen-35b-oq4-fp16-mtp
+      u2-qwen-embedding-4b:
+        display_name: Ultra B Qwen Embedding 4B
+        id: u2-qwen-embedding-4b
+      u2-qwen-tts-06b-8bit:
+        display_name: Ultra B Qwen Tts 06B 8Bit
+        id: u2-qwen-tts-06b-8bit
+      u2-qwen-tts-17b-8bit:
+        display_name: Ultra B Qwen Tts 17B 8Bit
+        id: u2-qwen-tts-17b-8bit
+      u2-qwen-tts-17b-bf16:
+        display_name: Ultra B Qwen Tts 17B Bf16
+        id: u2-qwen-tts-17b-bf16
+      u2-qwen3-coder-a3b:
+        display_name: Ultra B Qwen3 Coder A3B
+        id: u2-qwen3-coder-a3b
+      u2-qwen3-coder-next:
+        display_name: Ultra B Qwen3 Coder Next
+        id: u2-qwen3-coder-next
+      u2-qwen35-08b:
+        display_name: Ultra B Qwen35 08B
+        id: u2-qwen35-08b
+      u2-qwen35-08b-4bit:
+        display_name: Ultra B Qwen35 08B 4Bit
+        id: u2-qwen35-08b-4bit
+      u2-qwen35-08b-8bit:
+        display_name: Ultra B Qwen35 08B 8Bit
+        id: u2-qwen35-08b-8bit
+      u2-whisper:
+        display_name: Ultra B Whisper
+        id: u2-whisper
+  ollama-cloud:
+    api: https://ollama.cloud/api/v1
+  opencode-go:
+    api: http://localhost:18789/v1
+mcp_servers:
+  codebase-memory:
+    args: []
+    command: /Users/nramos/.local/bin/codebase-memory-mcp
+    transport: stdio
+  codegraph:
+    args:
+      - serve
+      - --mcp
+    command: codegraph
+    connect_timeout: 60
+    enabled: true
+    timeout: 120
+  context7:
+    args:
+      - -y
+      - --package=@upstash/context7-mcp@2.2.5
+      - --
+      - context7-mcp
+    command: npx
+  cua-driver:
+    args:
+      - mcp
+    command: /Users/nramos/.local/bin/cua-driver
+  engram:
+    args:
+      - mcp
+      - --tools=agent
+    command: engram
+  mcpvault:
+    args:
+      - /Users/nramos/nas-development/obsidian-vault
+    command: /opt/homebrew/bin/mcpvault
+    transport: stdio
+  n8n:
+    command: /Users/nramos/.hermes/node/bin/n8n-mcp
+    enabled: true
+    env: {}
+  cognee:
+    url: http://192.168.1.10:8101/mcp
+    enabled: true
+    connect_timeout: 15
