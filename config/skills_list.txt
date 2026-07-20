@@ -19,6 +19,7 @@ gifs
 github
 go-testing
 hermes
+hermes-desktop-plugins
 impeccable
 inference-sh
 interface-design
@@ -54,6 +55,7 @@ social-media
 software-development
 spec-vs-codebase-gap-analysis
 the-time-gazer-shorts
+web
 webwright
 work-unit-commits
 workspace-dispatch

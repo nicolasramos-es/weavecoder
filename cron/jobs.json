@@ -20,23 +20,24 @@
       "schedule_display": "every 120m",
       "repeat": {
         "times": null,
-        "completed": 126
+        "completed": 366
       },
-      "enabled": true,
-      "state": "scheduled",
-      "paused_at": null,
+      "enabled": false,
+      "state": "paused",
+      "paused_at": "2026-07-06T16:16:24.995924+01:00",
       "paused_reason": null,
       "created_at": "2026-05-22T20:06:54.722368+01:00",
-      "next_run_at": "2026-06-02T13:56:30.074332+01:00",
-      "last_run_at": "2026-06-02T11:56:30.074332+01:00",
+      "next_run_at": "2026-07-06T18:13:59.019421+01:00",
+      "last_run_at": "2026-06-22T22:09:30.836821+01:00",
       "last_status": "error",
-      "last_error": "Script exited with code 1\nstdout:\n\ud83c\udfac The Time Gazer - Orquestador [2026-06-02 11:56]\n==================================================\n  \u274c JSON inv\u00e1lido: apollo11.json\n  \u274c JSON inv\u00e1lido: misterios_dyatlov.json\n  \u2705 V\u00e1lidos: 378, inv\u00e1lidos: 89\n  \ud83d\udccb No publicados a\u00fan: 278\n\ud83d\udcc2 Scripts disponibles: 278\n\ud83c\udfaf Seleccionado: expediente_dyatlov_v14.json (serie: expediente)\n\ud83d\udcdd T\u00edtulo mejorado: 9 Excursionistas Encontrados Muertos en la Nieve.... \ud83d\udd0d\n\u2705 Script procesado guardado\n\ud83c\udfac Ejecutando productor... (cat: 27)\n\u26a0\ufe0f Falta texto en escena(s): [1, 2, 3, 4, 5]. Abortando generaci\u00f3n.\n\n\u274c Error: FFMPEG: /opt/homebrew/opt/ffmpeg-full/bin/ffmpeg",
+      "last_error": "Script exited with code 1\nstdout:\n\ud83c\udfac The Time Gazer - Orquestador [2026-06-22 22:09]\n==================================================\n  \u274c JSON inv\u00e1lido: apollo11.json\n  \u274c JSON inv\u00e1lido: misterios_dyatlov.json\n  \u2705 V\u00e1lidos: 378, inv\u00e1lidos: 89\n  \ud83d\udccb No publicados a\u00fan: 202\n\ud83d\udcc2 Scripts disponibles: 202\n\ud83c\udfaf Seleccionado: expediente_dyatlov_v14.json (serie: expediente)\n\ud83d\udcdd T\u00edtulo mejorado: 9 Excursionistas Encontrados Muertos en la Nieve.... \ud83d\udde1\ufe0f\n\u2705 Script procesado guardado\n\ud83c\udfac Ejecutando productor... (cat: 27)\n\u26a0\ufe0f Falta texto en escena(s): [1, 2, 3, 4, 5]. Abortando generaci\u00f3n.\n\n\u274c Error: FFMPEG: /opt/homebrew/opt/ffmpeg-full/bin/ffmpeg",
       "last_delivery_error": null,
       "deliver": "local",
       "origin": null,
       "enabled_toolsets": null,
       "workdir": null,
-      "profile": null
+      "profile": null,
+      "fire_claim": null
     },
     {
       "id": "36a5c6334520",
@@ -58,15 +59,15 @@
       "schedule_display": "0 7 * * *",
       "repeat": {
         "times": null,
-        "completed": 11
+        "completed": 31
       },
-      "enabled": true,
-      "state": "scheduled",
-      "paused_at": null,
+      "enabled": false,
+      "state": "paused",
+      "paused_at": "2026-07-06T16:16:25.180583+01:00",
       "paused_reason": null,
       "created_at": "2026-05-22T20:06:54.999552+01:00",
-      "next_run_at": "2026-06-03T07:00:00+01:00",
-      "last_run_at": "2026-06-02T07:00:38.951106+01:00",
+      "next_run_at": "2026-07-07T07:00:00+01:00",
+      "last_run_at": "2026-06-22T07:00:01.246426+01:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -74,37 +75,38 @@
       "origin": null,
       "enabled_toolsets": null,
       "workdir": null,
-      "profile": null
+      "profile": null,
+      "fire_claim": null
     },
     {
       "id": "75523a5ec203",
-      "name": "NR Music Pop - Generar + subir cada 2h",
+      "name": "NR Music Pop - Generar + subir cada 3h",
       "prompt": "",
       "skills": [],
       "skill": null,
       "model": null,
       "provider": null,
       "base_url": null,
-      "script": "run_nrpop_v3.sh",
+      "script": "run_nrpop_v4.sh",
       "no_agent": true,
       "context_from": null,
       "schedule": {
         "kind": "interval",
-        "minutes": 120,
-        "display": "every 120m"
+        "minutes": 180,
+        "display": "every 180m"
       },
-      "schedule_display": "every 120m",
+      "schedule_display": "every 180m",
       "repeat": {
         "times": null,
-        "completed": 32
+        "completed": 396
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-05-27T19:16:28.363737+01:00",
-      "next_run_at": "2026-06-02T13:59:01.465271+01:00",
-      "last_run_at": "2026-06-02T11:59:01.465271+01:00",
+      "next_run_at": "2026-07-20T17:28:09.520121+01:00",
+      "last_run_at": "2026-07-20T14:28:09.520121+01:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -117,37 +119,38 @@
       },
       "enabled_toolsets": null,
       "workdir": null,
-      "profile": null
+      "profile": null,
+      "fire_claim": null
     },
     {
       "id": "4b106c85ffc8",
-      "name": "NR Music Rock - Generar + subir cada 2h",
+      "name": "NR Music Rock - Generar + subir cada 3h",
       "prompt": "",
       "skills": [],
       "skill": null,
       "model": null,
       "provider": null,
       "base_url": null,
-      "script": "run_nrrock_v3.sh",
+      "script": "run_nrrock_v4.sh",
       "no_agent": true,
       "context_from": null,
       "schedule": {
         "kind": "interval",
-        "minutes": 120,
-        "display": "every 120m"
+        "minutes": 180,
+        "display": "every 180m"
       },
-      "schedule_display": "every 120m",
+      "schedule_display": "every 180m",
       "repeat": {
         "times": null,
-        "completed": 32
+        "completed": 396
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-05-27T19:18:43.618851+01:00",
-      "next_run_at": "2026-06-02T14:01:03.642283+01:00",
-      "last_run_at": "2026-06-02T12:01:03.642283+01:00",
+      "next_run_at": "2026-07-20T17:38:09.781411+01:00",
+      "last_run_at": "2026-07-20T14:38:09.781411+01:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -160,37 +163,38 @@
       },
       "enabled_toolsets": null,
       "workdir": null,
-      "profile": null
+      "profile": null,
+      "fire_claim": null
     },
     {
       "id": "c273c84e8426",
-      "name": "NR Music Hip-Hop - Generar + subir cada 2h",
+      "name": "NR Music Hip-Hop - Generar + subir cada 3h",
       "prompt": "",
       "skills": [],
       "skill": null,
       "model": null,
       "provider": null,
       "base_url": null,
-      "script": "run_nrhiphop_v3.sh",
+      "script": "run_nrhiphop_v4.sh",
       "no_agent": true,
       "context_from": null,
       "schedule": {
         "kind": "interval",
-        "minutes": 120,
-        "display": "every 120m"
+        "minutes": 180,
+        "display": "every 180m"
       },
-      "schedule_display": "every 120m",
+      "schedule_display": "every 180m",
       "repeat": {
         "times": null,
-        "completed": 32
+        "completed": 396
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-05-27T19:26:01.903278+01:00",
-      "next_run_at": "2026-06-02T15:32:30.029971+01:00",
-      "last_run_at": "2026-06-02T13:32:30.029971+01:00",
+      "next_run_at": "2026-07-20T17:28:10.508530+01:00",
+      "last_run_at": "2026-07-20T14:28:10.508530+01:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -203,18 +207,109 @@
       },
       "enabled_toolsets": null,
       "workdir": null,
-      "profile": null
+      "profile": null,
+      "fire_claim": null
     },
     {
       "id": "64a9a832e9d7",
-      "name": "NR Music Latino - Generar + subir cada 2h",
+      "name": "NR Music Latino - Generar + subir cada 3h",
       "prompt": "",
       "skills": [],
       "skill": null,
       "model": null,
       "provider": null,
       "base_url": null,
-      "script": "run_nrlatino_v3.sh",
+      "script": "run_nrlatino_v4.sh",
+      "no_agent": true,
+      "context_from": null,
+      "schedule": {
+        "kind": "interval",
+        "minutes": 180,
+        "display": "every 180m"
+      },
+      "schedule_display": "every 180m",
+      "repeat": {
+        "times": null,
+        "completed": 395
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-05-27T19:37:57.947811+01:00",
+      "next_run_at": "2026-07-20T18:21:30.701286+01:00",
+      "last_run_at": "2026-07-20T15:21:30.701286+01:00",
+      "last_status": "ok",
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "local",
+      "origin": {
+        "platform": "telegram",
+        "chat_id": "27970741",
+        "chat_name": "Nicol\u00e1s Ramos",
+        "thread_id": null
+      },
+      "enabled_toolsets": null,
+      "workdir": null,
+      "profile": null,
+      "fire_claim": null
+    },
+    {
+      "id": "085e969627fe",
+      "name": "Limpieza videos subidos \u2192 HDD externo",
+      "prompt": "",
+      "skills": [],
+      "skill": null,
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": "cleanup_videos.sh",
+      "no_agent": true,
+      "context_from": null,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 3 * * 1",
+        "display": "0 3 * * 1"
+      },
+      "schedule_display": "0 3 * * 1",
+      "repeat": {
+        "times": null,
+        "completed": 8
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-06-04T19:38:37.742528+01:00",
+      "next_run_at": "2026-07-27T03:00:00+01:00",
+      "last_run_at": "2026-07-20T03:01:37.985530+01:00",
+      "last_status": "ok",
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "local",
+      "origin": {
+        "platform": "telegram",
+        "chat_id": "27970741",
+        "chat_name": "Nicol\u00e1s Ramos",
+        "thread_id": null
+      },
+      "enabled_toolsets": null,
+      "workdir": null,
+      "profile": null,
+      "fire_claim": null
+    },
+    {
+      "id": "bab2f2c95c12",
+      "name": "mcfactory-scraper",
+      "prompt": "",
+      "skills": [],
+      "skill": null,
+      "model": null,
+      "provider": null,
+      "provider_snapshot": null,
+      "model_snapshot": null,
+      "base_url": null,
+      "script": "mcfactory-scraper.py",
       "no_agent": true,
       "context_from": null,
       "schedule": {
@@ -225,15 +320,194 @@
       "schedule_display": "every 120m",
       "repeat": {
         "times": null,
-        "completed": 31
+        "completed": 195
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
-      "created_at": "2026-05-27T19:37:57.947811+01:00",
-      "next_run_at": "2026-06-02T13:55:29.698153+01:00",
-      "last_run_at": "2026-06-02T11:55:29.698153+01:00",
+      "created_at": "2026-07-04T08:15:59.076254+01:00",
+      "next_run_at": "2026-07-20T17:13:32.161370+01:00",
+      "last_run_at": "2026-07-20T15:13:32.161370+01:00",
+      "last_status": "ok",
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "origin",
+      "origin": null,
+      "enabled_toolsets": null,
+      "workdir": null,
+      "fire_claim": null
+    },
+    {
+      "id": "bdc7cc7f2758",
+      "name": "stack-updater",
+      "prompt": "Eres un agente de mantenimiento del stack de infraestructura en el NAS (192.168.1.10).\n\nTu tarea es:\n1. Revisar las \u00faltimas releases de estos servicios en GitHub:\n   - Engram Cloud: ghcr.io/gentleman-programming/engram (repo: Gentleman-Programming/engram)\n   - Open WebUI: ghcr.io/open-webui/open-webui (repo: open-webui/open-webui)\n   - Multica: ghcr.io/multica-ai/multica-backend y multica-web (repo: multica-ai/multica)\n   - n8n: n8nio/n8n (repo: n8n-io/n8n)\n   - Home Assistant: ghcr.io/home-assistant/home-assistant (repo: home-assistant/core)\n\n2. Para cada servicio, comprueba:\n   - Versi\u00f3n actual en el NAS (docker ps + docker inspect para ver el tag)\n   - \u00daltima versi\u00f3n disponible en GitHub (releases)\n   - Si hay diferencia, eval\u00faa si es cr\u00edtica (seguridad/breaking) o menor\n\n3. Si hay actualizaciones:\n   - Haz docker pull de la nueva imagen\n   - Reinicia el contenedor\n   - Verifica que el contenedor arranca correctamente (healthy status)\n   - Notifica qu\u00e9 se actualiz\u00f3 y a qu\u00e9 versi\u00f3n\n\n4. Si hay breaking changes o migraciones de BD que requieran intervenci\u00f3n manual, NO actualices autom\u00e1ticamente, solo notifica.\n\nAccede al NAS con: sshpass -f /tmp/nas_pass ssh -o StrictHostKeyChecking=no clawdia@192.168.1.10\nPara comandos sudo: echo @Multilock00@ | sudo -S <comando>\n\nIMPORTANTE: No actualices nada que requiera migraci\u00f3n manual de base de datos. Si hay dudas, solo notifica.",
+      "skills": [],
+      "skill": null,
+      "model": null,
+      "provider": null,
+      "provider_snapshot": "ollama-cloud",
+      "model_snapshot": "deepseek-v4-flash",
+      "base_url": null,
+      "script": null,
+      "no_agent": false,
+      "context_from": null,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 8 * * 1",
+        "display": "0 8 * * 1"
+      },
+      "schedule_display": "0 8 * * 1",
+      "repeat": {
+        "times": null,
+        "completed": 3
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-07-05T22:04:32.803439+01:00",
+      "next_run_at": "2026-07-27T08:00:00+01:00",
+      "last_run_at": "2026-07-20T08:00:45.382324+01:00",
+      "last_status": "error",
+      "last_error": "RuntimeError: Skipped to prevent unintended spend: global inference config drifted since this job was created (provider 'ollama-cloud' -> 'opencode-go'), and this job is unpinned. No inference call was made. To run on the new config, pin it explicitly: `cronjob action=update job_id=bdc7cc7f2758 provider=<provider> model=<model>` (or pin the original values to keep them). See #44585.",
+      "last_delivery_error": null,
+      "deliver": "origin",
+      "origin": {
+        "platform": "telegram",
+        "chat_id": "27970741",
+        "chat_name": "Nicol\u00e1s Ramos",
+        "thread_id": null,
+        "user_id": "27970741"
+      },
+      "enabled_toolsets": [
+        "terminal",
+        "web",
+        "file"
+      ],
+      "workdir": null,
+      "fire_claim": null
+    },
+    {
+      "id": "a8bd33eb8f1f",
+      "name": "Media Agent - Descarga series + notificar novedades",
+      "prompt": "## MEDIA AGENT - DESCARGA DIARIA DE SERIES + NOVEDADES\n\nUsa computer_use para controlar Chrome REAL y descargar episodios nuevos.\n\n### PASO 1: ABRIR CHROME + DONPROXIES\n1. Lanzar Chrome con profile persistente y CDP en puerto 9229\n2. Navegar a https://donproxies.com/#proxy\n3. Hacer clic en el enlace del proxy generado (d0a4-don.mirror.pm o similar)\n4. Esperar a que cargue DonTorrent dentro del proxy\n\n### PASO 2: LEER LISTA DE SERIES\nConectarse al NAS 192.168.1.10 y leer /volumeUSB1/usbshare/series/\n\n### PASO 3: BUSCAR EPISODIOS NUEVOS\nPara cada serie que tenga episodios sin descargar:\n1. Buscar en DonTorrent el nombre de la serie\n2. Priorizar resultados con [720p] y ESPANOL\n3. Navegar a la temporada, identificar episodios\n4. Hacer clic en \"Descargar\" de los episodios que falten\n5. Cuando se descargue el .torrent en ~/Downloads/, copiarlo a /volumeUSB1/usbshare/ficheros_torrent/ en el NAS\n\n### PASO 4: EXCLUIR\nNO descargar series de: Netflix, Disney+, Amazon Prime, HBO.\n\n### PASO 5: CALIDAD\n720p HD, audio ESPANOL (castellano), WEB-DL preferido.\n\n### PASO 6: NOTIFICAR SERIES NUEVAS\nIMPORTANTE: Mientras navegas por DonTorrent, fijate si ves series NUEVAS trending/populares que NO esten en la biblioteca del NAS.\n- Si ves una serie nueva que parece interesante (de Fox, AMC, Starz, BBC, cadenas abiertas - NO Netflix/Disney+/Prime/HBO)\n- Notificar al usuario: \"He visto que [serie] esta trending. \u00bfQuieres que empiece a descargarla?\"\n- Esperar respuesta antes de descargar\n\n### PASO 7: NOTIFICAR EPISODIOS\nSi descargaste episodios nuevos: notificar cuales.\nSi no hay nada: guardar silencio.",
+      "skills": [],
+      "skill": null,
+      "model": null,
+      "provider": null,
+      "provider_snapshot": "opencode-go",
+      "model_snapshot": "deepseek-v4-flash",
+      "base_url": null,
+      "script": null,
+      "no_agent": false,
+      "context_from": null,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 11,23 * * *",
+        "display": "0 11,23 * * *"
+      },
+      "schedule_display": "0 11,23 * * *",
+      "repeat": {
+        "times": null,
+        "completed": 19
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-07-11T22:14:26.431822+01:00",
+      "next_run_at": "2026-07-20T23:00:00+01:00",
+      "last_run_at": "2026-07-20T11:20:21.919868+01:00",
+      "last_status": "ok",
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "origin",
+      "origin": null,
+      "enabled_toolsets": [
+        "computer_use",
+        "terminal"
+      ],
+      "workdir": null,
+      "fire_claim": null
+    },
+    {
+      "id": "76d530d3b077",
+      "name": "hermes-config auto-sync",
+      "prompt": "Ejecuta el script ~/hermes-config/scripts/auto-sync.sh para sincronizar la configuraci\u00f3n de Hermes con el repo de GitHub. No preguntes nada, solo ejecuta.",
+      "skills": [],
+      "skill": null,
+      "model": null,
+      "provider": null,
+      "provider_snapshot": "ollama-cloud",
+      "model_snapshot": "deepseek-v4-flash",
+      "base_url": null,
+      "script": null,
+      "no_agent": false,
+      "context_from": null,
+      "schedule": {
+        "kind": "interval",
+        "minutes": 30,
+        "display": "every 30m"
+      },
+      "schedule_display": "every 30m",
+      "repeat": {
+        "times": null,
+        "completed": 84
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-07-18T21:40:45.929170+01:00",
+      "next_run_at": "2026-07-20T16:58:38.537519+01:00",
+      "last_run_at": "2026-07-20T15:58:34.692980+01:00",
+      "last_status": "error",
+      "last_error": "RuntimeError: Skipped to prevent unintended spend: global inference config drifted since this job was created (provider 'ollama-cloud' -> 'opencode-go'), and this job is unpinned. No inference call was made. To run on the new config, pin it explicitly: `cronjob action=update job_id=76d530d3b077 provider=<provider> model=<model>` (or pin the original values to keep them). See #44585.",
+      "last_delivery_error": null,
+      "deliver": "local",
+      "origin": {
+        "platform": "telegram",
+        "chat_id": "27970741",
+        "chat_name": "Nicol\u00e1s Ramos",
+        "thread_id": null,
+        "user_id": "27970741"
+      },
+      "enabled_toolsets": null,
+      "workdir": null,
+      "fire_claim": null
+    },
+    {
+      "id": "59bd9183c6da",
+      "name": "hermes-config HDD backup",
+      "prompt": "Ejecuta /Volumes/HDD/backups/hermes-config/backup.sh para hacer backup de la configuraci\u00f3n de Hermes al disco externo HDD. No preguntes nada, solo ejecuta.",
+      "skills": [],
+      "skill": null,
+      "model": null,
+      "provider": null,
+      "provider_snapshot": "opencode-go",
+      "model_snapshot": "deepseek-v4-flash",
+      "base_url": null,
+      "script": null,
+      "no_agent": false,
+      "context_from": null,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 8 * * *",
+        "display": "0 8 * * *"
+      },
+      "schedule_display": "0 8 * * *",
+      "repeat": {
+        "times": null,
+        "completed": 2
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-07-18T21:55:23.301491+01:00",
+      "next_run_at": "2026-07-21T08:00:00+01:00",
+      "last_run_at": "2026-07-20T08:10:24.975351+01:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -242,12 +516,60 @@
         "platform": "telegram",
         "chat_id": "27970741",
         "chat_name": "Nicol\u00e1s Ramos",
-        "thread_id": null
+        "thread_id": null,
+        "user_id": "27970741"
       },
       "enabled_toolsets": null,
       "workdir": null,
-      "profile": null
+      "fire_claim": null
+    },
+    {
+      "id": "086edc1d943d",
+      "name": "multica-changelog-check",
+      "prompt": "Revisa el changelog de Multica en https://multica.ai/changelog y comp\u00e1ralo con la versi\u00f3n actual instalada en el NAS (Multica self-hosted en /volume4/docker/multica-caddy/). \n\n1. Extrae la \u00faltima versi\u00f3n publicada del changelog\n2. Verifica qu\u00e9 versi\u00f3n tenemos instalada (revisa las im\u00e1genes docker)\n3. Si hay una versi\u00f3n m\u00e1s reciente, avisa con un resumen de las novedades relevantes (nuevas features, bug fixes importantes)\n4. Si no hay novedades, solo confirma que est\u00e1 actualizado\n\nS\u00e9 conciso en el resumen. Usa el workspace nramosdev (ID: 899260c8-661d-4b6b-9635-ceae4fcfc473).",
+      "skills": [
+        "devops/synology-nas"
+      ],
+      "skill": "devops/synology-nas",
+      "model": null,
+      "provider": null,
+      "provider_snapshot": "opencode-go",
+      "model_snapshot": "deepseek-v4-flash",
+      "base_url": null,
+      "script": null,
+      "no_agent": false,
+      "context_from": null,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 9 * * 1",
+        "display": "0 9 * * 1"
+      },
+      "schedule_display": "0 9 * * 1",
+      "repeat": {
+        "times": null,
+        "completed": 0
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-07-20T15:16:15.929029+01:00",
+      "next_run_at": "2026-07-27T09:00:00+01:00",
+      "last_run_at": null,
+      "last_status": null,
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "telegram",
+      "origin": {
+        "platform": "telegram",
+        "chat_id": "27970741",
+        "chat_name": "Nicol\u00e1s Ramos",
+        "thread_id": null,
+        "user_id": "27970741"
+      },
+      "enabled_toolsets": null,
+      "workdir": null
     }
   ],
-  "updated_at": "2026-06-02T13:32:30.030398+01:00"
+  "updated_at": "2026-07-20T16:28:38.538267+01:00"
 }
