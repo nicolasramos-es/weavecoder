@@ -547,18 +547,6 @@ providers:
   opencode-go:
     api: http://localhost:18789/v1
 mcp_servers:
-  codebase-memory:
-    args: []
-    command: /Users/nramos/.local/bin/codebase-memory-mcp
-    transport: stdio
-  codegraph:
-    args:
-      - serve
-      - --mcp
-    command: codegraph
-    connect_timeout: 60
-    enabled: true
-    timeout: 120
   context7:
     args:
       - -y
@@ -575,15 +563,6 @@ mcp_servers:
       - mcp
       - --tools=agent
     command: engram
-  mcpvault:
-    args:
-      - /Users/nramos/nas-development/obsidian-vault
-    command: /opt/homebrew/bin/mcpvault
-    transport: stdio
-  n8n:
-    command: /Users/nramos/.hermes/node/bin/n8n-mcp
-    enabled: true
-    env: {}
   cognee:
     url: http://192.168.1.10:8101/mcp
     enabled: true
