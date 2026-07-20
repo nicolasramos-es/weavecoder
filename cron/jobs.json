@@ -453,17 +453,17 @@
       "schedule_display": "every 30m",
       "repeat": {
         "times": null,
-        "completed": 84
+        "completed": 85
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-07-18T21:40:45.929170+01:00",
-      "next_run_at": "2026-07-20T16:58:38.537519+01:00",
-      "last_run_at": "2026-07-20T15:58:34.692980+01:00",
-      "last_status": "error",
-      "last_error": "RuntimeError: Skipped to prevent unintended spend: global inference config drifted since this job was created (provider 'ollama-cloud' -> 'opencode-go'), and this job is unpinned. No inference call was made. To run on the new config, pin it explicitly: `cronjob action=update job_id=76d530d3b077 provider=<provider> model=<model>` (or pin the original values to keep them). See #44585.",
+      "next_run_at": "2026-07-20T17:29:41.351366+01:00",
+      "last_run_at": "2026-07-20T16:29:09.499868+01:00",
+      "last_status": "ok",
+      "last_error": null,
       "last_delivery_error": null,
       "deliver": "local",
       "origin": {
@@ -571,5 +571,5 @@
       "workdir": null
     }
   ],
-  "updated_at": "2026-07-20T16:28:38.538267+01:00"
+  "updated_at": "2026-07-20T16:59:41.352089+01:00"
 }
