@@ -381,10 +381,10 @@ mcp_servers:
     connect_timeout: 60
     enabled: true
     timeout: 120
-  cognee:
+  mem0:
     connect_timeout: 15
     enabled: true
-    url: http://192.168.1.10:8101/mcp
+    url: http://192.168.1.10:8102/sse
   context7:
     args:
     - -y
