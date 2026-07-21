@@ -453,15 +453,15 @@
       "schedule_display": "every 30m",
       "repeat": {
         "times": null,
-        "completed": 113
+        "completed": 114
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-07-18T21:40:45.929170+01:00",
-      "next_run_at": "2026-07-21T08:09:56.616382+01:00",
-      "last_run_at": "2026-07-21T07:09:18.558128+01:00",
+      "next_run_at": "2026-07-21T08:40:21.012292+01:00",
+      "last_run_at": "2026-07-21T07:40:18.692356+01:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -499,17 +499,17 @@
       "schedule_display": "0 8 * * *",
       "repeat": {
         "times": null,
-        "completed": 2
+        "completed": 3
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-07-18T21:55:23.301491+01:00",
-      "next_run_at": "2026-07-21T08:00:00+01:00",
-      "last_run_at": "2026-07-20T08:10:24.975351+01:00",
-      "last_status": "ok",
-      "last_error": null,
+      "next_run_at": "2026-07-22T08:00:00+01:00",
+      "last_run_at": "2026-07-21T08:00:20.155646+01:00",
+      "last_status": "error",
+      "last_error": "RuntimeError: Skipped to prevent unintended spend: global inference config drifted since this job was created (provider 'opencode-go' -> 'ollama-cloud'), and this job is unpinned. No inference call was made. To run on the new config, pin it explicitly: `cronjob action=update job_id=59bd9183c6da provider=<provider> model=<model>` (or pin the original values to keep them). See #44585.",
       "last_delivery_error": null,
       "deliver": "local",
       "origin": {
@@ -571,5 +571,5 @@
       "workdir": null
     }
   ],
-  "updated_at": "2026-07-21T07:39:56.617497+01:00"
+  "updated_at": "2026-07-21T08:10:21.012561+01:00"
 }
