@@ -382,9 +382,25 @@ mcp_servers:
     enabled: true
     timeout: 120
   mem0:
-    connect_timeout: 15
-    enabled: true
-    url: http://192.168.1.10:8103/
+    command: /Users/nramos/.hermes/venvs/mem0/bin/python
+    args: [/Users/nramos/.hermes/venvs/mem0/mem0-server.py]
+    env:
+      MEM0_QDRANT_URL: http://192.168.1.10:6333
+      MEM0_EMBED_PROVIDER: openai
+      MEM0_EMBED_MODEL: embed-main
+      MEM0_EMBED_URL: https://litellm.51.38.254.149.sslip.io/v1
+      MEM0_EMBED_API_KEY: sk-C6M66z7-cqqlptEBJYuLNg
+      MEM0_EMBED_DIMS: "384"
+      MEM0_ENABLE_GRAPH: "true"
+      MEM0_GRAPH_LLM_PROVIDER: openai
+      MEM0_GRAPH_LLM_MODEL: opencode-jj-deepseek-v4-flash
+      MEM0_GRAPH_LLM_URL: https://litellm.51.38.254.149.sslip.io/v1
+      MEM0_GRAPH_LLM_API_KEY: sk-C6M66z7-cqqlptEBJYuLNg
+      MEM0_NEO4J_URL: bolt://192.168.1.10:7687
+      MEM0_NEO4J_USER: neo4j
+      MEM0_NEO4J_PASSWORD: mem0graph
+      MEM0_USER_ID: hermes-default
+      OPENAI_API_KEY: sk-C6M66z7-cqqlptEBJYuLNg
   context7:
     args:
     - -y
