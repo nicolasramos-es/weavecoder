@@ -20,6 +20,7 @@ github
 go-testing
 hermes
 hermes-desktop-plugins
+hermes-themes
 impeccable
 inference-sh
 interface-design
