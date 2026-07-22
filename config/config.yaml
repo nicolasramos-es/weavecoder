@@ -384,7 +384,7 @@ mcp_servers:
   mem0:
     connect_timeout: 15
     enabled: true
-    url: http://192.168.1.10:8102/sse
+    url: http://192.168.1.10:8103/mcp
   context7:
     args:
     - -y
