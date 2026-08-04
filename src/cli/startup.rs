@@ -199,9 +199,8 @@ pub fn register_external_provider_runtimes() {
     crate::provider::external::register_external_provider_fallible(
         crate::provider::external::COPILOT_RUNTIME,
         || {
-            let provider = std::sync::Arc::new(
-                wvc_provider_copilot_runtime::CopilotApiProvider::new().ok()?,
-            );
+            let provider =
+                std::sync::Arc::new(wvc_provider_copilot_runtime::CopilotApiProvider::new().ok()?);
             let eager_tier_detection = std::env::var("JCODE_NON_INTERACTIVE").is_err();
             if eager_tier_detection && tokio::runtime::Handle::try_current().is_ok() {
                 let p_clone = std::sync::Arc::clone(&provider);
@@ -362,9 +361,7 @@ fn spawn_background_update_check(args: &Args) {
                             ));
                         }
                     } else {
-                        logging::info(
-                            "Update available! Run `wvc update` or `/reload` to update.",
-                        );
+                        logging::info("Update available! Run `wvc update` or `/reload` to update.");
                     }
                 }
             } else {

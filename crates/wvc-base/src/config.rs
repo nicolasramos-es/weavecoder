@@ -3,6 +3,12 @@
 //! Config is loaded from `~/.jcode/config.toml` (or `$JCODE_HOME/config.toml`)
 //! Environment variables override config file settings.
 
+use serde::{Deserialize, Serialize};
+use std::collections::{BTreeMap, BTreeSet, HashSet};
+use std::hash::{Hash, Hasher};
+use std::path::PathBuf;
+use std::sync::{LazyLock, RwLock};
+use std::time::{Duration, Instant, SystemTime};
 pub use wvc_config_types::{
     AgentsConfig, AmbientConfig, AuthConfig, AutoJudgeConfig, AutoReviewConfig, CompactionConfig,
     CompactionMode, CrossProviderFailoverMode, DiagramDisplayMode, DiagramPanePosition,
@@ -13,12 +19,6 @@ pub use wvc_config_types::{
     ReasoningDisplayMode, SafetyConfig, SessionPickerResumeAction, SponsorsConfig, SwarmSpawnMode,
     SwarmStripLayout, TerminalConfig, UpdateChannel, WebSearchConfig, WebSearchEngine,
 };
-use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, BTreeSet, HashSet};
-use std::hash::{Hash, Hasher};
-use std::path::PathBuf;
-use std::sync::{LazyLock, RwLock};
-use std::time::{Duration, Instant, SystemTime};
 
 const CONFIG_CACHE_CHECK_INTERVAL: Duration = if cfg!(test) {
     Duration::ZERO

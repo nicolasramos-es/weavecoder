@@ -4,10 +4,10 @@
 
 use anyhow::Result;
 use async_stream::stream;
-use weavecoder::message::{Message, StreamEvent, ToolDefinition};
-use weavecoder::provider::{EventStream, Provider};
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
+use weavecoder::message::{Message, StreamEvent, ToolDefinition};
+use weavecoder::provider::{EventStream, Provider};
 
 pub struct MockProvider {
     responses: Arc<Mutex<VecDeque<Vec<StreamEvent>>>>,

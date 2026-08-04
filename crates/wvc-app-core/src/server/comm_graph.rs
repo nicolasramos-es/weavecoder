@@ -14,13 +14,13 @@ use super::{
 };
 use crate::protocol::ServerEvent;
 use crate::protocol::TaskGraphNodeSpec;
-use wvc_plan::MAX_PLAN_ITEMS;
-use wvc_plan::bridge::{apply_task_graph, parse_kind, to_task_graph};
-use wvc_plan::dag::{self, HandoffArtifact, NodeSpec, NodeStatus, TaskGraph};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use tokio::sync::mpsc;
 use tokio::sync::{RwLock, broadcast};
+use wvc_plan::MAX_PLAN_ITEMS;
+use wvc_plan::bridge::{apply_task_graph, parse_kind, to_task_graph};
+use wvc_plan::dag::{self, HandoffArtifact, NodeSpec, NodeStatus, TaskGraph};
 
 fn spec_from_wire(spec: TaskGraphNodeSpec) -> NodeSpec {
     NodeSpec {

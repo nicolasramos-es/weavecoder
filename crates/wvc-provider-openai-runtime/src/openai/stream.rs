@@ -1,6 +1,4 @@
-pub(super) use wvc_provider_openai::stream::{
-    OpenAIResponsesStream, parse_openai_response_event,
-};
+pub(super) use wvc_provider_openai::stream::{OpenAIResponsesStream, parse_openai_response_event};
 
 #[cfg(test)]
 pub(super) use wvc_provider_openai::stream::{

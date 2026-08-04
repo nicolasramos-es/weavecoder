@@ -1,6 +1,6 @@
-use wvc_tui_workspace::color_support::rgb;
 use ratatui::prelude::*;
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
+use wvc_tui_workspace::color_support::rgb;
 
 pub fn wrap_line(
     line: Line<'static>,

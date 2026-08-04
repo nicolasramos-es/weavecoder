@@ -1694,8 +1694,7 @@ fn render_swarm_message_expanded_shows_body_and_collapse_badge() {
         "fixed the flaky test",
         "The flaky test was caused by a race in the setup helper.",
     );
-    let expanded =
-        wvc_tui_messages::toggle_collapsible_swarm_content(&collapsed).expect("toggle");
+    let expanded = wvc_tui_messages::toggle_collapsible_swarm_content(&collapsed).expect("toggle");
     let msg = DisplayMessage::swarm("DM from sheep", expanded);
 
     let lines = render_swarm_message(&msg, 100, crate::config::DiffDisplayMode::Off);

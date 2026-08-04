@@ -957,9 +957,8 @@ fn build_claude_api_key_system_param(system: &str) -> Option<ClaudeApiSystem<'_>
 /// main provider's resolution so memory features authenticate the same way the
 /// agent does.
 fn anthropic_sidecar_prefers_api_key() -> bool {
-    match wvc_provider_core::runtime_env_pinned_mode(
-        wvc_provider_core::DualAuthProvider::Anthropic,
-    ) {
+    match wvc_provider_core::runtime_env_pinned_mode(wvc_provider_core::DualAuthProvider::Anthropic)
+    {
         Some(wvc_provider_core::AuthMode::ApiKey) => true,
         Some(wvc_provider_core::AuthMode::Oauth) => false,
         None => auth::claude::load_credentials().is_err(),

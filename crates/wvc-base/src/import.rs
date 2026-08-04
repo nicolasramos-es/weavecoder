@@ -7,6 +7,11 @@ use crate::message::{ContentBlock, Role};
 use crate::session::{Session, SessionStatus, StoredMessage};
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
+use std::collections::HashSet;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+use std::path::Path;
+use std::path::PathBuf;
 pub use wvc_import_core::repo_ranking;
 use wvc_import_core::{
     ClaudeCodeContent, ClaudeCodeContentBlock, ClaudeCodeEntry, ClaudeCodeSessionInfo,
@@ -23,11 +28,6 @@ pub use wvc_import_core::{
     imported_claude_code_session_id, imported_codex_session_id, imported_cursor_session_id,
     imported_opencode_session_id, imported_pi_session_id, is_cursor_subagent_transcript,
 };
-use std::collections::HashSet;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
-use std::path::Path;
-use std::path::PathBuf;
 
 // Keep enough recent context for a useful continuation while preventing an
 // imported multi-hundred-message transcript from dominating first paint and
@@ -600,9 +600,7 @@ pub fn import_session(session_id: &str) -> Result<Session> {
     import_session_from_file(&session_file, session_id)
 }
 
-pub fn imported_session_id_for_target(
-    target: &wvc_session_types::ResumeTarget,
-) -> Option<String> {
+pub fn imported_session_id_for_target(target: &wvc_session_types::ResumeTarget) -> Option<String> {
     match target {
         wvc_session_types::ResumeTarget::JcodeSession { session_id } => Some(session_id.clone()),
         wvc_session_types::ResumeTarget::ClaudeCodeSession { session_id, .. } => {
@@ -1441,8 +1439,7 @@ pub fn import_cursor_session_from_path(
     let session_id = session_id_hint
         .map(|id| id.to_string())
         .unwrap_or_else(|| cursor_session_id_from_path(session_path));
-    let created_at =
-        wvc_import_core::file_modified_datetime(session_path).unwrap_or_else(Utc::now);
+    let created_at = wvc_import_core::file_modified_datetime(session_path).unwrap_or_else(Utc::now);
 
     let mut session = Session::create_with_id(imported_cursor_session_id(&session_id), None, None);
     session.provider_session_id = Some(session_id.clone());

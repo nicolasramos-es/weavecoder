@@ -731,9 +731,7 @@ mod tests {
         );
         for (role, value) in &parsed.display.colors {
             assert!(
-                wvc_config_types::DisplayConfig::default()
-                    .colors
-                    .is_empty(),
+                wvc_config_types::DisplayConfig::default().colors.is_empty(),
                 "colors should default to empty"
             );
             assert_eq!(value.len(), 7, "{role} example should be #rrggbb: {value}");

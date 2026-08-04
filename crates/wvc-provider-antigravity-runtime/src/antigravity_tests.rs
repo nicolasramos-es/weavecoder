@@ -1,10 +1,10 @@
 use super::*;
 use chrono::Utc;
+use tokio_stream::StreamExt;
 use wvc_provider_antigravity::{
     FetchAvailableModelsResponse, parse_fetch_available_models_response,
 };
 use wvc_provider_core::Provider;
-use tokio_stream::StreamExt;
 
 #[test]
 fn parse_fetch_available_models_response_discovers_metadata_and_priority_order() {

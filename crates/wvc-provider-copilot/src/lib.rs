@@ -1,10 +1,10 @@
+use serde::{Deserialize, Serialize};
+use serde_json::{Value, json};
+use std::collections::{HashMap, HashSet};
 use wvc_message_types::{
     ContentBlock, Message as ChatMessage, Role, TOOL_OUTPUT_MISSING_TEXT, ToolDefinition,
     sanitize_tool_id,
 };
-use serde::{Deserialize, Serialize};
-use serde_json::{Value, json};
-use std::collections::{HashMap, HashSet};
 
 pub const COPILOT_API_VERSION: &str = "2025-04-01";
 

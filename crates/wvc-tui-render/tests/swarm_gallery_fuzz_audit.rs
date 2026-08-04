@@ -2,12 +2,12 @@
 //! panel, and strip renderers across degenerate inputs (empty members, huge
 //! member counts, tiny widths/heights, wide glyphs).
 
+use ratatui::prelude::Line;
+use unicode_width::UnicodeWidthStr;
 use wvc_tui_render::swarm_gallery::{
     GalleryMember, SwarmStripHint, render_gallery, render_swarm_dock, render_swarm_panel,
     render_swarm_strip,
 };
-use ratatui::prelude::Line;
-use unicode_width::UnicodeWidthStr;
 
 fn member(id: &str, status: &str, role: Option<&str>, body: &[&str]) -> GalleryMember {
     GalleryMember {

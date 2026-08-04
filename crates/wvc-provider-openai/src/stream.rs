@@ -2,7 +2,6 @@ use anyhow::Result;
 use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64_STANDARD};
 use bytes::Bytes;
 use futures::Stream;
-use wvc_message_types::{StreamEvent, sanitize_tool_id};
 use serde::Deserialize;
 use serde_json::Value;
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -10,6 +9,7 @@ use std::pin::Pin;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::task::{Context as TaskContext, Poll};
 use std::time::{SystemTime, UNIX_EPOCH};
+use wvc_message_types::{StreamEvent, sanitize_tool_id};
 
 const WEBSOCKET_FALLBACK_NOTICE: &str = "falling back from websockets to https transport";
 static FALLBACK_TOOL_CALL_COUNTER: AtomicU64 = AtomicU64::new(1);

@@ -12,11 +12,6 @@
 
 use crate::errors::{Error, ErrorKind, Result};
 use crate::launch::{LaunchOptions, LaunchedInstance, ensure_runtime, launch_instance};
-use wvc_harness_api::{
-    API_VERSION_MAJOR, ApiEvent, ApiRequest, ClientFrame, HistoryMessage, ModelRouteInfo,
-    PermissionDecision, ServerFrame, SessionInfo, TextMatch, api_socket_path, read_frame,
-    write_frame,
-};
 use std::collections::HashMap;
 use std::io::{BufRead, BufReader, Write};
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
@@ -25,6 +20,11 @@ use std::sync::mpsc::{
 };
 use std::sync::{Arc, Condvar, Mutex};
 use std::time::Duration;
+use wvc_harness_api::{
+    API_VERSION_MAJOR, ApiEvent, ApiRequest, ClientFrame, HistoryMessage, ModelRouteInfo,
+    PermissionDecision, ServerFrame, SessionInfo, TextMatch, api_socket_path, read_frame,
+    write_frame,
+};
 
 /// How a client reaches the harness.
 pub struct ConnectOptions {

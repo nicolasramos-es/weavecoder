@@ -27,7 +27,6 @@ use crossterm::event::{
 use debug::DebugTrace;
 use futures::StreamExt;
 use helpers::*;
-use wvc_tui_messages::DisplayMessage;
 use ratatui::DefaultTerminal;
 use std::cell::RefCell;
 use std::collections::HashSet;
@@ -38,6 +37,7 @@ use std::sync::atomic::AtomicBool;
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
+use wvc_tui_messages::DisplayMessage;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AppRuntimeMode {

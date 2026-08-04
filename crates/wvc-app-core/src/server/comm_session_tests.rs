@@ -346,9 +346,7 @@ fn prepare_visible_spawn_session_cleans_session_when_launch_errors() {
     .expect_err("visible spawn preparation should surface launch error");
 
     assert!(error.to_string().contains("launch failed"));
-    let sessions_dir = crate::storage::wvc_dir()
-        .expect("wvc dir")
-        .join("sessions");
+    let sessions_dir = crate::storage::wvc_dir().expect("wvc dir").join("sessions");
     let remaining_sessions = std::fs::read_dir(&sessions_dir)
         .map(|entries| entries.count())
         .unwrap_or(0);

@@ -22,7 +22,8 @@ fn test_safety_classification() {
     assert!(safety.classify("edit") == weavecoder::safety::ActionTier::RequiresPermission);
     assert!(safety.classify("write") == weavecoder::safety::ActionTier::RequiresPermission);
     assert!(
-        safety.classify("create_pull_request") == weavecoder::safety::ActionTier::RequiresPermission
+        safety.classify("create_pull_request")
+            == weavecoder::safety::ActionTier::RequiresPermission
     );
     assert!(safety.classify("send_email") == weavecoder::safety::ActionTier::RequiresPermission);
 

@@ -1198,8 +1198,8 @@ fn repair_stale_shared_server_after_no_update() {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use wvc_update_core::parse_sha256sums;
     use sha2::{Digest, Sha256};
+    use wvc_update_core::parse_sha256sums;
 
     #[test]
     fn test_version_is_newer() {

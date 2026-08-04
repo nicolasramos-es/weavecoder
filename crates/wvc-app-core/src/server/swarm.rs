@@ -7,9 +7,6 @@ use crate::protocol::{NotificationType, ServerEvent};
 use crate::session::Session;
 use anyhow::Result;
 use futures::future::try_join_all;
-use wvc_swarm_core::{
-    completion_notification_message, normalize_completion_report, truncate_detail,
-};
 use serde::Deserialize;
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
@@ -18,6 +15,9 @@ use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Mutex as StdMutex, OnceLock};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use tokio::sync::{Mutex, RwLock, broadcast};
+use wvc_swarm_core::{
+    completion_notification_message, normalize_completion_report, truncate_detail,
+};
 
 fn status_age_secs(last_status_change: Instant) -> u64 {
     last_status_change.elapsed().as_secs()
@@ -1736,13 +1736,13 @@ mod tests {
     use crate::plan::PlanItem;
     use crate::protocol::{NotificationType, ServerEvent};
     use crate::server::{SwarmMember, VersionedPlan};
-    use wvc_swarm_core::{
-        append_swarm_completion_report_instructions, summarize_plan_items, truncate_detail,
-    };
     use std::collections::{HashMap, HashSet};
     use std::sync::Arc;
     use std::time::{Duration, Instant};
     use tokio::sync::{RwLock, mpsc};
+    use wvc_swarm_core::{
+        append_swarm_completion_report_instructions, summarize_plan_items, truncate_detail,
+    };
 
     fn plan_item(id: &str, content: &str) -> PlanItem {
         PlanItem {

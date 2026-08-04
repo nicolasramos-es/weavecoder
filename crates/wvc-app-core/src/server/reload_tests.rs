@@ -3,11 +3,11 @@ use super::{
     persist_reload_recovery_intents, receive_reload_signal,
 };
 use crate::server::{ReloadSignal, SwarmEvent, SwarmEventType, SwarmMember};
-use wvc_agent_runtime::InterruptSignal;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::{RwLock, broadcast, mpsc, watch};
+use wvc_agent_runtime::InterruptSignal;
 
 fn set_member_status(members: &mut HashMap<String, SwarmMember>, session_id: &str, status: &str) {
     assert!(

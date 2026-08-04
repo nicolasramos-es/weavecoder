@@ -15,7 +15,6 @@ mod failover;
 mod fingerprint;
 pub mod gemini;
 mod image_clamp;
-pub mod wvc;
 pub mod models;
 mod multi_provider;
 pub mod openai;
@@ -29,6 +28,7 @@ mod selection;
 mod startup;
 mod state;
 mod stream_timeout;
+pub mod wvc;
 
 use crate::auth;
 use crate::message::{Message, ToolDefinition};
@@ -39,17 +39,26 @@ use account_failover::{
 };
 use anyhow::{Result, anyhow};
 use async_trait::async_trait;
-#[cfg(test)]
-use wvc_provider_core::FailoverDecision;
 use registry::ProviderRegistry;
 use std::collections::HashMap;
 use std::sync::{Arc, LazyLock, Mutex, RwLock};
+#[cfg(test)]
+use wvc_provider_core::FailoverDecision;
 
 pub use catalog_routes::{
     append_simplified_anthropic_model_routes, remote_current_openai_compatible_route_for_model,
     remote_model_is_server_copilot_only, remote_model_routes_fallback,
     remote_model_routes_lightweight_fallback, remote_model_should_offer_copilot_route,
     remote_openai_compatible_route_for_model, simplified_model_routes_for_picker,
+};
+pub use route_builders::{
+    build_anthropic_oauth_route, build_chatgpt_web_route, build_copilot_route,
+    build_openai_api_key_route, build_openai_oauth_route, build_openrouter_auto_route,
+    build_openrouter_endpoint_route, build_openrouter_fallback_provider_route,
+    is_listable_model_name, listable_model_names_from_routes, openrouter_catalog_model_id,
+};
+pub(crate) use routing::{
+    anthropic_api_key_route_availability, anthropic_oauth_route_availability,
 };
 pub use wvc_provider_core::attempt_tracker;
 pub use wvc_provider_core::cli_provider_arg_for_session_key;
@@ -70,15 +79,6 @@ pub use wvc_provider_core::{
     pick_next_fallback_route_with_options,
 };
 pub use wvc_provider_core::{ProviderFailoverPrompt, parse_failover_prompt_message};
-pub use route_builders::{
-    build_anthropic_oauth_route, build_chatgpt_web_route, build_copilot_route,
-    build_openai_api_key_route, build_openai_oauth_route, build_openrouter_auto_route,
-    build_openrouter_endpoint_route, build_openrouter_fallback_provider_route,
-    is_listable_model_name, listable_model_names_from_routes, openrouter_catalog_model_id,
-};
-pub(crate) use routing::{
-    anthropic_api_key_route_availability, anthropic_oauth_route_availability,
-};
 
 /// Process-wide handle to the live agent provider.
 ///
@@ -1466,19 +1466,15 @@ impl MultiProvider {
                     wvc_provider_core::AuthMode::ApiKey => {
                         anthropic::AnthropicCredentialMode::ApiKey
                     }
-                    wvc_provider_core::AuthMode::Oauth => {
-                        anthropic::AnthropicCredentialMode::OAuth
-                    }
+                    wvc_provider_core::AuthMode::Oauth => anthropic::AnthropicCredentialMode::OAuth,
                 })
             });
             let openai_credential_mode = pinned.and_then(|route| {
-                matches!(
-                    route.provider,
-                    wvc_provider_core::DualAuthProvider::OpenAI
-                )
-                .then(|| match route.mode {
-                    wvc_provider_core::AuthMode::ApiKey => openai::OpenAICredentialMode::ApiKey,
-                    wvc_provider_core::AuthMode::Oauth => openai::OpenAICredentialMode::OAuth,
+                matches!(route.provider, wvc_provider_core::DualAuthProvider::OpenAI).then(|| {
+                    match route.mode {
+                        wvc_provider_core::AuthMode::ApiKey => openai::OpenAICredentialMode::ApiKey,
+                        wvc_provider_core::AuthMode::Oauth => openai::OpenAICredentialMode::OAuth,
+                    }
                 })
             });
             return self.set_model_on_provider_with_credential_modes(
@@ -1834,13 +1830,11 @@ impl Provider for MultiProvider {
             // `openai:` prefixes route without pinning a credential.
             let pinned = wvc_provider_core::AuthRoute::parse_explicit_credential_prefix(prefix);
             let openai_credential_mode = pinned.and_then(|route| {
-                matches!(
-                    route.provider,
-                    wvc_provider_core::DualAuthProvider::OpenAI
-                )
-                .then(|| match route.mode {
-                    wvc_provider_core::AuthMode::ApiKey => openai::OpenAICredentialMode::ApiKey,
-                    wvc_provider_core::AuthMode::Oauth => openai::OpenAICredentialMode::OAuth,
+                matches!(route.provider, wvc_provider_core::DualAuthProvider::OpenAI).then(|| {
+                    match route.mode {
+                        wvc_provider_core::AuthMode::ApiKey => openai::OpenAICredentialMode::ApiKey,
+                        wvc_provider_core::AuthMode::Oauth => openai::OpenAICredentialMode::OAuth,
+                    }
                 })
             });
             let anthropic_credential_mode = pinned.and_then(|route| {
@@ -1852,9 +1846,7 @@ impl Provider for MultiProvider {
                     wvc_provider_core::AuthMode::ApiKey => {
                         anthropic::AnthropicCredentialMode::ApiKey
                     }
-                    wvc_provider_core::AuthMode::Oauth => {
-                        anthropic::AnthropicCredentialMode::OAuth
-                    }
+                    wvc_provider_core::AuthMode::Oauth => anthropic::AnthropicCredentialMode::OAuth,
                 })
             });
             if openai_credential_mode.is_some() || anthropic_credential_mode.is_some() {

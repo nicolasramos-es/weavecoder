@@ -628,12 +628,9 @@ mod tests {
             Some("reload failed for test".to_string()),
         );
 
-        let status = inspect_reload_wait_status(
-            &temp.path().join("wvc.sock"),
-            Duration::from_secs(5),
-            None,
-        )
-        .await;
+        let status =
+            inspect_reload_wait_status(&temp.path().join("wvc.sock"), Duration::from_secs(5), None)
+                .await;
 
         assert_eq!(
             status,
@@ -655,12 +652,9 @@ mod tests {
             Some("ready for handoff".to_string()),
         );
 
-        let status = inspect_reload_wait_status(
-            &temp.path().join("wvc.sock"),
-            Duration::from_secs(5),
-            None,
-        )
-        .await;
+        let status =
+            inspect_reload_wait_status(&temp.path().join("wvc.sock"), Duration::from_secs(5), None)
+                .await;
 
         assert_eq!(status, ReloadWaitStatus::Ready);
     }

@@ -31,8 +31,7 @@ fn test_provider_choice_aliases_parse() {
         Args::try_parse_from(["wvc", "--provider", "kimi-for-coding", "run", "smoke"]).unwrap();
     assert_eq!(args.provider, ProviderChoice::Kimi);
 
-    let args =
-        Args::try_parse_from(["wvc", "--provider", "cerebrascode", "run", "smoke"]).unwrap();
+    let args = Args::try_parse_from(["wvc", "--provider", "cerebrascode", "run", "smoke"]).unwrap();
     assert_eq!(args.provider, ProviderChoice::Cerebras);
 
     let args = Args::try_parse_from(["wvc", "--provider", "compat", "run", "smoke"]).unwrap();
@@ -621,8 +620,8 @@ fn auth_status_subcommand_parses() {
 
 #[test]
 fn auth_doctor_subcommand_parses() {
-    let args = Args::try_parse_from(["wvc", "auth", "doctor", "openai", "--validate", "--json"])
-        .unwrap();
+    let args =
+        Args::try_parse_from(["wvc", "auth", "doctor", "openai", "--validate", "--json"]).unwrap();
     match args.command {
         Some(Command::Auth(AuthCommand::Doctor {
             provider,

@@ -10,11 +10,11 @@
 //! shipping consumer, which is what keeps the SDK's shape honest instead of
 //! validated only by its own examples.
 
-use wvc_sdk::{ApiEvent, ConnectOptions, JcodeClient, LaunchOptions};
 use std::path::PathBuf;
 use std::sync::mpsc::{Receiver, Sender, channel};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
+use wvc_sdk::{ApiEvent, ConnectOptions, JcodeClient, LaunchOptions};
 
 /// Failure wording and connection-stage reporting are the SDK's, so the app
 /// and any other client describe the same failure the same way.

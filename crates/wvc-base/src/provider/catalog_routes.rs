@@ -1225,8 +1225,7 @@ fn remote_openai_compatible_profile_models(
         }
     };
 
-    if let Some(cache) =
-        wvc_provider_openrouter::load_disk_cache_entry_for_namespace(&resolved.id)
+    if let Some(cache) = wvc_provider_openrouter::load_disk_cache_entry_for_namespace(&resolved.id)
     {
         let source_matches = cache
             .source_api_base
@@ -1290,8 +1289,7 @@ mod tests {
             let cache_dir = std::path::PathBuf::from(wvc_home).join("cache");
             std::fs::create_dir_all(&cache_dir).expect("create cache dir");
             let cache = wvc_provider_openrouter::DiskCache {
-                cached_at: wvc_provider_openrouter::current_unix_secs()
-                    .expect("current unix time"),
+                cached_at: wvc_provider_openrouter::current_unix_secs().expect("current unix time"),
                 source_api_base: Some(source_api_base.to_string()),
                 models: model_ids
                     .iter()

@@ -9,10 +9,10 @@
 //! counts are what belongs in the checked-in default.
 
 use super::TestState;
-use wvc_tui_messages::DisplayMessage;
-use wvc_tui_style::palette::role_for_rendered;
 use ratatui::style::Color;
 use std::collections::BTreeMap;
+use wvc_tui_messages::DisplayMessage;
+use wvc_tui_style::palette::role_for_rendered;
 
 /// Render a set of representative frames and tally role area plus adjacency.
 fn measure() -> (

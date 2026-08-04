@@ -1,8 +1,8 @@
 use anyhow::Result;
-use wvc_message_types::{ContentBlock, Message, Role, ToolCall, ToolDefinition};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::collections::HashSet;
+use wvc_message_types::{ContentBlock, Message, Role, ToolCall, ToolDefinition};
 
 pub const DEFAULT_MODEL: &str = "gemini-2.5-pro";
 pub const AVAILABLE_MODELS: &[&str] = &[

@@ -16,6 +16,8 @@
 //! All tests serialize on `lock_test_env()` because they mutate the process
 //! environment (`JCODE_HOME`).
 
+use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 use wvc_base::import::{
     import_session, import_session_from_file, list_claude_code_sessions,
     list_claude_code_sessions_lazy,
@@ -23,8 +25,6 @@ use wvc_base::import::{
 use wvc_base::message::ContentBlock;
 use wvc_base::session::Session;
 use wvc_import_core::imported_claude_code_session_id;
-use std::path::{Path, PathBuf};
-use std::sync::Mutex;
 
 /// Serializes tests that mutate `JCODE_HOME`. This test binary has its own
 /// address space, so a file-local mutex is sufficient (and avoids depending on

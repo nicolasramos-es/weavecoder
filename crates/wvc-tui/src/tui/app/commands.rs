@@ -2361,10 +2361,9 @@ fn handle_selfdev_command(app: &mut App, trimmed: &str) -> bool {
                 format!(
                     "Created self-dev session {} but could not auto-open a supported terminal.\n\nRun manually:\n{}",
                     launch.session_id,
-                    launch.command_preview().unwrap_or_else(|| format!(
-                        "wvc --resume {} self-dev",
-                        launch.session_id
-                    ))
+                    launch
+                        .command_preview()
+                        .unwrap_or_else(|| format!("wvc --resume {} self-dev", launch.session_id))
                 )
             };
 

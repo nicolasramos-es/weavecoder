@@ -178,12 +178,7 @@ mod tests {
             "🐙 jcode Octopus"
         );
         assert_eq!(
-            terminal_window_title(
-                "🐙",
-                Some("resume window title"),
-                Some("wvc Octopus"),
-                true
-            ),
+            terminal_window_title("🐙", Some("resume window title"), Some("wvc Octopus"), true),
             "🐙 resume window title [self-dev]"
         );
     }

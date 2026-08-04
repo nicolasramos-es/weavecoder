@@ -11,16 +11,16 @@
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use chrono::Utc;
-use wvc_base::auth::cursor as cursor_auth;
-use wvc_base::provider::cursor::{AVAILABLE_MODELS, DEFAULT_MODEL};
-use wvc_message_types::{ContentBlock, Message, Role, StreamEvent, ToolDefinition};
-use wvc_provider_core::{EventStream, Provider};
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::{Value, json};
 use std::sync::{Arc, RwLock};
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
+use wvc_base::auth::cursor as cursor_auth;
+use wvc_base::provider::cursor::{AVAILABLE_MODELS, DEFAULT_MODEL};
+use wvc_message_types::{ContentBlock, Message, Role, StreamEvent, ToolDefinition};
+use wvc_provider_core::{EventStream, Provider};
 
 mod agent_transport;
 

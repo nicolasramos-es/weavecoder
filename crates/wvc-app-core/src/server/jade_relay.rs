@@ -7,12 +7,12 @@ use super::{SessionAgents, SwarmMember};
 use crate::config::SafetyConfig;
 use crate::session::Session;
 use anyhow::{Context, Result};
-use wvc_agent_runtime::{InterruptSignal, SoftInterruptSource};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
+use wvc_agent_runtime::{InterruptSignal, SoftInterruptSource};
 
 const RELAY_LONG_POLL_SECONDS: u32 = 20;
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(30);

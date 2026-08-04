@@ -112,11 +112,7 @@ impl NotificationDispatcher {
         );
 
         // Build rich HTML email with approve/deny buttons
-        let reply_to = self
-            .config
-            .email_from
-            .as_deref()
-            .unwrap_or("wvc@localhost");
+        let reply_to = self.config.email_from.as_deref().unwrap_or("wvc@localhost");
         let email_html = build_permission_email_html(action, description, request_id, reply_to);
 
         self.send_all_with_email_override(

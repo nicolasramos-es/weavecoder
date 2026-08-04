@@ -1,13 +1,13 @@
 use anyhow::Result;
 use bytes::Bytes;
 use futures::Stream;
-use wvc_message_types::StreamEvent;
 use serde_json::Value;
 use std::collections::VecDeque;
 use std::pin::Pin;
 use std::sync::{Arc, Mutex};
 use std::task::{Context as TaskContext, Poll};
 use std::time::Instant;
+use wvc_message_types::StreamEvent;
 
 use crate::{PinSource, ProviderPin};
 

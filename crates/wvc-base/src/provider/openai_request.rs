@@ -5,12 +5,11 @@ pub use wvc_provider_openai::{
 };
 
 use crate::message::Message as ChatMessage;
-use wvc_provider_openai::OpenAiRequestLogLevel;
 use serde_json::Value;
+use wvc_provider_openai::OpenAiRequestLogLevel;
 
 pub fn build_responses_input(messages: &[ChatMessage]) -> Vec<Value> {
-    wvc_provider_openai::build_responses_input_with_logger(messages, |level, message| match level
-    {
+    wvc_provider_openai::build_responses_input_with_logger(messages, |level, message| match level {
         OpenAiRequestLogLevel::Info => crate::logging::info(message),
         OpenAiRequestLogLevel::Warn => crate::logging::warn(message),
     })

@@ -18,8 +18,8 @@
 use std::collections::HashMap;
 
 use crossterm::event::{KeyCode, KeyModifiers};
-use wvc_tui_core::keybind::format_binding;
 use serde::{Deserialize, Serialize};
+use wvc_tui_core::keybind::format_binding;
 
 use super::App;
 use crate::tui::keybind::{

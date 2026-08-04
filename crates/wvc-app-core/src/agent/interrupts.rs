@@ -4,10 +4,10 @@ use crate::message::{ContentBlock, Role};
 use crate::protocol::ServerEvent;
 use crate::session::StoredDisplayRole;
 use anyhow::Result;
+use std::sync::Arc;
 use wvc_agent_runtime::{
     InterruptSignal, SoftInterruptMessage, SoftInterruptQueue, SoftInterruptSource,
 };
-use std::sync::Arc;
 
 fn soft_interrupt_session_display_role(source: SoftInterruptSource) -> Option<StoredDisplayRole> {
     match source {

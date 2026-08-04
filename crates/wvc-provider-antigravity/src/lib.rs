@@ -1,8 +1,8 @@
 use chrono::{DateTime, Utc};
-use wvc_provider_gemini::CodeAssistGenerateResponse;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::{HashMap, HashSet};
+use wvc_provider_gemini::CodeAssistGenerateResponse;
 
 /// Known-good model id used when the backend default is unknown. The literal
 /// alias `"default"` is rejected by `generateContent` with HTTP 404, so we must

@@ -8,12 +8,12 @@
 //! The legacy `render_markdown*` path remains authoritative; this adapter is
 //! validated against it before any switchover.
 
-use wvc_render_core::{
-    Alignment as CoreAlignment, BlockKind, Document, FillRole, StyleRole, StyledLine, StyledSpan,
-};
 use ratatui::layout::Alignment;
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
+use wvc_render_core::{
+    Alignment as CoreAlignment, BlockKind, Document, FillRole, StyleRole, StyledLine, StyledSpan,
+};
 
 use crate::{
     bold_color, code_bg, code_fg, heading_color, heading_h1_color, heading_h2_color,

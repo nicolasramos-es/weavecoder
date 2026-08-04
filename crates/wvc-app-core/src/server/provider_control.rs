@@ -4,12 +4,12 @@ use crate::agent::Agent;
 use crate::auth::lifecycle::{AuthActivationRequest, AuthActivationResult};
 use crate::protocol::{AuthChanged, NotificationType, ServerEvent};
 use crate::provider::{ModelCatalogRefreshSummary, ModelRoute, Provider, RouteSelection};
-use wvc_provider_core::ModelCatalogSnapshot;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex as StdMutex, OnceLock};
 use std::time::Instant;
 use tokio::sync::{Mutex, RwLock, mpsc};
+use wvc_provider_core::ModelCatalogSnapshot;
 
 type SessionAgents = Arc<RwLock<HashMap<String, Arc<Mutex<Agent>>>>>;
 static AUTH_REFRESH_GENERATIONS: OnceLock<StdMutex<HashMap<String, u64>>> = OnceLock::new();

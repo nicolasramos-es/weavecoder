@@ -1,16 +1,16 @@
 use crate::bus::FileOp;
 use crate::plan::VersionedPlan;
 use crate::protocol::ServerEvent;
-use wvc_agent_runtime::{
-    InterruptSignal, SoftInterruptMessage, SoftInterruptQueue, SoftInterruptSource,
-};
-use wvc_swarm_core::{SwarmLifecycleStatus, SwarmMemberRecord, SwarmRole};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::sync::{Arc, LazyLock, Mutex as StdMutex};
 use std::time::Instant;
 use tokio::sync::{RwLock, mpsc};
+use wvc_agent_runtime::{
+    InterruptSignal, SoftInterruptMessage, SoftInterruptQueue, SoftInterruptSource,
+};
+use wvc_swarm_core::{SwarmLifecycleStatus, SwarmMemberRecord, SwarmRole};
 
 /// Process-global registry mapping session id -> background-tool signal.
 ///

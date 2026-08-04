@@ -16,11 +16,11 @@
 //! tools live mid-stream) and keeps its no-retry-after-output guard instead.
 
 use anyhow::Result;
-use wvc_message_types::StreamEvent;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
+use wvc_message_types::StreamEvent;
 
 /// Whether an event renders as content on the consumer side, such that
 /// replaying the request after it was emitted would visibly duplicate output.

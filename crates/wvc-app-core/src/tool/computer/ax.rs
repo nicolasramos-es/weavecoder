@@ -11,10 +11,10 @@
 
 use super::osa;
 use anyhow::{Result, bail};
-use wvc_tool_types::ToolOutput;
 use serde::Deserialize;
 use serde_json::json;
 use std::time::Duration;
+use wvc_tool_types::ToolOutput;
 
 /// A structural handle to an AX element.
 #[derive(Debug, Clone, Deserialize)]

@@ -33,7 +33,7 @@ jobs:
 
       - name: Enforce Rust and TypeScript SDK surface parity
         working-directory: ${{ github.workspace }}
-        run: cargo test -p jcode-sdk parity -- --nocapture
+        run: cargo test -p wvc-sdk parity -- --nocapture
 
       - name: Install dependencies
         run: npm ci

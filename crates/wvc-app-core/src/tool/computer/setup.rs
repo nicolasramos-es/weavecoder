@@ -3,11 +3,11 @@
 
 use super::osa;
 use anyhow::Result;
-use wvc_tool_types::ToolOutput;
 use serde_json::json;
 use std::process::Command;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
+use wvc_tool_types::ToolOutput;
 
 fn accessibility_ok() -> bool {
     // System Events reports whether assistive access is enabled for us.

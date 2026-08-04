@@ -1,5 +1,12 @@
 use anyhow::{Context, Result};
 use clap::{Parser, ValueEnum};
+use ratatui::Terminal;
+use ratatui::backend::TestBackend;
+use serde::Serialize;
+use serde_json::json;
+use std::fs;
+use std::path::PathBuf;
+use std::time::{Duration, Instant};
 use weavecoder::message::{ContentBlock, Role, ToolCall};
 use weavecoder::perf::{SyntheticSystemProfile, TuiPerfPolicy, tui_policy_for};
 use weavecoder::prompt::ContextInfo;
@@ -8,13 +15,6 @@ use weavecoder::side_panel::{
     SidePanelPage, SidePanelPageFormat, SidePanelPageSource, SidePanelSnapshot,
 };
 use weavecoder::tui::{DisplayMessage, ProcessingStatus, TuiState, info_widget::InfoWidgetData};
-use ratatui::Terminal;
-use ratatui::backend::TestBackend;
-use serde::Serialize;
-use serde_json::json;
-use std::fs;
-use std::path::PathBuf;
-use std::time::{Duration, Instant};
 
 #[path = "tui_bench/side_panel.rs"]
 mod tui_bench_side_panel;
@@ -1121,7 +1121,10 @@ impl TuiState for BenchState {
     }
 
     fn side_panel_native_scrollbar(&self) -> bool {
-        weavecoder::config::config().display.native_scrollbars.side_panel
+        weavecoder::config::config()
+            .display
+            .native_scrollbars
+            .side_panel
     }
 
     fn diff_line_wrap(&self) -> bool {

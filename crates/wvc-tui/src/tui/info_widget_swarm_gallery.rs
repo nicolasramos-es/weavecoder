@@ -8,14 +8,14 @@
 //! [`GalleryMember`] (label + body lines).
 
 use crate::protocol::SwarmMemberStatus;
+use ratatui::prelude::*;
+use std::collections::{HashMap, HashSet};
 use wvc_tui_core::keybind::alt_chord_lower;
 use wvc_tui_render::swarm_gallery::{
     GalleryMember, SwarmStripHint, display_order, humanize_age, is_active_status, render_gallery,
     render_swarm_compact, render_swarm_dock, render_swarm_live_card, render_swarm_panel,
     render_swarm_strip, render_swarm_strip_vertical, status_accent, status_glyph,
 };
-use ratatui::prelude::*;
-use std::collections::{HashMap, HashSet};
 
 fn member_label(member: &SwarmMemberStatus) -> String {
     member

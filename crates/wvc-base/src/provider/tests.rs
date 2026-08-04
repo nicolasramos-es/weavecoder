@@ -463,12 +463,8 @@ fn openai_model_routes_cover_oauth_api_and_no_auth_state_space() {
         assert_eq!(oauth_only_methods, vec!["openai-oauth"]);
 
         crate::env::set_var("OPENAI_API_KEY", "sk-test-openai-api-key");
-        std::fs::remove_file(
-            crate::storage::wvc_dir()
-                .unwrap()
-                .join("openai-auth.json"),
-        )
-        .expect("remove oauth credentials");
+        std::fs::remove_file(crate::storage::wvc_dir().unwrap().join("openai-auth.json"))
+            .expect("remove oauth credentials");
         crate::auth::AuthStatus::invalidate_cache();
         let api_only = provider.model_routes();
         let api_only_methods = api_only

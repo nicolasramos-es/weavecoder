@@ -27,9 +27,9 @@
 //! contains no content by construction.
 
 use crate::state_support::{current_session_id, new_event_id, version};
-use wvc_usage_types::{OnboardingTraceEvent, OnboardingTraceStep};
 use std::collections::BTreeMap;
 use std::time::Instant;
+use wvc_usage_types::{OnboardingTraceEvent, OnboardingTraceStep};
 
 /// Timings round to this bucket, so they describe behavior in aggregate
 /// without being precise enough to identify a machine or a person.

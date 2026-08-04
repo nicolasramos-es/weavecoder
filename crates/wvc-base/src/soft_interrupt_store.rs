@@ -1,7 +1,7 @@
 use anyhow::Result;
-use wvc_agent_runtime::{SoftInterruptMessage, SoftInterruptSource};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+use wvc_agent_runtime::{SoftInterruptMessage, SoftInterruptSource};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct PersistedSoftInterrupt {

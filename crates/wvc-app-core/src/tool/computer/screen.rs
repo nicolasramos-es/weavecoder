@@ -4,10 +4,10 @@ use super::osa;
 use anyhow::{Context, Result, bail};
 use base64::{Engine as _, engine::general_purpose::STANDARD};
 use core_graphics::display::CGDisplay;
-use wvc_tool_types::ToolOutput;
 use serde_json::json;
 use std::process::Command;
 use std::time::Duration;
+use wvc_tool_types::ToolOutput;
 
 /// Read width/height from a PNG IHDR chunk. Returns None if not a PNG.
 pub fn png_dimensions(bytes: &[u8]) -> Option<(u32, u32)> {

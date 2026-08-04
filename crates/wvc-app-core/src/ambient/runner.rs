@@ -22,9 +22,9 @@ use crate::session::Session;
 use crate::tool;
 use crate::tool::ambient as ambient_tools;
 use chrono::Utc;
-use wvc_agent_runtime::{SoftInterruptMessage, SoftInterruptQueue, SoftInterruptSource};
 use std::sync::Arc;
 use tokio::sync::{Notify, RwLock};
+use wvc_agent_runtime::{SoftInterruptMessage, SoftInterruptQueue, SoftInterruptSource};
 
 const MAX_IDLE_POLL_SECS: u64 = 30;
 
@@ -999,8 +999,7 @@ impl AmbientRunnerHandle {
         }
 
         // Find the jcode binary
-        let wvc_bin =
-            std::env::current_exe().unwrap_or_else(|_| std::path::PathBuf::from("wvc"));
+        let wvc_bin = std::env::current_exe().unwrap_or_else(|_| std::path::PathBuf::from("wvc"));
 
         // Spawn kitty with `jcode ambient run-visible`
         logging::info("Ambient visible: spawning kitty with jcode TUI");

@@ -13,8 +13,8 @@
 //! The result is stored in `wvc_tui_style::theme_mode` where the renderer
 //! adapts colors for light backgrounds at frame time.
 
-use wvc_tui_style::ThemeMode;
 use std::sync::{Mutex, OnceLock};
+use wvc_tui_style::ThemeMode;
 
 static DETECTED: OnceLock<ThemeMode> = OnceLock::new();
 

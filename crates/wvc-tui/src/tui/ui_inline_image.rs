@@ -17,12 +17,12 @@
 //!   fraction of the viewport so a tall screenshot never buries the transcript.
 
 use crate::tui::mermaid;
-use wvc_tui_messages::{ImageRegion, ImageRegionRender, PreparedMessages};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{LazyLock, Mutex, OnceLock, mpsc};
+use wvc_tui_messages::{ImageRegion, ImageRegionRender, PreparedMessages};
 
 /// One image to render inline, resolved from a `RenderedImage`.
 #[derive(Clone)]
@@ -996,10 +996,7 @@ pub(crate) fn build_section(
     }
 
     let line_count = lines.len();
-    let plain: Vec<String> = lines
-        .iter()
-        .map(wvc_tui_render::line_plain_text)
-        .collect();
+    let plain: Vec<String> = lines.iter().map(wvc_tui_render::line_plain_text).collect();
 
     PreparedMessages {
         wrapped_lines: lines,

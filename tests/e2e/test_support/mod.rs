@@ -7,13 +7,6 @@ pub(crate) use crate::mock_provider::MockProvider;
 pub(crate) use anyhow::{Context, Result};
 pub(crate) use async_trait::async_trait;
 pub(crate) use futures::{SinkExt, StreamExt, stream};
-pub(crate) use weavecoder::agent::Agent;
-pub(crate) use weavecoder::message::{ContentBlock, Message, Role, StreamEvent, ToolDefinition};
-pub(crate) use weavecoder::protocol::{Request, ServerEvent};
-pub(crate) use weavecoder::provider::{EventStream, Provider};
-pub(crate) use weavecoder::server;
-pub(crate) use weavecoder::session::{Session, StoredCompactionState};
-pub(crate) use weavecoder::tool::Registry;
 pub(crate) use std::ffi::OsString;
 pub(crate) use std::io::Read;
 pub(crate) use std::net::TcpListener as StdTcpListener;
@@ -30,6 +23,13 @@ pub(crate) use tokio::time::timeout;
 pub(crate) use tokio_tungstenite::connect_async;
 pub(crate) use tokio_tungstenite::tungstenite::Message as WsMessage;
 pub(crate) use tokio_tungstenite::tungstenite::client::IntoClientRequest;
+pub(crate) use weavecoder::agent::Agent;
+pub(crate) use weavecoder::message::{ContentBlock, Message, Role, StreamEvent, ToolDefinition};
+pub(crate) use weavecoder::protocol::{Request, ServerEvent};
+pub(crate) use weavecoder::provider::{EventStream, Provider};
+pub(crate) use weavecoder::server;
+pub(crate) use weavecoder::session::{Session, StoredCompactionState};
+pub(crate) use weavecoder::tool::Registry;
 
 static JCODE_HOME_LOCK: std::sync::OnceLock<Mutex<()>> = std::sync::OnceLock::new();
 
@@ -68,9 +68,7 @@ pub(crate) struct TestEnvGuard {
 impl TestEnvGuard {
     pub(crate) fn new() -> Result<Self> {
         let lock = lock_wvc_home();
-        let temp_home = tempfile::Builder::new()
-            .prefix("wvc-e2e-home-")
-            .tempdir()?;
+        let temp_home = tempfile::Builder::new().prefix("wvc-e2e-home-").tempdir()?;
         let prev_home = std::env::var_os("JCODE_HOME");
         let prev_runtime_dir = std::env::var_os("JCODE_RUNTIME_DIR");
         let prev_test_session = std::env::var_os("JCODE_TEST_SESSION");

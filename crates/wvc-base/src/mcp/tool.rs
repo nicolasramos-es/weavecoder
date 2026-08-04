@@ -4,11 +4,11 @@ use super::manager::McpManager;
 use super::protocol::{ContentBlock, McpToolDef};
 use anyhow::Result;
 use async_trait::async_trait;
-use wvc_tool_core::{Tool, ToolContext};
-use wvc_tool_types::ToolOutput;
 use serde_json::Value;
 use std::sync::Arc;
 use tokio::sync::RwLock;
+use wvc_tool_core::{Tool, ToolContext};
+use wvc_tool_types::ToolOutput;
 
 /// A tool that proxies to an MCP server
 pub struct McpTool {

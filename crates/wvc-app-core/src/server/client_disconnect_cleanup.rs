@@ -6,11 +6,11 @@ use super::{
 };
 use crate::agent::Agent;
 use anyhow::Result;
-use wvc_agent_runtime::InterruptSignal;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::{Mutex, RwLock, broadcast};
+use wvc_agent_runtime::InterruptSignal;
 
 type SessionAgents = Arc<RwLock<HashMap<String, Arc<Mutex<Agent>>>>>;
 type ChannelSubscriptions = Arc<RwLock<HashMap<String, HashMap<String, HashSet<String>>>>>;

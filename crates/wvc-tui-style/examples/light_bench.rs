@@ -218,8 +218,7 @@ fn tune(start: &Palette) -> Palette {
 
 fn main() {
     let derived = flipped_defaults();
-    let generated =
-        wvc_tui_style::harmony::generate_from_seed(Role::User.default_rgb(), LIGHT_BG);
+    let generated = wvc_tui_style::harmony::generate_from_seed(Role::User.default_rgb(), LIGHT_BG);
     let tuned = tune(&hand_tuned());
 
     report("derived (runtime flip of dark defaults)", &derived);

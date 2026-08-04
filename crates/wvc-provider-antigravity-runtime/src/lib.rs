@@ -6,6 +6,11 @@
 
 use anyhow::{Context, Result};
 use async_trait::async_trait;
+use serde_json::{Value, json};
+use std::sync::{Arc, RwLock};
+use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
+use uuid::Uuid;
 use wvc_base::auth::antigravity as antigravity_auth;
 use wvc_message_types::{ConnectionPhase, Message, StreamEvent, ToolDefinition};
 use wvc_provider_antigravity::{
@@ -24,11 +29,6 @@ use wvc_provider_gemini::{
     CodeAssistGenerateRequest, CodeAssistGenerateResponse, GeminiFunctionCallingConfig,
     GeminiToolConfig, VertexGenerateContentRequest,
 };
-use serde_json::{Value, json};
-use std::sync::{Arc, RwLock};
-use tokio::sync::mpsc;
-use tokio_stream::wrappers::ReceiverStream;
-use uuid::Uuid;
 
 const DEFAULT_MODEL: &str = "default";
 
@@ -449,8 +449,7 @@ impl Provider for AntigravityProvider {
             {
                 Ok(response) => response,
                 Err(err) => {
-                    if !wvc_provider_gemini::is_missing_thought_signature_error(&err.to_string())
-                    {
+                    if !wvc_provider_gemini::is_missing_thought_signature_error(&err.to_string()) {
                         let _ = tx.send(Err(err)).await;
                         return;
                     }

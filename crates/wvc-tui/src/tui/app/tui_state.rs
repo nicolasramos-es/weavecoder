@@ -298,8 +298,7 @@ impl App {
 
         match route.provider {
             WidgetProviderKind::Anthropic => {
-                match self
-                    .dual_credential_active(route, wvc_provider_core::ActiveProvider::Claude)
+                match self.dual_credential_active(route, wvc_provider_core::ActiveProvider::Claude)
                 {
                     Some(ActiveCredential::OAuth) => AuthMethod::AnthropicOAuth,
                     Some(ActiveCredential::ApiKey) => AuthMethod::AnthropicApiKey,
@@ -307,8 +306,7 @@ impl App {
                 }
             }
             WidgetProviderKind::OpenAI => {
-                match self
-                    .dual_credential_active(route, wvc_provider_core::ActiveProvider::OpenAI)
+                match self.dual_credential_active(route, wvc_provider_core::ActiveProvider::OpenAI)
                 {
                     Some(ActiveCredential::OAuth) => AuthMethod::OpenAIOAuth,
                     Some(ActiveCredential::ApiKey) => AuthMethod::OpenAIApiKey,
@@ -2110,8 +2108,7 @@ impl App {
 
         let exe = std::env::current_exe().unwrap_or_else(|_| std::path::PathBuf::from("wvc"));
         let cwd = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
-        match wvc_app_core::session_launch::spawn_resume_in_new_terminal(&exe, &session_id, &cwd)
-        {
+        match wvc_app_core::session_launch::spawn_resume_in_new_terminal(&exe, &session_id, &cwd) {
             Ok(true) => self.set_status_notice(format!("Opened {label} in a new window")),
             Ok(false) => self.set_status_notice(format!(
                 "Could not open a terminal for {label} (no emulator found)"

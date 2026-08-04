@@ -61,7 +61,6 @@ use crate::tool::Registry;
 use crate::transport::Stream;
 use anyhow::Result;
 use futures::FutureExt;
-use wvc_agent_runtime::{InterruptSignal, SoftInterruptSource, StreamError};
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use std::sync::{
@@ -71,6 +70,7 @@ use std::sync::{
 use std::time::{Duration, Instant};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::sync::{Mutex, RwLock, broadcast, mpsc};
+use wvc_agent_runtime::{InterruptSignal, SoftInterruptSource, StreamError};
 
 type SessionAgents = Arc<RwLock<HashMap<String, Arc<Mutex<Agent>>>>>;
 type ChannelSubscriptions = Arc<RwLock<HashMap<String, HashMap<String, HashSet<String>>>>>;

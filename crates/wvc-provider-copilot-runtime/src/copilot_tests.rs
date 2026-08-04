@@ -144,10 +144,7 @@ fn context_window_handles_dot_and_dash_names() {
         Some(128_000)
     );
     assert_eq!(
-        wvc_base::provider::context_limit_for_model_with_provider(
-            "gpt-5.3-codex",
-            Some("copilot")
-        ),
+        wvc_base::provider::context_limit_for_model_with_provider("gpt-5.3-codex", Some("copilot")),
         Some(128_000)
     );
     assert_eq!(
@@ -165,10 +162,7 @@ fn context_window_handles_dot_and_dash_names() {
         Some(1_000_000)
     );
     assert_eq!(
-        wvc_base::provider::context_limit_for_model_with_provider(
-            "unknown-model",
-            Some("copilot")
-        ),
+        wvc_base::provider::context_limit_for_model_with_provider("unknown-model", Some("copilot")),
         Some(128_000)
     );
 }

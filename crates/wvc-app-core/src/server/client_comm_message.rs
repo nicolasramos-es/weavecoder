@@ -5,11 +5,11 @@ use super::{
 };
 use crate::agent::Agent;
 use crate::protocol::{CommDeliveryMode, NotificationType, ServerEvent};
-use wvc_agent_runtime::SoftInterruptSource;
-use wvc_swarm_core::ChannelIndex;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use tokio::sync::{Mutex, RwLock, broadcast, mpsc};
+use wvc_agent_runtime::SoftInterruptSource;
+use wvc_swarm_core::ChannelIndex;
 
 type SessionAgents = Arc<RwLock<HashMap<String, Arc<Mutex<Agent>>>>>;
 type ChannelSubscriptions = Arc<RwLock<HashMap<String, HashMap<String, HashSet<String>>>>>;

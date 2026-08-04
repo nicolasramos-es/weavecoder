@@ -583,10 +583,8 @@ mod utf8_truncation_tests {
             stdout
         );
 
-        let probe_path = std::env::temp_dir().join(format!(
-            "wvc-cmd-quoting-probe-{}.cmd",
-            std::process::id()
-        ));
+        let probe_path =
+            std::env::temp_dir().join(format!("wvc-cmd-quoting-probe-{}.cmd", std::process::id()));
         std::fs::write(
             &probe_path,
             concat!(

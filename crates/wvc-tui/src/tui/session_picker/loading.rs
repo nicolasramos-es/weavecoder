@@ -2506,10 +2506,7 @@ fn load_opencode_session_stub(path: &Path) -> Result<Option<SessionInfo>> {
         .get("directory")
         .and_then(|v| v.as_str())
         .map(|s| s.to_string());
-    let short_name = format!(
-        "opencode {}",
-        wvc_core::util::truncate_str(&session_id, 8)
-    );
+    let short_name = format!("opencode {}", wvc_core::util::truncate_str(&session_id, 8));
     let title = value
         .get("title")
         .and_then(|v| v.as_str())
@@ -2662,10 +2659,7 @@ fn load_opencode_session_info(path: &Path) -> Result<Option<SessionInfo>> {
         return Ok(None);
     }
 
-    let short_name = format!(
-        "opencode {}",
-        wvc_core::util::truncate_str(&session_id, 8)
-    );
+    let short_name = format!("opencode {}", wvc_core::util::truncate_str(&session_id, 8));
     let search_index = build_search_index(
         &format!("opencode:{session_id}"),
         &short_name,

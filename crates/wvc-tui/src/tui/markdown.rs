@@ -47,9 +47,7 @@ fn to_markdown_latex_mode(
 ) -> wvc_tui_markdown::LatexRenderingMode {
     match mode {
         crate::config::LatexRenderingMode::None => wvc_tui_markdown::LatexRenderingMode::None,
-        crate::config::LatexRenderingMode::Unicode => {
-            wvc_tui_markdown::LatexRenderingMode::Unicode
-        }
+        crate::config::LatexRenderingMode::Unicode => wvc_tui_markdown::LatexRenderingMode::Unicode,
         crate::config::LatexRenderingMode::Image => wvc_tui_markdown::LatexRenderingMode::Image,
     }
 }

@@ -1,3 +1,6 @@
+use serde_json::Value;
+use std::collections::{HashMap, HashSet};
+use std::sync::atomic::{AtomicU64, Ordering};
 use wvc_message_types::{
     ContentBlock, Message as ChatMessage, Role, TOOL_OUTPUT_MISSING_TEXT, ToolDefinition,
     sanitize_tool_id,
@@ -5,9 +8,6 @@ use wvc_message_types::{
 use wvc_provider_core::openai_schema::{
     openai_compatible_schema, schema_supports_strict, strict_normalize_schema,
 };
-use serde_json::Value;
-use std::collections::{HashMap, HashSet};
-use std::sync::atomic::{AtomicU64, Ordering};
 
 static REWRITTEN_ORPHAN_TOOL_OUTPUTS: AtomicU64 = AtomicU64::new(0);
 
@@ -561,8 +561,8 @@ pub fn build_responses_input_with_logger(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use wvc_message_types::ToolDefinition;
     use serde_json::json;
+    use wvc_message_types::ToolDefinition;
 
     #[test]
     fn build_tools_flattens_allof_schema_for_openai() {

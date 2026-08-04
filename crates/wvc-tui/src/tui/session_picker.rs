@@ -8,7 +8,6 @@ use crate::session::{CrashedSessionsInfo, Session};
 use crate::tui::{DisplayMessage, markdown};
 use anyhow::Result;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind, KeyModifiers, MouseEventKind};
-use wvc_session_types::SessionStatus;
 use ratatui::{
     Frame,
     layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
@@ -19,6 +18,7 @@ use ratatui::{
 use std::collections::HashSet;
 use std::io::IsTerminal;
 use std::time::Duration;
+use wvc_session_types::SessionStatus;
 
 pub use wvc_tui_session_picker::{
     PickerItem, PreviewMessage, ResumeTarget, ServerGroup, SessionFilterMode, SessionInfo,

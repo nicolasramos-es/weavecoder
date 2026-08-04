@@ -517,9 +517,7 @@ fn model_picker_route_is_default(
 }
 
 impl App {
-    pub(super) fn remote_model_catalog_snapshot(
-        &self,
-    ) -> wvc_provider_core::ModelCatalogSnapshot {
+    pub(super) fn remote_model_catalog_snapshot(&self) -> wvc_provider_core::ModelCatalogSnapshot {
         wvc_provider_core::ModelCatalogSnapshot::new(
             self.remote_provider_name.clone(),
             self.remote_provider_model.clone(),
@@ -758,12 +756,7 @@ impl App {
         // The curated client catalog is versioned with the backend and is the
         // authority for managed subscription entitlements. Do not hide newly
         // launched subscription models behind a stale remote names snapshot.
-        Self::append_wvc_subscription_routes_static(
-            remote_available_entries,
-            routes,
-            true,
-            false,
-        );
+        Self::append_wvc_subscription_routes_static(remote_available_entries, routes, true, false);
     }
 
     fn hydrate_remote_model_catalog_snapshot(

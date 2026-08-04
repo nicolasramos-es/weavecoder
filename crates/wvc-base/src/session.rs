@@ -46,10 +46,6 @@ pub use crash::{
     CrashedSessionsInfo, detect_crashed_sessions, find_recent_crashed_sessions,
     find_session_by_name_or_id, recover_crashed_sessions, recover_crashed_sessions_by_ids,
 };
-pub use wvc_session_types::{
-    EnvSnapshot, GitState, SessionImproveMode, SessionStatus, StoredCompactionState,
-    StoredDisplayRole, StoredMemoryInjection, StoredMessage, StoredTokenUsage,
-};
 use journal::{PersistVectorMode, SessionJournalMeta, SessionPersistState};
 pub use maintenance::prune_old_session_backups;
 pub use memory_profile::SessionMemoryProfileSnapshot;
@@ -69,6 +65,10 @@ pub use storage_paths::session_journal_path_from_snapshot;
 pub(crate) use storage_paths::session_path_in_dir;
 use storage_paths::{estimate_json_bytes, persist_vector_mode_label};
 pub use storage_paths::{session_exists, session_journal_path, session_path};
+pub use wvc_session_types::{
+    EnvSnapshot, GitState, SessionImproveMode, SessionStatus, StoredCompactionState,
+    StoredDisplayRole, StoredMemoryInjection, StoredMessage, StoredTokenUsage,
+};
 
 fn stored_messages_to_messages(messages: &[StoredMessage]) -> Vec<Message> {
     messages.iter().map(StoredMessage::to_message).collect()
@@ -1288,10 +1288,8 @@ request in this new forked session, using the inherited conversation only as con
     pub fn strip_oversized_images(&mut self, target_total_chars: usize) -> usize {
         let mut contents: Vec<&mut Vec<ContentBlock>> =
             self.messages.iter_mut().map(|m| &mut m.content).collect();
-        let stripped = wvc_compaction_core::strip_large_images_in_contents(
-            &mut contents,
-            target_total_chars,
-        );
+        let stripped =
+            wvc_compaction_core::strip_large_images_in_contents(&mut contents, target_total_chars);
         if stripped > 0 {
             self.mark_memory_profile_dirty();
             self.mark_messages_full_dirty();

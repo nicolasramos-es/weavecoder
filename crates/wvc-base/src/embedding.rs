@@ -6,11 +6,11 @@
 //! logging integration stable.
 
 use anyhow::Result;
-use wvc_embedding as backend;
 use serde::Serialize;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, OnceLock};
 use std::time::{Duration, Instant};
+use wvc_embedding as backend;
 
 use crate::storage::wvc_dir;
 

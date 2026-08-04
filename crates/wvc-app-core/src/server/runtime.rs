@@ -12,7 +12,6 @@ use crate::gateway::GatewayClient;
 use crate::protocol::ServerEvent;
 use crate::provider::Provider;
 use crate::transport::{Listener, Stream};
-use wvc_agent_runtime::InterruptSignal;
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::future::Future;
 use std::sync::Arc;
@@ -21,6 +20,7 @@ use std::time::Instant;
 use tokio::sync::{Mutex, OnceCell, RwLock, broadcast, mpsc};
 use tokio::task::JoinSet;
 use tokio_util::sync::CancellationToken;
+use wvc_agent_runtime::InterruptSignal;
 
 type ChannelSubscriptions = Arc<RwLock<HashMap<String, HashMap<String, HashSet<String>>>>>;
 

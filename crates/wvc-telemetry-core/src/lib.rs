@@ -4,6 +4,14 @@ mod lifecycle;
 pub mod onboarding_trace;
 mod state_support;
 use chrono::{DateTime, NaiveDate, Utc};
+use lifecycle::emit_lifecycle_event;
+use serde_json::Value;
+use state_support::*;
+use std::collections::HashSet;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::mpsc::{SyncSender, TrySendError, sync_channel};
+use std::sync::{Mutex, OnceLock};
+use std::time::{Duration, Instant};
 use wvc_usage_types::{
     AuthEvent, DiscoveryEvent, ErrorCounts, FeedbackEvent, InstallEvent, OnboardingStepEvent,
     SessionLifecycleEvent, SessionStartEvent, TelemetryProjectProfile as ProjectProfile,
@@ -14,14 +22,6 @@ use wvc_usage_types::{
     telemetry_workflow_flags_from_counts,
 };
 pub use wvc_usage_types::{ErrorCategory, SessionEndReason};
-use lifecycle::emit_lifecycle_event;
-use serde_json::Value;
-use state_support::*;
-use std::collections::HashSet;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::mpsc::{SyncSender, TrySendError, sync_channel};
-use std::sync::{Mutex, OnceLock};
-use std::time::{Duration, Instant};
 
 const TELEMETRY_ENDPOINT: &str = "https://telemetry.jcode.sh/v1/event";
 const ASYNC_SEND_TIMEOUT: Duration = Duration::from_secs(5);

@@ -72,7 +72,7 @@ jobs:
             fi
 
             echo "::group::cargo build (jcode binary)"
-            cargo build --locked $PROFILE_FLAG -p jcode --bin jcode
+            cargo build --locked $PROFILE_FLAG -p weavecoder --bin wvc
             echo "::endgroup::"
 
             echo "::group::Verify binary launches"
@@ -80,9 +80,9 @@ jobs:
             echo "::endgroup::"
 
             echo "::group::Compile platform unit tests"
-            cargo test --locked $PROFILE_FLAG -p jcode-base --lib --no-run
+            cargo test --locked $PROFILE_FLAG -p wvc-base --lib --no-run
             echo "::endgroup::"
 
             echo "::group::Run platform unit tests"
-            cargo test --locked $PROFILE_FLAG -p jcode-base --lib -- --nocapture platform
+            cargo test --locked $PROFILE_FLAG -p wvc-base --lib -- --nocapture platform
             echo "::endgroup::"
