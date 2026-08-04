@@ -2,7 +2,7 @@
 name = "wvc-code-graph"
 version = "0.1.0"
 edition = "2024"
-description = "Code Knowledge Graph: tree-sitter parsing and symbol extraction for weavecoder"
+description = "Code Knowledge Graph: tree-sitter parsing + SQLite/FTS5 storage for weavecoder"
 publish = false
 
 [dependencies]
@@ -11,5 +11,11 @@ tree-sitter-go = "0.23"
 tree-sitter-python = "0.23"
 tree-sitter-typescript = "0.23"
 tree-sitter-rust = "0.23"
+rusqlite = { version = "0.32", features = ["bundled"] }
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", features = ["serde"] }
 
 [dev-dependencies]
+tempfile = "3"

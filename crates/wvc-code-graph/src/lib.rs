@@ -1,7 +1,8 @@
-//! Code Knowledge Graph: tree-sitter parsing and symbol extraction.
+//! # wvc-code-graph
 //!
-//! Provides language detection by file extension and tree-sitter parsing
-//! for Go, Python, TypeScript, and Rust source files.
+//! Code Knowledge Graph for weavecoder: tree-sitter parsing and symbol
+//! extraction (Go, Python, TypeScript, Rust) + embedded SQLite storage with
+//! FTS5. Stores symbols (code entities) and relations (edges between them).
 
 use tree_sitter::Tree;
 
@@ -12,8 +13,18 @@ mod parser;
 pub use language::{detect_language, Language};
 pub use parser::{parse_file, parse_str};
 
-#[cfg(test)]
-mod tests;
+// Storage modules
+mod storage;
+mod symbols;
+mod relations;
+mod fts;
+
+pub use storage::{CodeGraph, CodeGraphError};
+pub use symbols::{Symbol, SymbolKind, SymbolInsert, SymbolQuery, SymbolResult};
+pub use relations::{Relation, RelationKind, RelationInsert};
+pub use fts::{FtsSearchResult, FtsQuery};
+
+pub const SCHEMA_VERSION: u32 = 1;
 
 /// Parse a file's contents as a string and produce a tree-sitter Tree.
 pub fn parse_source(source: &str, ext: &str) -> Result<Tree, String> {
@@ -29,3 +40,6 @@ pub fn detect_ext(path: &str) -> Option<String> {
         .and_then(|e| e.to_str())
         .map(|s| s.to_lowercase())
 }
+
+#[cfg(test)]
+mod tests;

@@ -44,6 +44,7 @@ members = [
     "crates/wvc-session-types",
     "crates/wvc-setup-hints",
     "crates/wvc-storage",
+    "crates/wvc-code-graph",
     "crates/wvc-side-panel-types",
     "crates/wvc-azure-auth",
     "crates/wvc-notify-email",
