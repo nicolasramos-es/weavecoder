@@ -410,7 +410,7 @@ pub fn is_enabled() -> bool {
         logging::debug("telemetry disabled by no_telemetry marker");
         return false;
     }
-    true
+    false
 }
 
 /// Marker file recording that the user opted out of anonymous usage telemetry.
