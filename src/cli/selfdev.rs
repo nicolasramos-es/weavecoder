@@ -9,13 +9,13 @@ use crate::{build, logging, session, startup_profile};
 use super::output;
 use super::provider_init::ProviderChoice;
 
-pub use jcode_selfdev_types::CLIENT_SELFDEV_ENV;
-pub use jcode_selfdev_types::client_selfdev_requested;
+pub use wvc_selfdev_types::CLIENT_SELFDEV_ENV;
+pub use wvc_selfdev_types::client_selfdev_requested;
 
 const JCODE_REPO_URL: &str = "https://github.com/1jehuang/jcode.git";
 
 fn selfdev_clone_dir() -> Result<PathBuf> {
-    Ok(crate::storage::jcode_dir()?.join("source").join("jcode"))
+    Ok(crate::storage::wvc_dir()?.join("source").join("wvc"))
 }
 
 fn resolve_or_clone_repo_dir() -> Result<PathBuf> {
@@ -25,7 +25,7 @@ fn resolve_or_clone_repo_dir() -> Result<PathBuf> {
 
     let repo_dir = selfdev_clone_dir()?;
     if repo_dir.exists() {
-        if build::is_jcode_repo(&repo_dir) {
+        if build::is_wvc_repo(&repo_dir) {
             return Ok(repo_dir);
         }
 
@@ -66,7 +66,7 @@ fn resolve_or_clone_repo_dir() -> Result<PathBuf> {
         );
     }
 
-    if !build::is_jcode_repo(&repo_dir) {
+    if !build::is_wvc_repo(&repo_dir) {
         anyhow::bail!(
             "Cloned self-dev source is not a valid jcode repository: {}",
             repo_dir.display()

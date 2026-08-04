@@ -23,7 +23,7 @@ fn lock_env() -> std::sync::MutexGuard<'static, ()> {
 #[test]
 #[allow(deprecated)]
 fn test_provider_choice_arg_values() {
-    assert_eq!(ProviderChoice::Jcode.as_arg_value(), "jcode");
+    assert_eq!(ProviderChoice::Jcode.as_arg_value(), "wvc");
     assert_eq!(ProviderChoice::Claude.as_arg_value(), "claude");
     assert_eq!(ProviderChoice::AnthropicApi.as_arg_value(), "anthropic-api");
     assert_eq!(
@@ -152,7 +152,7 @@ fn test_server_bootstrap_login_selection_preserves_order() {
     );
     assert_eq!(
         resolve_login_selection("4", &providers).map(|provider| provider.id),
-        Some("jcode")
+        Some("wvc")
     );
     assert_eq!(
         resolve_login_selection("5", &providers).map(|provider| provider.id),
@@ -194,7 +194,7 @@ fn test_auto_init_login_selection_preserves_order() {
 }
 
 #[test]
-fn test_init_provider_jcode_delegates_runtime_profile_to_wrapper() {
+fn test_init_provider_wvc_delegates_runtime_profile_to_wrapper() {
     let _guard = lock_env();
     let _env_guard = crate::storage::lock_test_env();
     // Sandbox JCODE_HOME: with the real home, persisted auth/credential state
@@ -214,7 +214,7 @@ fn test_init_provider_jcode_delegates_runtime_profile_to_wrapper() {
         .block_on(init_provider(&ProviderChoice::Jcode, None))
         .expect("init jcode provider");
 
-    assert_eq!(provider.name(), "Jcode Subscription");
+    assert_eq!(provider.name(), "Weavecoder Subscription");
     assert!(crate::subscription_catalog::is_runtime_mode_enabled());
     assert_eq!(
         std::env::var("JCODE_OPENROUTER_MODEL").ok().as_deref(),
@@ -226,7 +226,7 @@ fn test_init_provider_jcode_delegates_runtime_profile_to_wrapper() {
     );
     assert_eq!(
         std::env::var("JCODE_RUNTIME_PROVIDER").ok().as_deref(),
-        Some("jcode")
+        Some("wvc")
     );
     assert_eq!(
         std::env::var("JCODE_INITIAL_PROVIDER_EXPLICIT")

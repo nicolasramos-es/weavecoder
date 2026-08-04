@@ -179,11 +179,11 @@ pub(crate) async fn run_main(mut args: Args) -> Result<()> {
             }
             let api_socket = api_socket
                 .map(std::path::PathBuf::from)
-                .unwrap_or_else(jcode_harness_api_server::api_socket_path);
+                .unwrap_or_else(wvc_harness_api_server::api_socket_path);
             // The global `--socket` (and `JCODE_SOCKET`) already selects the
             // daemon socket; `set_socket_path` exported it during startup.
-            let legacy_socket = jcode_harness_api_server::legacy_socket_path();
-            jcode_harness_api_server::run_bridge(api_socket, legacy_socket).await?;
+            let legacy_socket = wvc_harness_api_server::legacy_socket_path();
+            wvc_harness_api_server::run_bridge(api_socket, legacy_socket).await?;
         }
         Some(Command::Server { action }) => match action {
             ServerCommand::Start { json } => {
@@ -201,7 +201,7 @@ pub(crate) async fn run_main(mut args: Args) -> Result<()> {
                         })
                     );
                 } else {
-                    println!("Jcode server is running.");
+                    println!("Weavecoder server is running.");
                 }
             }
             ServerCommand::Keepalive => {
@@ -898,8 +898,8 @@ async fn run_default_command(args: Args) -> Result<()> {
     startup_profile::mark("crash_resume_hint");
 
     let cwd = std::env::current_dir()?;
-    let in_jcode_repo = build::is_jcode_repo(&cwd);
-    startup_profile::mark("is_jcode_repo");
+    let in_wvc_repo = build::is_wvc_repo(&cwd);
+    startup_profile::mark("is_wvc_repo");
     let already_in_selfdev = crate::cli::selfdev::client_selfdev_requested();
 
     // Record where this interactive launch happened so the system-wide launch
@@ -911,7 +911,7 @@ async fn run_default_command(args: Args) -> Result<()> {
         setup_hints::record_launch_dirs(&cwd, repo_dir.as_deref());
     }
 
-    if in_jcode_repo && !already_in_selfdev && !args.no_selfdev {
+    if in_wvc_repo && !already_in_selfdev && !args.no_selfdev {
         output::stderr_info("📍 Detected jcode repository - enabling self-dev mode");
         output::stderr_info("   Using shared server with self-dev session mode");
         output::stderr_info("   (use --no-selfdev to disable auto-detection)");

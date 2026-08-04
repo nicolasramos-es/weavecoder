@@ -248,7 +248,7 @@ fn run_cloud_sessions_helper_command(action: CloudSessionsSubcommand) -> Result<
 }
 
 fn cloud_sessions_config_path() -> Result<PathBuf> {
-    Ok(crate::storage::jcode_dir()?.join("cloud_sessions.json"))
+    Ok(crate::storage::wvc_dir()?.join("cloud_sessions.json"))
 }
 
 fn load_cloud_sessions_config() -> Result<Option<CloudSessionsConfig>> {
@@ -471,7 +471,7 @@ struct SyncCandidate {
 }
 
 fn cloud_sessions_sync_state_path() -> Result<PathBuf> {
-    Ok(crate::storage::jcode_dir()?.join("cloud_sessions_sync.json"))
+    Ok(crate::storage::wvc_dir()?.join("cloud_sessions_sync.json"))
 }
 
 fn load_cloud_sessions_sync_state() -> Result<CloudSessionsSyncState> {
@@ -514,7 +514,7 @@ fn resolve_sync_sessions_dir(override_path: Option<&str>) -> Result<PathBuf> {
     if let Some(path) = override_path.map(str::trim).filter(|path| !path.is_empty()) {
         return Ok(expand_home_path(path));
     }
-    Ok(crate::storage::jcode_dir()?.join("sessions"))
+    Ok(crate::storage::wvc_dir()?.join("sessions"))
 }
 
 fn expand_home_path(path: &str) -> PathBuf {
@@ -1791,7 +1791,7 @@ pub fn run_memory_command(cmd: MemorySubcommand) -> Result<()> {
         }
 
         MemorySubcommand::ClearTest => {
-            let test_dir = storage::jcode_dir()?.join("memory").join("test");
+            let test_dir = storage::wvc_dir()?.join("memory").join("test");
             if test_dir.exists() {
                 let count = std::fs::read_dir(&test_dir)?.count();
                 std::fs::remove_dir_all(&test_dir)?;
@@ -1853,7 +1853,7 @@ pub fn run_pair_command(list: bool, revoke: Option<String>) -> Result<()> {
     let code = registry.generate_pairing_code();
     let connect_host = resolve_connect_host(&gw_config.bind_addr);
     let pair_uri = format!(
-        "jcode://pair?host={}&port={}&code={}",
+        "wvc://pair?host={}&port={}&code={}",
         connect_host, gw_config.port, code
     );
 
@@ -2175,7 +2175,7 @@ pub async fn run_server_reload_command(force: bool, emit_json: bool) -> Result<(
             reloaded: false,
             already_current: true,
             handoff_ready: true,
-            detail: "jcode server is already running the newest binary; no reload needed."
+            detail: "wvc server is already running the newest binary; no reload needed."
                 .to_string(),
         });
     }
@@ -2188,9 +2188,9 @@ pub async fn run_server_reload_command(force: bool, emit_json: bool) -> Result<(
     );
 
     let detail = if handoff_ready {
-        "jcode server reloaded onto the newest binary.".to_string()
+        "wvc server reloaded onto the newest binary.".to_string()
     } else {
-        "jcode server reload requested; the new server is still coming up.".to_string()
+        "wvc server reload requested; the new server is still coming up.".to_string()
     };
 
     emit(ServerReloadReport {
@@ -2349,12 +2349,12 @@ Re-run with `--force` if you really want to stop the server.";
             println!("{detail}");
         }
         if stopped && signaled_pid.is_some() {
-            println!("jcode server stopped.");
+            println!("wvc server stopped.");
         } else if stopped && !had_listener && signaled_pid.is_none() {
             // Nothing was running; this is still a success for an installer.
         } else if !stopped {
             println!(
-                "jcode server did not exit cleanly; it may still be shutting down. Re-run if needed."
+                "wvc server did not exit cleanly; it may still be shutting down. Re-run if needed."
             );
         }
         if reaped {
@@ -2379,7 +2379,7 @@ pub async fn run_single_message_command(
         super::provider_init::init_provider_for_validation(choice, model).await?
     };
     let registry = crate::tool::Registry::new(provider.clone()).await;
-    // Load MCP servers from ~/.jcode/mcp.json so headless `jcode run` has the
+    // Load MCP servers from ~/.jcode/mcp.json so headless `wvc run` has the
     // same `mcp__*` tools as interactive/server sessions. This is non-blocking:
     // `register_mcp_tools` advertises cached tool schemas synchronously (so the
     // first locked tool snapshot already contains MCP tools, for zero
@@ -2390,9 +2390,9 @@ pub async fn run_single_message_command(
         registry.register_mcp_tools(None, None, None).await;
         // Cold-cache gap: when a configured MCP server has no cached schema yet
         // (first ever use, or reconfigured), advertise-early registers nothing
-        // for it, and a single-turn `jcode run` locks its tool snapshot before
+        // for it, and a single-turn `wvc run` locks its tool snapshot before
         // the background connection finishes, so the model would never see those
-        // tools. Long-lived sessions recover on a later turn, but `jcode run`
+        // tools. Long-lived sessions recover on a later turn, but `wvc run`
         // has no later turn. So, only when the cache is cold for some configured
         // server, briefly wait for the first connection to register tools before
         // the agent runs. Warm runs skip this entirely and stay instant. (#390)
@@ -2430,7 +2430,7 @@ fn run_command_auto_poke_enabled() -> bool {
         .unwrap_or_else(|| crate::config::config().features.auto_poke)
 }
 
-/// Whether headless `jcode run` should load MCP servers from `~/.jcode/mcp.json`.
+/// Whether headless `wvc run` should load MCP servers from `~/.jcode/mcp.json`.
 /// Enabled by default; set `JCODE_RUN_MCP=0` (or `false`/`off`/`no`) to skip MCP
 /// registration for latency-sensitive scripting. (#390)
 fn run_command_mcp_enabled() -> bool {
@@ -2443,7 +2443,7 @@ fn run_command_mcp_enabled() -> bool {
         .unwrap_or(true)
 }
 
-/// Max time `jcode run` waits for cold-cache MCP servers to register their
+/// Max time `wvc run` waits for cold-cache MCP servers to register their
 /// tools before running the single turn. Override with `JCODE_RUN_MCP_WAIT_MS`
 /// (0 disables the wait).
 fn run_command_mcp_cold_wait() -> std::time::Duration {
@@ -2472,7 +2472,7 @@ fn cold_cache_mcp_servers() -> Vec<String> {
         .collect()
 }
 
-/// Bridge the cold-cache gap for `jcode run`: if any configured MCP server has
+/// Bridge the cold-cache gap for `wvc run`: if any configured MCP server has
 /// no cached schema, briefly poll the registry until its `mcp__*` tools appear
 /// (or the budget elapses) so the single turn's locked tool snapshot includes
 /// them. Warm caches return immediately because `cold_cache_mcp_servers` is
@@ -2487,7 +2487,7 @@ async fn wait_for_cold_cache_mcp_tools(registry: &crate::tool::Registry) {
         return;
     }
     crate::logging::info(&format!(
-        "jcode run: waiting up to {}ms for cold-cache MCP server(s) to register tools: {}",
+        "wvc run: waiting up to {}ms for cold-cache MCP server(s) to register tools: {}",
         budget.as_millis(),
         cold_servers.join(", ")
     ));
@@ -2500,13 +2500,13 @@ async fn wait_for_cold_cache_mcp_tools(registry: &crate::tool::Registry) {
         });
         if covered {
             crate::logging::info(
-                "jcode run: cold-cache MCP server(s) registered tools; proceeding",
+                "wvc run: cold-cache MCP server(s) registered tools; proceeding",
             );
             return;
         }
         if std::time::Instant::now() >= deadline {
             crate::logging::warn(
-                "jcode run: timed out waiting for cold-cache MCP server(s); \
+                "wvc run: timed out waiting for cold-cache MCP server(s); \
                  their tools may be missing from this run",
             );
             return;

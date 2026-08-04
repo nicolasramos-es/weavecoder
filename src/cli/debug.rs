@@ -21,7 +21,7 @@ pub async fn run_debug_command(
         let filename = main_path
             .file_name()
             .and_then(|n| n.to_str())
-            .unwrap_or("jcode.sock");
+            .unwrap_or("wvc.sock");
         let debug_filename = filename.replace(".sock", "-debug.sock");
         main_path.with_file_name(debug_filename)
     } else {
@@ -118,7 +118,7 @@ async fn debug_list_servers() -> Result<()> {
             for entry in entries.flatten() {
                 let path = entry.path();
                 if let Some(name) = path.file_name().and_then(|n| n.to_str())
-                    && name.starts_with("jcode")
+                    && name.starts_with("wvc")
                     && name.ends_with(".sock")
                     && !name.contains("-debug")
                 {
@@ -141,7 +141,7 @@ async fn debug_list_servers() -> Result<()> {
             let filename = socket_path
                 .file_name()
                 .and_then(|n| n.to_str())
-                .unwrap_or("jcode.sock");
+                .unwrap_or("wvc.sock");
             let debug_filename = filename.replace(".sock", "-debug.sock");
             socket_path.with_file_name(debug_filename)
         };
@@ -244,7 +244,7 @@ async fn debug_start_server(arg: &str, socket_path: Option<String>) -> Result<()
         let filename = socket_pathbuf
             .file_name()
             .and_then(|n| n.to_str())
-            .unwrap_or("jcode.sock");
+            .unwrap_or("wvc.sock");
         let debug_filename = filename.replace(".sock", "-debug.sock");
         socket_pathbuf.with_file_name(debug_filename)
     };

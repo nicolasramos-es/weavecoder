@@ -349,7 +349,7 @@ fn run_auto_poke_followup_prioritizes_incomplete_todos() {
     }
 }
 
-/// Headless `jcode run` is what the benchmarks and scripted use go through, so
+/// Headless `wvc run` is what the benchmarks and scripted use go through, so
 /// the deferred quality review must reach that path too, not only the TUI.
 #[test]
 fn run_auto_poke_delivers_the_deferred_gate_digest_before_confidence() {

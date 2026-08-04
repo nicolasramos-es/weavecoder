@@ -53,7 +53,7 @@ impl TestEnvGuard {
     fn new() -> anyhow::Result<Self> {
         let lock = lock_env();
         let temp_home = tempfile::Builder::new()
-            .prefix("jcode-selfdev-test-home-")
+            .prefix("wvc-selfdev-test-home-")
             .tempdir()?;
         let env = EnvVarGuard::capture(&["JCODE_HOME", "JCODE_TEST_SESSION"]);
 
@@ -200,7 +200,7 @@ async fn test_selfdev_session_and_registry() {
     assert!(result.is_ok(), "selfdev tool should execute successfully");
 
     let _ = std::fs::remove_file(
-        storage::jcode_dir()
+        storage::wvc_dir()
             .unwrap()
             .join("sessions")
             .join(format!("{}.json", session_id)),
@@ -211,7 +211,7 @@ async fn test_selfdev_session_and_registry() {
 async fn test_wait_for_reloading_server_returns_false_when_reload_failed() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::tempdir().expect("tempdir");
-    let socket_path = temp.path().join("jcode.sock");
+    let socket_path = temp.path().join("wvc.sock");
     let _env = set_socket_test_env(&socket_path, temp.path());
     crate::server::write_reload_state(
         "reload-test",
@@ -229,7 +229,7 @@ async fn test_wait_for_reloading_server_returns_false_when_reload_failed() {
 async fn test_wait_for_reloading_server_returns_true_for_live_listener() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::tempdir().expect("tempdir");
-    let socket_path = temp.path().join("jcode.sock");
+    let socket_path = temp.path().join("wvc.sock");
     let _env = set_socket_test_env(&socket_path, temp.path());
     let _listener = crate::transport::Listener::bind(&socket_path).expect("bind listener");
 
@@ -256,15 +256,15 @@ fn set_var<T: AsRef<OsStr>>(name: &str, value: T) {
 }
 
 #[test]
-fn test_launcher_dir_uses_trimmed_install_dir_before_jcode_home() {
+fn test_launcher_dir_uses_trimmed_install_dir_before_wvc_home() {
     let (_lock, _env, temp) = isolated_launcher_env();
     let install_dir = temp.path().join("install bin");
-    let jcode_home = temp.path().join("jcode-home");
+    let wvc_home = temp.path().join("wvc-home");
     set_var(
         "JCODE_INSTALL_DIR",
         format!("  {}  ", install_dir.display()),
     );
-    set_var("JCODE_HOME", &jcode_home);
+    set_var("JCODE_HOME", &wvc_home);
 
     assert_eq!(build::launcher_dir().expect("launcher dir"), install_dir);
 }
@@ -281,7 +281,7 @@ fn test_launcher_dir_ignores_blank_overrides_and_uses_home_default() {
 
 fn default_launcher_dir(home: &Path) -> PathBuf {
     if cfg!(windows) {
-        home.join("AppData").join("Local").join("jcode").join("bin")
+        home.join("AppData").join("Local").join("wvc").join("bin")
     } else {
         home.join(".local").join("bin")
     }
@@ -300,9 +300,9 @@ fn test_selfdev_build_command_prefers_repo_wrapper_when_present() {
     assert_eq!(build.args.first().map(String::as_str), Some("-lc"));
     let command = build.args.get(1).expect("shell command");
     assert!(command.contains("dev_cargo.sh' build --profile selfdev -p jcode --bin jcode"));
-    assert!(!command.contains("jcode-desktop"));
+    assert!(!command.contains("wvc-desktop"));
     assert!(build.display.contains("-p jcode --bin jcode"));
-    assert!(!build.display.contains("jcode-desktop"));
+    assert!(!build.display.contains("wvc-desktop"));
 }
 
 #[test]
@@ -313,7 +313,7 @@ fn test_selfdev_build_command_falls_back_to_cargo_when_wrapper_missing() {
     assert_eq!(build.args.first().map(String::as_str), Some("-lc"));
     let command = build.args.get(1).expect("shell command");
     assert!(command.contains("cargo build --profile selfdev -p jcode --bin jcode"));
-    assert!(!command.contains("jcode-desktop"));
+    assert!(!command.contains("wvc-desktop"));
 }
 
 #[test]
@@ -335,7 +335,7 @@ fn test_selfdev_build_command_can_target_tui_only() {
     let build =
         build::selfdev_build_command_for_target(temp.path(), build::SelfDevBuildTarget::Tui);
     assert!(build.display.contains("-p jcode --bin jcode"));
-    assert!(!build.display.contains("jcode-desktop"));
+    assert!(!build.display.contains("wvc-desktop"));
 }
 
 #[test]

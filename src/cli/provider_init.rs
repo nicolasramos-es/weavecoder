@@ -130,7 +130,7 @@ impl ProviderChoice {
     #[allow(deprecated)]
     pub fn as_arg_value(&self) -> &'static str {
         match self {
-            Self::Jcode => "jcode",
+            Self::Jcode => "wvc",
             Self::Claude => "claude",
             Self::AnthropicApi => "anthropic-api",
             Self::ClaudeSubprocess => "claude-subprocess",
@@ -413,7 +413,7 @@ pub fn prompt_login_provider_selection(
     heading: &str,
 ) -> Result<LoginProviderDescriptor> {
     prompt_login_provider_selection_optional(providers, heading)?.ok_or_else(|| {
-        anyhow::anyhow!("Login skipped. Run `jcode login` when you're ready to authenticate.")
+        anyhow::anyhow!("Login skipped. Run `wvc login` when you're ready to authenticate.")
     })
 }
 
@@ -650,7 +650,7 @@ fn provider_label_for_api_key_env(env_key: &str) -> String {
 
 fn provider_login_hint_for_api_key_env(env_key: &str) -> String {
     if env_key == "OPENROUTER_API_KEY" {
-        return "jcode login --provider openrouter".to_string();
+        return "wvc login --provider openrouter".to_string();
     }
 
     crate::provider_catalog::openai_compatible_profiles()
@@ -658,9 +658,9 @@ fn provider_login_hint_for_api_key_env(env_key: &str) -> String {
         .find_map(|profile| {
             let resolved = resolve_openai_compatible_profile(*profile);
             (resolved.api_key_env == env_key)
-                .then(|| format!("jcode login --provider {}", resolved.id))
+                .then(|| format!("wvc login --provider {}", resolved.id))
         })
-        .unwrap_or_else(|| "jcode login".to_string())
+        .unwrap_or_else(|| "wvc login".to_string())
 }
 
 fn ensure_external_api_key_auth_allowed_for_explicit_choice(env_key: &str) -> Result<()> {
@@ -811,7 +811,7 @@ fn ensure_openai_auth_allowed_for_explicit_choice() -> Result<()> {
     if maybe_prompt_for_generic_oauth_source(
         "OpenAI/Codex",
         auth::external::preferred_unconsented_openai_oauth_source(),
-        "jcode login --provider openai",
+        "wvc login --provider openai",
         false,
         || auth::codex::load_credentials().is_ok(),
     )? {
@@ -829,7 +829,7 @@ fn ensure_openai_auth_allowed_for_explicit_choice() -> Result<()> {
             "OpenAI/Codex",
             "Codex",
             &path,
-            "jcode login --provider openai"
+            "wvc login --provider openai"
         ));
     }
 
@@ -855,7 +855,7 @@ fn maybe_enable_legacy_codex_auth_for_auto(has_other_provider: bool) -> Result<b
         return maybe_prompt_for_generic_oauth_source(
             "OpenAI/Codex",
             Some(source),
-            "jcode login --provider openai",
+            "wvc login --provider openai",
             true,
             || auth::codex::load_credentials().is_ok(),
         );
@@ -876,7 +876,7 @@ fn maybe_enable_legacy_codex_auth_for_auto(has_other_provider: bool) -> Result<b
             "OpenAI/Codex",
             "Codex",
             &path,
-            "jcode login --provider openai",
+            "wvc login --provider openai",
         ));
         return Ok(false);
     }
@@ -897,7 +897,7 @@ fn ensure_claude_auth_allowed_for_explicit_choice() -> Result<()> {
     if maybe_prompt_for_generic_oauth_source(
         "Claude",
         auth::external::preferred_unconsented_anthropic_oauth_source(),
-        "jcode login --provider claude",
+        "wvc login --provider claude",
         false,
         || auth::claude::load_credentials().is_ok(),
     )? {
@@ -913,7 +913,7 @@ fn ensure_claude_auth_allowed_for_explicit_choice() -> Result<()> {
             "Claude",
             source.display_name(),
             &path,
-            "jcode login --provider claude"
+            "wvc login --provider claude"
         ));
     }
     if prompt_to_trust_external_auth("Claude", source.display_name(), &path)? {
@@ -937,7 +937,7 @@ fn maybe_enable_claude_auth_for_auto(has_other_provider: bool) -> Result<bool> {
         return maybe_prompt_for_generic_oauth_source(
             "Claude",
             Some(source),
-            "jcode login --provider claude",
+            "wvc login --provider claude",
             true,
             || auth::claude::load_credentials().is_ok(),
         );
@@ -955,7 +955,7 @@ fn maybe_enable_claude_auth_for_auto(has_other_provider: bool) -> Result<bool> {
             "Claude",
             source.display_name(),
             &path,
-            "jcode login --provider claude",
+            "wvc login --provider claude",
         ));
         return Ok(false);
     }
@@ -980,7 +980,7 @@ fn ensure_gemini_auth_allowed_for_explicit_choice() -> Result<()> {
     if maybe_prompt_for_generic_oauth_source(
         "Gemini",
         auth::external::preferred_unconsented_gemini_oauth_source(),
-        "jcode login --provider gemini",
+        "wvc login --provider gemini",
         false,
         || auth::gemini::load_tokens().is_ok(),
     )? {
@@ -996,7 +996,7 @@ fn ensure_gemini_auth_allowed_for_explicit_choice() -> Result<()> {
             "Gemini",
             "Gemini CLI",
             &path,
-            "jcode login --provider gemini"
+            "wvc login --provider gemini"
         ));
     }
     if prompt_to_trust_external_auth("Gemini", "Gemini CLI", &path)? {
@@ -1024,7 +1024,7 @@ fn maybe_enable_gemini_auth_for_auto(has_other_provider: bool) -> Result<bool> {
         return maybe_prompt_for_generic_oauth_source(
             "Gemini",
             Some(source),
-            "jcode login --provider gemini",
+            "wvc login --provider gemini",
             true,
             || auth::gemini::load_tokens().is_ok(),
         );
@@ -1042,7 +1042,7 @@ fn maybe_enable_gemini_auth_for_auto(has_other_provider: bool) -> Result<bool> {
             "Gemini",
             "Gemini CLI",
             &path,
-            "jcode login --provider gemini",
+            "wvc login --provider gemini",
         ));
         return Ok(false);
     }
@@ -1061,7 +1061,7 @@ fn ensure_antigravity_auth_allowed_for_explicit_choice() -> Result<()> {
     if maybe_prompt_for_generic_oauth_source(
         "Antigravity",
         auth::external::preferred_unconsented_antigravity_oauth_source(),
-        "jcode login --provider antigravity",
+        "wvc login --provider antigravity",
         false,
         || auth::antigravity::load_tokens().is_ok(),
     )? {
@@ -1084,7 +1084,7 @@ fn ensure_copilot_auth_allowed_for_explicit_choice() -> Result<()> {
             "GitHub Copilot",
             source.display_name(),
             &path,
-            "jcode login --provider copilot"
+            "wvc login --provider copilot"
         ));
     }
     if prompt_to_trust_external_auth("GitHub Copilot", source.display_name(), &path)? {
@@ -1112,7 +1112,7 @@ fn maybe_enable_copilot_auth_for_auto(has_other_provider: bool) -> Result<bool> 
             "GitHub Copilot",
             source.display_name(),
             &path,
-            "jcode login --provider copilot",
+            "wvc login --provider copilot",
         ));
         return Ok(false);
     }
@@ -1136,7 +1136,7 @@ fn ensure_cursor_auth_allowed_for_explicit_choice() -> Result<()> {
             "Cursor",
             source.display_name(),
             &path,
-            "jcode login --provider cursor"
+            "wvc login --provider cursor"
         ));
     }
     if prompt_to_trust_external_auth("Cursor", source.display_name(), &path)? {
@@ -1164,7 +1164,7 @@ fn maybe_enable_cursor_auth_for_auto(has_other_provider: bool) -> Result<bool> {
             "Cursor",
             source.display_name(),
             &path,
-            "jcode login --provider cursor",
+            "wvc login --provider cursor",
         ));
         return Ok(false);
     }
@@ -1254,7 +1254,7 @@ pub async fn login_and_bootstrap_provider(
             disable_subscription_runtime_mode();
             Arc::new(provider::MultiProvider::new())
         }
-        LoginProviderTarget::Jcode => Arc::new(provider::jcode::JcodeProvider::new()),
+        LoginProviderTarget::Jcode => Arc::new(provider::wvc::JcodeProvider::new()),
         LoginProviderTarget::Claude | LoginProviderTarget::ClaudeApiKey => {
             disable_subscription_runtime_mode();
             Arc::new(provider::MultiProvider::new())
@@ -1303,7 +1303,7 @@ pub async fn login_and_bootstrap_provider(
             disable_subscription_runtime_mode();
             clear_initial_model_provider();
             crate::env::set_var("JCODE_ACTIVE_PROVIDER", "cursor");
-            Arc::new(jcode_provider_cursor_runtime::CursorCliProvider::new())
+            Arc::new(wvc_provider_cursor_runtime::CursorCliProvider::new())
         }
         LoginProviderTarget::Copilot => {
             disable_subscription_runtime_mode();
@@ -1313,13 +1313,13 @@ pub async fn login_and_bootstrap_provider(
             disable_subscription_runtime_mode();
             clear_initial_model_provider();
             crate::env::set_var("JCODE_ACTIVE_PROVIDER", "gemini");
-            Arc::new(jcode_provider_gemini_runtime::GeminiProvider::new())
+            Arc::new(wvc_provider_gemini_runtime::GeminiProvider::new())
         }
         LoginProviderTarget::Antigravity => {
             disable_subscription_runtime_mode();
             clear_initial_model_provider();
             crate::env::set_var("JCODE_ACTIVE_PROVIDER", "antigravity");
-            Arc::new(jcode_provider_antigravity_runtime::AntigravityProvider::new())
+            Arc::new(wvc_provider_antigravity_runtime::AntigravityProvider::new())
         }
         LoginProviderTarget::Google => {
             anyhow::bail!("Google login cannot be used as a model provider bootstrap");
@@ -1408,7 +1408,7 @@ async fn init_provider_with_options(
     let provider: Arc<dyn provider::Provider> = match choice {
         ProviderChoice::Jcode => {
             init_notice("Using Jcode subscription provider");
-            Arc::new(provider::jcode::JcodeProvider::new())
+            Arc::new(provider::wvc::JcodeProvider::new())
         }
         ProviderChoice::Claude => {
             disable_subscription_runtime_mode();
@@ -1457,7 +1457,7 @@ async fn init_provider_with_options(
             init_notice("Using Cursor native HTTPS provider (experimental)");
             clear_initial_model_provider();
             crate::env::set_var("JCODE_ACTIVE_PROVIDER", "cursor");
-            Arc::new(jcode_provider_cursor_runtime::CursorCliProvider::new())
+            Arc::new(wvc_provider_cursor_runtime::CursorCliProvider::new())
         }
         ProviderChoice::Copilot => {
             disable_subscription_runtime_mode();
@@ -1478,7 +1478,7 @@ async fn init_provider_with_options(
             }
             clear_initial_model_provider();
             crate::env::set_var("JCODE_ACTIVE_PROVIDER", "gemini");
-            Arc::new(jcode_provider_gemini_runtime::GeminiProvider::new())
+            Arc::new(wvc_provider_gemini_runtime::GeminiProvider::new())
         }
         ProviderChoice::Openrouter => {
             disable_subscription_runtime_mode();
@@ -1575,13 +1575,13 @@ async fn init_provider_with_options(
                     anyhow::anyhow!("Unknown provider profile '{}'", profile_name)
                 })?;
                 Arc::new(
-                    jcode_provider_openrouter_runtime::OpenRouterProvider::new_named_openai_compatible(
+                    wvc_provider_openrouter_runtime::OpenRouterProvider::new_named_openai_compatible(
                         &profile_name,
                         profile,
                     )?,
                 )
             } else {
-                Arc::new(jcode_provider_openrouter_runtime::OpenRouterProvider::new()?)
+                Arc::new(wvc_provider_openrouter_runtime::OpenRouterProvider::new()?)
             }
         }
         ProviderChoice::Antigravity => {
@@ -1590,7 +1590,7 @@ async fn init_provider_with_options(
             init_notice("Using Antigravity provider (experimental)");
             clear_initial_model_provider();
             crate::env::set_var("JCODE_ACTIVE_PROVIDER", "antigravity");
-            Arc::new(jcode_provider_antigravity_runtime::AntigravityProvider::new())
+            Arc::new(wvc_provider_antigravity_runtime::AntigravityProvider::new())
         }
         ProviderChoice::Google => {
             disable_subscription_runtime_mode();
@@ -1748,7 +1748,7 @@ async fn init_provider_with_options(
                 // `/login` flow then activates a provider via the normal
                 // auth-changed path (MultiProvider::on_auth_changed hot-inits the
                 // newly logged-in provider). Only the actual TUI server opts in
-                // via JCODE_DEFERRED_AUTH_BOOTSTRAP, so `jcode run` and other
+                // via JCODE_DEFERRED_AUTH_BOOTSTRAP, so `wvc run` and other
                 // genuinely headless callers still fail loudly.
                 if std::env::var_os("JCODE_DEFERRED_AUTH_BOOTSTRAP").is_some() {
                     crate::logging::info(

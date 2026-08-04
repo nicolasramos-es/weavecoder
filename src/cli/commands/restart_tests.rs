@@ -15,7 +15,7 @@ impl TestEnvGuard {
     fn new() -> anyhow::Result<Self> {
         let lock = crate::storage::lock_test_env();
         let temp_home = tempfile::Builder::new()
-            .prefix("jcode-cli-restart-test-home-")
+            .prefix("wvc-cli-restart-test-home-")
             .tempdir()?;
         let prev_home = std::env::var_os("JCODE_HOME");
         crate::env::set_var("JCODE_HOME", temp_home.path());

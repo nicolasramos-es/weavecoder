@@ -14,22 +14,22 @@ use crate::test_support::*;
 /// Spin up an in-process server backed by a `MockProvider`.
 async fn start_inprocess_server(
     label: &str,
-    provider: Arc<dyn jcode::provider::Provider>,
+    provider: Arc<dyn weavecoder::provider::Provider>,
 ) -> Result<(
     std::path::PathBuf,
     std::path::PathBuf,
     tokio::task::JoinHandle<Result<()>>,
 )> {
     let runtime_dir = short_runtime_dir(format!(
-        "jcode-reload-mc-{label}-{}",
+        "wvc-reload-mc-{label}-{}",
         std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
             .as_nanos()
     ));
     std::fs::create_dir_all(&runtime_dir)?;
-    let socket_path = runtime_dir.join("jcode.sock");
-    let debug_socket_path = runtime_dir.join("jcode-debug.sock");
+    let socket_path = runtime_dir.join("wvc.sock");
+    let debug_socket_path = runtime_dir.join("wvc-debug.sock");
 
     let server_instance =
         server::Server::new_with_paths(provider, socket_path.clone(), debug_socket_path.clone());

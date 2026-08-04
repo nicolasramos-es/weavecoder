@@ -136,7 +136,7 @@ pub fn hot_update(session_id: &str) -> Result<()> {
 
     match update::check_for_update_blocking() {
         Ok(Some(release)) => {
-            let current = jcode_build_meta::version();
+            let current = wvc_build_meta::version();
             update::print_centered(&format!(
                 "Update available: {} -> {}",
                 current, release.tag_name
@@ -188,7 +188,7 @@ pub fn hot_update(session_id: &str) -> Result<()> {
             }
             update::print_centered(&format!(
                 "Already up to date ({})",
-                jcode_build_meta::version()
+                wvc_build_meta::version()
             ));
         }
         Err(e) => {
@@ -226,7 +226,7 @@ pub fn get_repo_dir() -> Option<std::path::PathBuf> {
 const UPDATE_FETCH_INTERVAL_SECS: u64 = 15 * 60;
 
 fn claim_update_fetch_slot() -> bool {
-    let Ok(base) = crate::storage::jcode_dir() else {
+    let Ok(base) = crate::storage::wvc_dir() else {
         // Cannot coordinate without a home dir; fall back to probing.
         return true;
     };
@@ -381,7 +381,7 @@ pub fn run_update() -> Result<()> {
             Ok(Some(release)) => {
                 update::print_centered(&format!(
                     "Downloading {} \u{2192} {}...",
-                    jcode_build_meta::version(),
+                    wvc_build_meta::version(),
                     release.tag_name
                 ));
                 let _path =
@@ -402,7 +402,7 @@ pub fn run_update() -> Result<()> {
                 }
                 update::print_centered(&format!(
                     "Already up to date ({})",
-                    jcode_build_meta::version()
+                    wvc_build_meta::version()
                 ));
             }
             Err(e) => {

@@ -309,7 +309,7 @@ mod crash_resume_hint_tests {
         let joined = lines.join("\n");
 
         assert!(
-            joined.contains("jcode --resume ses_koala_123"),
+            joined.contains("wvc --resume ses_koala_123"),
             "the direct resume command must still be offered: {joined}"
         );
         assert!(
@@ -334,14 +334,14 @@ mod crash_resume_hint_tests {
         let joined = lines.join("\n");
 
         assert!(joined.contains("2 sessions crashed"), "{joined}");
-        assert!(joined.contains("jcode --resume ses_koala_123"), "{joined}");
+        assert!(joined.contains("wvc --resume ses_koala_123"), "{joined}");
         assert!(joined.contains("List all:"), "{joined}");
     }
 }
 
 fn init_tui_terminal(inherited_terminal: bool) -> Result<ratatui::DefaultTerminal> {
     if !io::stdin().is_terminal() || !io::stdout().is_terminal() {
-        anyhow::bail!("jcode TUI requires an interactive terminal (stdin/stdout must be a TTY)");
+        anyhow::bail!("wvc TUI requires an interactive terminal (stdin/stdout must be a TTY)");
     }
     if inherited_terminal {
         init_tui_terminal_resume()
@@ -377,8 +377,8 @@ pub fn init_tui_runtime() -> Result<(ratatui::DefaultTerminal, TuiRuntimeGuard)>
         crate::tui::theme_detect::init_theme_mode();
     }
     let terminal = init_tui_terminal(inherited_terminal)?;
-    crate::tui::mermaid::install_jcode_mermaid_hooks();
-    crate::tui::markdown::install_jcode_markdown_hooks();
+    crate::tui::mermaid::install_wvc_mermaid_hooks();
+    crate::tui::markdown::install_wvc_markdown_hooks();
     crate::tui::mermaid::init_picker();
 
     let perf_policy = crate::perf::tui_policy();
@@ -496,7 +496,7 @@ fn cleanup_tui_runtime(state: &TuiRuntimeState, restore_terminal: bool) {
         if state.keyboard_enhanced {
             tui::disable_keyboard_enhancement();
         }
-        jcode_tui_style::restore_terminal_quietly();
+        wvc_tui_style::restore_terminal_quietly();
     }
 }
 
@@ -793,7 +793,7 @@ mod tests {
             let mut output = Vec::new();
             write_session_resume_hint(&mut output, &session_id).unwrap();
             let output = String::from_utf8(output).unwrap();
-            let expected_cmd = format!("jcode --resume {}", session_id);
+            let expected_cmd = format!("wvc --resume {}", session_id);
             assert!(output.contains(&expected_cmd));
             assert!(output.contains("to resume"));
             assert!(!session_id.is_empty());

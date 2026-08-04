@@ -4,8 +4,8 @@
 
 use anyhow::Result;
 use async_stream::stream;
-use jcode::message::{Message, StreamEvent, ToolDefinition};
-use jcode::provider::{EventStream, Provider};
+use weavecoder::message::{Message, StreamEvent, ToolDefinition};
+use weavecoder::provider::{EventStream, Provider};
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 

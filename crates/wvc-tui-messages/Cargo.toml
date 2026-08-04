@@ -1,0 +1,13 @@
+[package]
+name = "wvc-tui-messages"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+wvc-config-types = { path = "../wvc-config-types" }
+wvc-message-types = { path = "../wvc-message-types" }
+wvc-session-types = { path = "../wvc-session-types" }
+wvc-tui-markdown = { path = "../wvc-tui-markdown" }
+ratatui = "0.30"
+serde_json = "1"

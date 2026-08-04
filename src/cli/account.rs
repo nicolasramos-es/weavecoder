@@ -3,7 +3,7 @@ use anyhow::{Context, Result};
 use crate::subscription_api::{self, AccountApiError};
 
 pub(crate) async fn run_login(no_browser: bool) -> Result<()> {
-    super::login::run_jcode_account_login(no_browser).await
+    super::login::run_wvc_account_login(no_browser).await
 }
 
 pub(crate) async fn run_status(json: bool) -> Result<()> {
@@ -24,7 +24,7 @@ pub(crate) async fn run_status(json: bool) -> Result<()> {
                 .parsed_tier()
                 .map(|tier| tier.display_name().to_string())
                 .unwrap_or_else(|| me.tier.clone());
-            println!("Jcode Account");
+            println!("Weavecoder Account");
             println!("  Email:  {}", me.email);
             println!("  Plan:   {} ({})", tier, me.status);
             println!(
@@ -84,7 +84,7 @@ pub(crate) async fn run_logout() -> Result<()> {
             println!("No local Jcode account credential was present. Local account cache is clear.")
         }
         (true, Ok(())) => println!(
-            "Jcode account key revoked. Local credentials and account cache were securely cleared."
+            "Weavecoder account key revoked. Local credentials and account cache were securely cleared."
         ),
         (true, Err(AccountApiError::Unauthorized)) => println!(
             "The Jcode account key was already revoked. Local credentials and account cache were securely cleared."
@@ -106,7 +106,7 @@ fn public_manage_url(candidate: Option<&str>) -> &str {
                 reqwest::Url::parse(url),
                 Ok(parsed)
                     if parsed.scheme() == "https"
-                        && matches!(parsed.host_str(), Some("jcode.sh" | "www.jcode.sh" | "solosystems.dev"))
+                        && matches!(parsed.host_str(), Some("wvc.sh" | "www.jcode.sh" | "solosystems.dev"))
                         && parsed.username().is_empty()
                         && parsed.password().is_none()
             )

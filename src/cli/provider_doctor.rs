@@ -5,7 +5,7 @@ use std::io::IsTerminal;
 use anyhow::{Context, Result, anyhow};
 
 use crate::live_tests::LiveVerificationStageStatus;
-use jcode_provider_doctor::{
+use wvc_provider_doctor::{
     DoctorReport, DoctorTier, NativeProviderKind, native_doctor_supports_provider,
     run_antigravity_native_e2e, run_claude_native_e2e, run_generic_native_e2e, run_provider_e2e,
 };

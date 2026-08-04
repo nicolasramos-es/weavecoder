@@ -1,0 +1,11 @@
+[package]
+name = "wvc-provider-anthropic"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+wvc-logging = { path = "../wvc-logging" }
+wvc-message-types = { path = "../wvc-message-types" }
+wvc-provider-core = { path = "../wvc-provider-core" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

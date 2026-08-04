@@ -49,7 +49,7 @@ async fn binary_integration_independent_claude() -> Result<()> {
             "run",
             "--release",
             "--bin",
-            "jcode",
+            "wvc",
             "--",
             "run",
             "Say 'test-ok' and nothing else",
@@ -81,7 +81,7 @@ async fn binary_integration_openai_provider() -> Result<()> {
             "run",
             "--release",
             "--bin",
-            "jcode",
+            "wvc",
             "--",
             "--provider",
             "openai",
@@ -122,7 +122,7 @@ async fn binary_version_command() -> Result<()> {
 
     assert!(output.status.success(), "Version command should succeed");
     assert!(
-        stdout.contains("jcode") || stdout.contains("20"),
+        stdout.contains("wvc") || stdout.contains("20"),
         "Version should contain 'jcode' or date. Got: {}",
         stdout
     );
@@ -140,7 +140,7 @@ async fn binary_integration_reload_handoff() -> Result<()> {
     let _env = setup_test_env()?;
 
     let release_binary =
-        jcode::build::release_binary_path(std::path::Path::new(env!("CARGO_MANIFEST_DIR")));
+        weavecoder::build::release_binary_path(std::path::Path::new(env!("CARGO_MANIFEST_DIR")));
     if !release_binary.exists() {
         anyhow::bail!(
             "release binary missing at {} (run `cargo build --release` first)",
@@ -149,7 +149,7 @@ async fn binary_integration_reload_handoff() -> Result<()> {
     }
 
     let temp_root = tempfile::Builder::new()
-        .prefix("jcode-reload-e2e-")
+        .prefix("wvc-reload-e2e-")
         .tempdir()?;
     let runtime_dir = temp_root.path().join("runtime");
     let home_dir = temp_root.path().join("home");
@@ -159,8 +159,8 @@ async fn binary_integration_reload_handoff() -> Result<()> {
     std::fs::create_dir_all(&home_dir)?;
     std::fs::create_dir_all(&install_dir)?;
 
-    let socket_path = runtime_dir.join("jcode.sock");
-    let debug_socket_path = runtime_dir.join("jcode-debug.sock");
+    let socket_path = runtime_dir.join("wvc.sock");
+    let debug_socket_path = runtime_dir.join("wvc-debug.sock");
 
     let stderr_file = std::fs::File::create(&stderr_path)?;
     let mut child = Command::new(env!("CARGO_BIN_EXE_jcode"))
@@ -213,7 +213,7 @@ async fn binary_integration_reload_handoff() -> Result<()> {
         );
 
         let marker_deadline = Instant::now() + Duration::from_secs(20);
-        while jcode::server::reload_marker_active(Duration::from_secs(30)) {
+        while weavecoder::server::reload_marker_active(Duration::from_secs(30)) {
             if Instant::now() >= marker_deadline {
                 anyhow::bail!("reload marker remained active too long after restart");
             }
@@ -268,7 +268,7 @@ async fn binary_integration_selfdev_reload_reconnects_quickly() -> Result<()> {
     let _env = setup_test_env()?;
 
     let release_binary =
-        jcode::build::release_binary_path(std::path::Path::new(env!("CARGO_MANIFEST_DIR")));
+        weavecoder::build::release_binary_path(std::path::Path::new(env!("CARGO_MANIFEST_DIR")));
     if !release_binary.exists() {
         anyhow::bail!(
             "release binary missing at {} (run `cargo build --release` first)",
@@ -277,7 +277,7 @@ async fn binary_integration_selfdev_reload_reconnects_quickly() -> Result<()> {
     }
 
     let temp_root = tempfile::Builder::new()
-        .prefix("jcode-selfdev-reload-e2e-")
+        .prefix("wvc-selfdev-reload-e2e-")
         .tempdir()?;
     let runtime_dir = temp_root.path().join("runtime");
     let home_dir = temp_root.path().join("home");
@@ -290,8 +290,8 @@ async fn binary_integration_selfdev_reload_reconnects_quickly() -> Result<()> {
     let _runtime_guard = EnvVarGuard::set("JCODE_RUNTIME_DIR", &runtime_dir);
     let _install_guard = EnvVarGuard::set("JCODE_INSTALL_DIR", &install_dir);
 
-    let socket_path = runtime_dir.join("jcode.sock");
-    let debug_socket_path = runtime_dir.join("jcode-debug.sock");
+    let socket_path = runtime_dir.join("wvc.sock");
+    let debug_socket_path = runtime_dir.join("wvc-debug.sock");
     let mut command = Command::new(&release_binary);
     command
         .arg("--no-update")
@@ -374,7 +374,7 @@ async fn binary_integration_selfdev_client_reload_resumes_session() -> Result<()
     let _env = setup_test_env()?;
 
     let release_binary =
-        jcode::build::release_binary_path(std::path::Path::new(env!("CARGO_MANIFEST_DIR")));
+        weavecoder::build::release_binary_path(std::path::Path::new(env!("CARGO_MANIFEST_DIR")));
     if !release_binary.exists() {
         anyhow::bail!(
             "release binary missing at {} (run `cargo build --release` first)",
@@ -383,7 +383,7 @@ async fn binary_integration_selfdev_client_reload_resumes_session() -> Result<()
     }
 
     let temp_root = tempfile::Builder::new()
-        .prefix("jcode-selfdev-client-reload-e2e-")
+        .prefix("wvc-selfdev-client-reload-e2e-")
         .tempdir()?;
     let runtime_dir = temp_root.path().join("runtime");
     let home_dir = temp_root.path().join("home");
@@ -396,9 +396,9 @@ async fn binary_integration_selfdev_client_reload_resumes_session() -> Result<()
     let _runtime_guard = EnvVarGuard::set("JCODE_RUNTIME_DIR", &runtime_dir);
     let _install_guard = EnvVarGuard::set("JCODE_INSTALL_DIR", &install_dir);
 
-    let socket_path = runtime_dir.join("jcode.sock");
-    let debug_socket_path = runtime_dir.join("jcode-debug.sock");
-    let starter_binary = temp_root.path().join("jcode-selfdev-client-starter");
+    let socket_path = runtime_dir.join("wvc.sock");
+    let debug_socket_path = runtime_dir.join("wvc-debug.sock");
+    let starter_binary = temp_root.path().join("wvc-selfdev-client-starter");
     std::fs::copy(env!("CARGO_BIN_EXE_jcode"), &starter_binary)?;
     let starter_mtime = std::fs::metadata(&release_binary)?
         .modified()?
@@ -536,7 +536,7 @@ async fn binary_integration_selfdev_full_reload_resumes_session_quickly() -> Res
     let _env = setup_test_env()?;
 
     let release_binary =
-        jcode::build::release_binary_path(std::path::Path::new(env!("CARGO_MANIFEST_DIR")));
+        weavecoder::build::release_binary_path(std::path::Path::new(env!("CARGO_MANIFEST_DIR")));
     if !release_binary.exists() {
         anyhow::bail!(
             "release binary missing at {} (run `cargo build --release` first)",
@@ -545,7 +545,7 @@ async fn binary_integration_selfdev_full_reload_resumes_session_quickly() -> Res
     }
 
     let temp_root = tempfile::Builder::new()
-        .prefix("jcode-selfdev-full-reload-e2e-")
+        .prefix("wvc-selfdev-full-reload-e2e-")
         .tempdir()?;
     let runtime_dir = temp_root.path().join("runtime");
     let home_dir = temp_root.path().join("home");
@@ -558,9 +558,9 @@ async fn binary_integration_selfdev_full_reload_resumes_session_quickly() -> Res
     let _runtime_guard = EnvVarGuard::set("JCODE_RUNTIME_DIR", &runtime_dir);
     let _install_guard = EnvVarGuard::set("JCODE_INSTALL_DIR", &install_dir);
 
-    let socket_path = runtime_dir.join("jcode.sock");
-    let debug_socket_path = runtime_dir.join("jcode-debug.sock");
-    let starter_binary = temp_root.path().join("jcode-selfdev-full-reload-starter");
+    let socket_path = runtime_dir.join("wvc.sock");
+    let debug_socket_path = runtime_dir.join("wvc-debug.sock");
+    let starter_binary = temp_root.path().join("wvc-selfdev-full-reload-starter");
     std::fs::copy(env!("CARGO_BIN_EXE_jcode"), &starter_binary)?;
     let starter_mtime = std::fs::metadata(&release_binary)?
         .modified()?

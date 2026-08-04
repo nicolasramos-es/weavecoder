@@ -1,0 +1,144 @@
+[package]
+name = "wvc-app-core"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# Application core for jcode: all non-presentation modules (server, agent,
+# provider, auth, session, tool, config, etc.) extracted out of the monolithic
+# root `jcode` crate so they compile as a separate rustc unit. The root `jcode`
+# crate (cli + tui + bin) re-exports this crate's modules via `pub use
+# wvc_app_core::*`, preserving every existing `crate::<module>` path.
+
+[lib]
+name = "wvc_app_core"
+path = "src/lib.rs"
+
+[dependencies]
+# NOTE: the jemalloc allocator stats live in `wvc-base` (process_memory) and
+# local embeddings live in `wvc-base` (embedding); this crate forwards those
+# features to wvc-base rather than depending on the backing crates directly.
+
+# Async runtime
+tokio = { version = "1", features = ["fs", "io-std", "io-util", "macros", "net", "process", "rt-multi-thread", "signal", "sync", "time"] }
+tokio-util = { version = "0.7", features = ["rt"] }
+futures = "0.3"
+async-trait = "0.1"
+
+# HTTP client
+reqwest = { version = "0.12", default-features = false, features = ["json", "stream", "blocking", "charset", "http2", "system-proxy", "rustls-tls", "rustls-tls-native-roots"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["raw_value"] }
+
+# CLI
+
+# File operations
+glob = "0.3"
+similar = "2"            # diffing for edits
+
+# Utilities
+dirs = "5"               # home directory
+anyhow = "1"
+libc = "0.2"             # Unix system calls (flock)
+chrono = { version = "0.4", features = ["serde"] }
+regex = "1"
+urlencoding = "2"        # URL encoding for web search
+uuid = { version = "1", features = ["v4", "v5"] }
+
+# Embeddings (local inference) live in wvc-base; this crate forwards the
+# `embeddings` feature to wvc-base rather than depending on wvc-embedding.
+wvc-import-core = { path = "../wvc-import-core" }
+
+# OAuth
+base64 = "0.22"
+sha2 = "0.10"
+rand = "0.9.3"
+url = "2"
+open = "5"               # Open URLs in browser
+wvc-agent-runtime = { path = "../wvc-agent-runtime" }
+wvc-ambient-types = { path = "../wvc-ambient-types" }
+wvc-notify-email = { path = "../wvc-notify-email" }
+wvc-provider-core = { path = "../wvc-provider-core" }
+# NOTE: wvc-app-core does NOT depend on any wvc-tui-* crate. They were
+# unused dead dependency edges here (the TUI declares them itself). Removing
+# them stops a wvc-tui-* edit from cascading a recompile through app-core.
+wvc-update-core = { path = "../wvc-update-core" }
+wvc-terminal-image = { path = "../wvc-terminal-image" }
+
+# Streaming
+tokio-stream = "0.1"
+
+# TUI
+ratatui = "0.30"
+crossterm = { version = "0.29", features = ["event-stream"] }
+
+# Markdown & syntax highlighting
+unicode-width = "0.2"   # Unicode character display width
+
+# PDF parsing (behind feature flag)
+wvc-pdf = { path = "../wvc-pdf", optional = true }
+wvc-build-support = { path = "../wvc-build-support" }
+wvc-build-meta = { path = "../wvc-build-meta" }
+
+# Foundational layer (provider, auth, config, session, message, memory, ...).
+# Re-exported via `pub use wvc_base::*` in lib.rs. default-features=false so
+# this crate controls wvc-base's optional features (see [features] below).
+wvc-base = { path = "../wvc-base", default-features = false }
+wvc-command-risk = { path = "../wvc-command-risk" }
+wvc-core = { path = "../wvc-core" }
+wvc-message-types = { path = "../wvc-message-types" }
+wvc-overnight-core = { path = "../wvc-overnight-core" }
+wvc-plan = { path = "../wvc-plan" }
+wvc-swarm-core = { path = "../wvc-swarm-core" }
+wvc-selfdev-types = { path = "../wvc-selfdev-types" }
+wvc-session-types = { path = "../wvc-session-types" }
+wvc-setup-hints = { path = "../wvc-setup-hints" }
+wvc-task-types = { path = "../wvc-task-types" }
+wvc-tool-core = { path = "../wvc-tool-core" }
+wvc-tool-types = { path = "../wvc-tool-types" }
+
+# Archive extraction (for auto-update)
+flate2 = "1"
+tar = "0.4"
+tempfile = "3"
+agentgrep = { git = "https://github.com/1jehuang/agentgrep.git", tag = "v0.1.6" }
+
+[features]
+default = ["pdf", "embeddings", "bedrock"]
+# jemalloc allocator stats live in wvc-base (process_memory); forward there.
+jemalloc = ["wvc-base/jemalloc"]
+jemalloc-prof = ["wvc-base/jemalloc-prof"]
+# local embeddings live in wvc-base (embedding); forward there.
+embeddings = ["wvc-base/embeddings"]
+# live AWS Bedrock support lives in wvc-base (provider/bedrock); forward there.
+bedrock = ["wvc-base/bedrock"]
+# Used only by the CentOS 7 portable Linux release build.
+linux-compat-vendored-openssl = ["wvc-notify-email/linux-compat-vendored-openssl"]
+# PDF text extraction lives in this crate (tool/read.rs).
+pdf = ["dep:wvc-pdf"]
+# Compiles this crate's test-only helpers/accessors (e.g. the
+# ExternalAuthReviewCandidate read accessors) as `pub` and forwards
+# wvc-base's `test-support` so downstream crates' test targets can reach the
+# whole stack's helpers. Never enabled in normal (non-test) builds.
+test-support = ["wvc-base/test-support"]
+
+[dev-dependencies]
+# Used by async streaming tests (ambient/runner_tests, server/client_actions_tests).
+async-stream = "0.3"
+# Enables wvc-base's test-support helpers (storage::lock_test_env,
+# auth::test_sandbox, bus::reset_models_updated_publish_state_for_tests) for
+# *this* crate's own test target. Feature unification applies this only to
+# test/bench/example builds, not to a normal `cargo build`.
+wvc-base = { path = "../wvc-base", default-features = false, features = ["test-support"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_System_Threading"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+global-hotkey = "0.7"
+# Native desktop control for the `macos_computer_use` tool (synthetic mouse/keyboard
+# events, cursor positioning, display bounds). `highsierra` enables the
+# CGEventCreateScrollWheelEvent2 binding used for scroll.
+core-graphics = { version = "0.23", features = ["highsierra"] }

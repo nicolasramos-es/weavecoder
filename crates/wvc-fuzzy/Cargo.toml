@@ -1,0 +1,9 @@
+[package]
+name = "wvc-fuzzy"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+name = "wvc_fuzzy"
+path = "src/lib.rs"

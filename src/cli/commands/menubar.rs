@@ -213,7 +213,7 @@ pub fn ensure_menubar_helper_running() {}
 /// onboarding) override `$JCODE_HOME` with throwaway temp dirs; anchoring to
 /// the real home (`$HOME/.jcode`) gives every process the same lock inode so
 /// the singleton actually holds across them. For a normal (non-sandboxed)
-/// launch this is exactly `crate::storage::jcode_dir()`, so behavior for the
+/// launch this is exactly `crate::storage::wvc_dir()`, so behavior for the
 /// real user is unchanged.
 #[cfg(target_os = "macos")]
 fn global_menubar_dir() -> Option<std::path::PathBuf> {
@@ -258,7 +258,7 @@ fn is_menubar_sandbox(
     test_session: bool,
     temp_server: bool,
     custom_home: Option<&std::ffi::OsStr>,
-    real_jcode_home: Option<&std::path::Path>,
+    real_wvc_home: Option<&std::path::Path>,
 ) -> bool {
     if test_session || temp_server {
         return true;
@@ -269,7 +269,7 @@ fn is_menubar_sandbox(
         return false;
     };
     let custom = std::path::Path::new(custom_home);
-    let Some(real) = real_jcode_home else {
+    let Some(real) = real_wvc_home else {
         // No real home to compare against: treat any explicit override as a sandbox.
         return true;
     };
@@ -373,7 +373,7 @@ mod macos {
     }
 
     /// Autosave name under which macOS persists the status item's position.
-    const STATUS_ITEM_AUTOSAVE: &str = "jcode-menubar";
+    const STATUS_ITEM_AUTOSAVE: &str = "wvc-menubar";
 
     /// Number of fixed items at the end of the menu (separator, New Window,
     /// separator, Quit). Session rows are inserted between the summary header
@@ -385,7 +385,7 @@ mod macos {
            // does not implement Drop.
            #[unsafe(super(NSObject))]
            #[thread_kind = MainThreadOnly]
-           #[name = "JcodeMenubarHandler"]
+           #[name = "WeavecoderMenubarHandler"]
            struct MenuHandler;
 
            impl MenuHandler {
@@ -400,13 +400,13 @@ mod macos {
                    let Ok(session_id) = object.downcast::<NSString>() else {
                        return;
                    };
-                   launch_jcode_window(vec!["--resume".to_string(), session_id.to_string()]);
+                   launch_wvc_window(vec!["--resume".to_string(), session_id.to_string()]);
                }
 
                /// Launch a brand-new jcode session in a new terminal window.
                #[unsafe(method(newWindow:))]
                fn new_window(&self, _sender: &NSMenuItem) {
-                   launch_jcode_window(Vec::new());
+                   launch_wvc_window(Vec::new());
                }
            }
        );
@@ -420,9 +420,9 @@ mod macos {
 
     /// Launch a jcode window off the main thread so slow terminal startup
     /// (osascript / `open`) never blocks the menu bar UI.
-    fn launch_jcode_window(args: Vec<String>) {
+    fn launch_wvc_window(args: Vec<String>) {
         std::thread::spawn(move || {
-            if let Err(err) = crate::setup_hints::launch_jcode_in_macos_terminal(&args) {
+            if let Err(err) = crate::setup_hints::launch_wvc_in_macos_terminal(&args) {
                 crate::logging::warn(&format!(
                     "menubar: failed to launch jcode window ({args:?}): {err}"
                 ));
@@ -432,7 +432,7 @@ mod macos {
 
     pub(super) fn run_status_item_app() {
         let mtm = MainThreadMarker::new()
-            .expect("jcode menubar must run on the main thread (the process entry point)");
+            .expect("wvc menubar must run on the main thread (the process entry point)");
 
         // Defense in depth: a process running under an explicit test/temp marker
         // must never paint into the real user's menu bar. The real protection
@@ -510,7 +510,7 @@ mod macos {
         if let Some(button) = status_item.button(mtm) {
             let icon = NSImage::imageWithSystemSymbolName_accessibilityDescription(
                 ns_string!("terminal.fill"),
-                Some(ns_string!("jcode sessions")),
+                Some(ns_string!("wvc sessions")),
             );
             if let Some(icon) = icon.as_deref() {
                 icon.setTemplate(true);

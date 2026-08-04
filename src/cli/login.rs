@@ -12,7 +12,7 @@ use crate::provider_catalog::{
 use super::provider_init::{ProviderChoice, login_provider_for_choice, save_named_api_key};
 
 mod existing_key_notice;
-mod jcode_device;
+mod wvc_device;
 mod next_step;
 mod scriptable;
 use scriptable::*;
@@ -280,7 +280,7 @@ pub async fn run_login_provider(
                 eprintln!("Imported {} existing auth source(s).", imported);
                 Ok(LoginFlowOutcome::Completed)
             }
-            LoginProviderTarget::Jcode => login_jcode_flow(options.no_browser)
+            LoginProviderTarget::Jcode => login_wvc_flow(options.no_browser)
                 .await
                 .map(|_| LoginFlowOutcome::Completed),
             LoginProviderTarget::Claude => login_claude_flow(account_label, options.no_browser)
@@ -467,14 +467,14 @@ async fn notify_running_server_auth_changed_best_effort(provider: Option<&str>) 
     }
 }
 
-async fn login_jcode_flow(no_browser: bool) -> Result<()> {
+async fn login_wvc_flow(no_browser: bool) -> Result<()> {
     eprintln!("Starting jcode subscription sign-in...");
-    let _ = jcode_device::login_jcode_device_flow(no_browser).await?;
+    let _ = wvc_device::login_wvc_device_flow(no_browser).await?;
     Ok(())
 }
 
-pub(crate) async fn run_jcode_account_login(no_browser: bool) -> Result<()> {
-    login_jcode_flow(no_browser).await
+pub(crate) async fn run_wvc_account_login(no_browser: bool) -> Result<()> {
+    login_wvc_flow(no_browser).await
 }
 
 fn login_openai_api_key_flow() -> Result<()> {
@@ -524,7 +524,7 @@ async fn login_claude_flow(requested_label: Option<&str>, no_browser: bool) -> R
     eprintln!(
         "Account '{}' stored at {}",
         label,
-        auth::claude::jcode_path()?.display()
+        auth::claude::wvc_path()?.display()
     );
     if let Some(email) = profile_email {
         eprintln!("Profile email: {}", email);
@@ -570,7 +570,7 @@ async fn login_openai_flow(requested_label: Option<&str>, no_browser: bool) -> R
     eprintln!(
         "Successfully logged in to OpenAI! Account '{}' saved to {}",
         label,
-        crate::storage::jcode_dir()?
+        crate::storage::wvc_dir()?
             .join("openai-auth.json")
             .display()
     );
@@ -978,7 +978,7 @@ fn login_cursor_flow() -> Result<()> {
             .join("cursor.env")
             .display()
     );
-    eprintln!("jcode will use the native Cursor HTTPS transport.");
+    eprintln!("wvc will use the native Cursor HTTPS transport.");
     crate::telemetry::record_auth_success("cursor", "api_key");
     Ok(())
 }
@@ -1035,7 +1035,7 @@ async fn login_copilot_device_flow(no_browser: bool) -> Result<()> {
 async fn login_antigravity_flow(no_browser: bool) -> Result<()> {
     eprintln!("Starting native Antigravity login...");
     eprintln!(
-        "jcode will authenticate directly with Google Antigravity; the Antigravity desktop app is not required."
+        "wvc will authenticate directly with Google Antigravity; the Antigravity desktop app is not required."
     );
     eprintln!(
         "If browser launch fails, or you pass `--no-browser`, jcode will prompt for the callback URL instead."

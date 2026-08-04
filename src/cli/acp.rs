@@ -122,7 +122,7 @@ impl DaemonSession {
         let mut reader = self.reader.lock().await;
         let n = reader.read_line(&mut line).await?;
         if n == 0 {
-            anyhow::bail!("Jcode daemon disconnected");
+            anyhow::bail!("Weavecoder daemon disconnected");
         }
         let event = serde_json::from_str(&line)
             .with_context(|| format!("failed to decode Jcode daemon event: {}", line.trim_end()))?;
@@ -530,7 +530,7 @@ impl AcpRuntime {
                 }
                 other => {
                     if self.profile.is_extended() {
-                        self.write_jcode_extension_event(&attached_id, &other)
+                        self.write_wvc_extension_event(&attached_id, &other)
                             .await?;
                     }
                 }
@@ -612,7 +612,7 @@ impl AcpRuntime {
                 }
             };
             if self.profile.is_extended() {
-                self.write_jcode_extension_event(&session.session_id, &event)
+                self.write_wvc_extension_event(&session.session_id, &event)
                     .await?;
             }
             match event {
@@ -678,7 +678,7 @@ impl AcpRuntime {
         .await
     }
 
-    async fn write_jcode_extension_event(
+    async fn write_wvc_extension_event(
         &self,
         session_id: &str,
         event: &ServerEvent,
@@ -910,7 +910,7 @@ fn initialize_result(params: &Value, profile: AcpProfile) -> Value {
         object.insert(
             "_meta".to_string(),
             json!({
-                "jcode": {
+                "wvc": {
                     "profile": profile.as_str(),
                     "extensions": ["raw_server_event"]
                 }
@@ -922,9 +922,9 @@ fn initialize_result(params: &Value, profile: AcpProfile) -> Value {
         "protocolVersion": protocol_version,
         "agentCapabilities": agent_capabilities,
         "agentInfo": {
-            "name": "jcode",
-            "title": "Jcode",
-            "version": jcode_build_meta::pkg_version(),
+            "name": "wvc",
+            "title": "Weavecoder",
+            "version": wvc_build_meta::pkg_version(),
         },
         "authMethods": [],
     })
@@ -1130,7 +1130,7 @@ mod tests {
     }
 
     #[test]
-    fn initialize_standard_omits_jcode_meta() {
+    fn initialize_standard_omits_wvc_meta() {
         let result = initialize_result(&json!({"protocolVersion": 1}), AcpProfile::Standard);
         assert_eq!(result["protocolVersion"], 1);
         assert!(result["agentCapabilities"].get("_meta").is_none());
@@ -1138,10 +1138,10 @@ mod tests {
     }
 
     #[test]
-    fn initialize_full_advertises_jcode_extension_meta() {
+    fn initialize_full_advertises_wvc_extension_meta() {
         let result = initialize_result(&json!({"protocolVersion": 1}), AcpProfile::Full);
         assert_eq!(
-            result["agentCapabilities"]["_meta"]["jcode"]["profile"],
+            result["agentCapabilities"]["_meta"]["wvc"]["profile"],
             "full"
         );
     }

@@ -313,7 +313,7 @@ async fn audit_openrouter_context_windows(
 ) -> AuthTestContextAuditReport {
     use crate::provider::Provider as _;
 
-    let provider = match jcode_provider_openrouter_runtime::OpenRouterProvider::new() {
+    let provider = match wvc_provider_openrouter_runtime::OpenRouterProvider::new() {
         Ok(provider) => provider,
         Err(err) => {
             return AuthTestContextAuditReport {
@@ -736,7 +736,7 @@ fn persist_auth_test_live_verification_event(
             "tool_smoke" => {
                 let tool_smoke_skipped = auth_test_step_is_skipped(step);
                 if !tool_smoke_skipped {
-                    capabilities.push("real_jcode_tool_smoke");
+                    capabilities.push("real_wvc_tool_smoke");
                 }
                 expected.push(crate::live_tests::checkpoints::TOOL_CALL_PARSE);
                 expected.push(crate::live_tests::checkpoints::TOOL_EXECUTION_LOOP);
@@ -778,7 +778,7 @@ fn persist_auth_test_live_verification_event(
     let (coverage_provider_id, coverage_provider_label) =
         auth_test_coverage_provider_identity(report);
     let mut event = crate::live_tests::LiveVerificationEvent::new(
-        "auth_test_real_jcode_runtime",
+        "auth_test_real_wvc_runtime",
         coverage_provider_id,
         coverage_provider_label,
         crate::live_tests::LiveVerificationAuth::non_secret("auth-test", None::<String>),
