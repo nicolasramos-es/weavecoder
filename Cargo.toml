@@ -28,6 +28,7 @@ members = [
     "crates/wvc-command-risk",
     "crates/wvc-core",
     "crates/wvc-fuzzy",
+    "crates/wvc-code-graph",
     "crates/wvc-harness-api",
     "crates/wvc-harness-api-server",
     "crates/wvc-sdk",

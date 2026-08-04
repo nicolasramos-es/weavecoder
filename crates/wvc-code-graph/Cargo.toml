@@ -1,0 +1,15 @@
+[package]
+name = "wvc-code-graph"
+version = "0.1.0"
+edition = "2024"
+description = "Code Knowledge Graph: tree-sitter parsing and symbol extraction for weavecoder"
+publish = false
+
+[dependencies]
+tree-sitter = "0.25"
+tree-sitter-go = "0.23"
+tree-sitter-python = "0.23"
+tree-sitter-typescript = "0.23"
+tree-sitter-rust = "0.23"
+
+[dev-dependencies]
