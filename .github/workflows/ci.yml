@@ -33,7 +33,7 @@ jobs:
           cache-all-crates: "true"
 
       - name: Install system dependencies
-        # jcode-desktop2 pulls yeslogic-fontconfig-sys, whose build script hard
+        # wvc-desktop2 pulls yeslogic-fontconfig-sys, whose build script hard
         # fails without fontconfig.pc. Without this the "Enforce desktop2 frame
         # budget" step cannot even build, and `cargo check --all-targets
         # --all-features` above is affected the same way.
@@ -124,11 +124,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Test Discord release announcements
-        run: python3 -m unittest -v scripts/test_post_discord_release.py
-
-      - name: Compile release automation scripts
-        run: python3 -m py_compile scripts/post_discord_release.py scripts/test_post_discord_release.py
+      # Discord release announcements removed: discord-release.yml was deleted
+        # (jcode Discord channel no longer applicable to weavecoder).
 
   build:
     name: Build & Test (${{ matrix.os }})
@@ -219,7 +216,7 @@ jobs:
       - name: Run deterministic retention-readiness cohort
         shell: bash
         run: |
-          # A cold jcode-app-core test harness compiles heavy optional provider
+          # A cold wvc-app-core test harness compiles heavy optional provider
           # dependencies and can exceed three minutes on hosted runners. The
           # cohort itself runs in under a second once the lib test is built.
           python3 .github/scripts/run_with_timeout.py 600 \
@@ -229,7 +226,7 @@ jobs:
       - name: Run secret-input pty cohort (all platforms with a pty)
         if: runner.os != 'Windows'
         shell: bash
-        # `jcode-base --lib` is never executed on Linux CI: the only jcode-base
+        # `wvc-base --lib` is never executed on Linux CI: the only wvc-base
         # test invocation anywhere in this workflow is a Windows-only
         # `power_inhibit::tests::windows_` filter. So the masking fix for #660 had
         # a test that was compiled and never run, which is the same
@@ -238,7 +235,7 @@ jobs:
         # Windows runner; everywhere else they take about a second.
         #
         # 600s, not 300s: the budget is dominated by cold-compiling the
-        # jcode-base lib test harness, which exceeded 300s on a hosted macOS
+        # wvc-base lib test harness, which exceeded 300s on a hosted macOS
         # runner (run 30591536707) while the cohort itself runs in a second.
         run: |
           python3 .github/scripts/run_with_timeout.py 600 \
@@ -254,13 +251,13 @@ jobs:
         # memories are keyed by model_id, which does not change across a tract
         # bump, so the stale-embedding filter cannot notice (#657).
         #
-        # That test skips itself when the model is absent, and jcode-embedding
+        # That test skips itself when the model is absent, and wvc-embedding
         # tests are not otherwise run here at all, so without this step it would
         # never execute. Fetch the model first (~87MB) so the cohort is real
         # rather than a silent skip.
         run: |
           set -euo pipefail
-          model_dir="$HOME/.jcode/models/all-MiniLM-L6-v2"
+          model_dir="$HOME/.wvc/models/all-MiniLM-L6-v2"
           mkdir -p "$model_dir"
           base="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main"
           curl -sSfL --retry 3 -o "$model_dir/model.onnx" "$base/onnx/model.onnx"
@@ -290,7 +287,7 @@ jobs:
         # These tests exercise the per-platform stdin detector, whose
         # implementations are entirely separate (`/proc/PID/syscall` on Linux,
         # `proc_pidinfo` + thread state on macOS). They were never gated: the
-        # only `jcode-app-core --lib` run above is filtered to
+        # only `wvc-app-core --lib` run above is filtered to
         # `retention_readiness`, and the broader suite is Linux-only, so the
         # macOS detector had no coverage at all. `TH_STATE_WAITING` was defined
         # as 2 (`TH_STATE_STOPPED`) rather than 3, which silently disabled
@@ -473,12 +470,12 @@ jobs:
           & ./scripts/invoke_cargo_with_timeout.ps1 `
             -Name 'Windows setup-hints tests' `
             -TimeoutSeconds 300 `
-            -CargoArgs @('test', '--locked', '--target', 'x86_64-pc-windows-msvc', '-p', 'jcode-setup-hints', '--lib', '--', '--nocapture')
+            -CargoArgs @('test', '--locked', '--target', 'x86_64-pc-windows-msvc', '-p', 'wvc-setup-hints', '--lib', '--', '--nocapture')
 
           & ./scripts/invoke_cargo_with_timeout.ps1 `
             -Name 'Windows power-inhibit tests' `
             -TimeoutSeconds 900 `
-            -CargoArgs @('test', '--locked', '--target', 'x86_64-pc-windows-msvc', '-p', 'jcode-base', '--no-default-features', '--lib', 'power_inhibit::tests::windows_', '--', '--nocapture')
+            -CargoArgs @('test', '--locked', '--target', 'x86_64-pc-windows-msvc', '-p', 'wvc-base', '--no-default-features', '--lib', 'power_inhibit::tests::windows_', '--', '--nocapture')
 
       - name: Run Windows e2e smoke tests
         shell: pwsh
@@ -498,9 +495,9 @@ jobs:
       - name: Run Windows lifecycle e2e tests
         shell: pwsh
         env:
-          JCODE_E2E_ARTIFACT_DIR: ${{ runner.temp }}/jcode-windows-e2e-logs
+          WVC_E2E_ARTIFACT_DIR: ${{ runner.temp }}/wvc-windows-e2e-logs
         run: |
-          New-Item -ItemType Directory -Force -Path $env:JCODE_E2E_ARTIFACT_DIR | Out-Null
+          New-Item -ItemType Directory -Force -Path $env:WVC_E2E_ARTIFACT_DIR | Out-Null
           $tests = @(
             'windows_lifecycle::windows_binary_server_accepts_clients_and_debug_cli',
             'windows_lifecycle::windows_binary_server_rebinds_named_pipe_after_exit'
@@ -516,14 +513,14 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: windows-e2e-diagnostics
-          path: ${{ runner.temp }}/jcode-windows-e2e-logs
+          name: windows-e2e-diagnostics-wvc
+          path: ${{ runner.temp }}/wvc-windows-e2e-logs
           if-no-files-found: ignore
 
       - name: Verify built binary launches
         shell: pwsh
         run: |
-          & "target/x86_64-pc-windows-msvc/release/jcode.exe" --version
+          & "target/x86_64-pc-windows-msvc/release/wvc.exe" --version
           if ($LASTEXITCODE -ne 0) {
             throw 'Built Windows binary failed to run --version'
           }
@@ -546,7 +543,7 @@ jobs:
           # this identity from the root package version and appends `-dev`.
           $version = 'v' + $cargoVersion.Matches[0].Groups[1].Value + '-dev'
           & ./.github/scripts/verify_windows_install.ps1 `
-            -ArtifactExePath 'target/x86_64-pc-windows-msvc/release/jcode.exe' `
+            -ArtifactExePath 'target/x86_64-pc-windows-msvc/release/wvc.exe' `
             -Version $version
 
   fmt:
@@ -582,7 +579,7 @@ jobs:
           cache: npm
           cache-dependency-path: sdk/typescript/package-lock.json
 
-      # The SDK mirrors crates/jcode-harness-api by hand. Without this job the
+      # The SDK mirrors crates/wvc-harness-api by hand. Without this job the
       # only guard that runs on a change is the Rust-side variant check, and a
       # typo in the TypeScript itself (or a broken client) reaches consumers.
       - name: Install
