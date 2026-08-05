@@ -1154,11 +1154,8 @@ mod tests {
         let full_status_elapsed = 0.0;
         let app_lifetime_elapsed = 0.24;
 
-        let full_status_symbol = wvc_tui_style::theme::activity_indicator(
-            full_status_elapsed,
-            STATUS_SPINNER_FPS,
-            true,
-        );
+        let full_status_symbol =
+            wvc_tui_style::theme::activity_indicator(full_status_elapsed, STATUS_SPINNER_FPS, true);
         let old_app_lifetime_symbol = wvc_tui_style::theme::activity_indicator(
             app_lifetime_elapsed,
             STATUS_SPINNER_FPS,

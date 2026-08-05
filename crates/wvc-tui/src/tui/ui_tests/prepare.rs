@@ -1185,9 +1185,7 @@ fn test_prepare_messages_renders_reasoning_role_dim_italic_without_sentinel() {
     content.push_str(&wvc_tui_markdown::reasoning_line_markup(
         "weighing the options",
     ));
-    content.push_str(&wvc_tui_markdown::reasoning_line_markup(
-        "▸ thought for 3s",
-    ));
+    content.push_str(&wvc_tui_markdown::reasoning_line_markup("▸ thought for 3s"));
 
     let state = TestState {
         display_messages: vec![

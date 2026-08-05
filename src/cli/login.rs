@@ -12,9 +12,9 @@ use crate::provider_catalog::{
 use super::provider_init::{ProviderChoice, login_provider_for_choice, save_named_api_key};
 
 mod existing_key_notice;
-mod wvc_device;
 mod next_step;
 mod scriptable;
+mod wvc_device;
 use scriptable::*;
 
 #[derive(Debug, Clone, Default)]

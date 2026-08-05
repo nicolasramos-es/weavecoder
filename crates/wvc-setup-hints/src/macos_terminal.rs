@@ -1,8 +1,8 @@
 use anyhow::Result;
-use wvc_storage as storage;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::path::PathBuf;
+use wvc_storage as storage;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum MacTerminalKind {

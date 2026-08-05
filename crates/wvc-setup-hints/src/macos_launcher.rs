@@ -113,10 +113,7 @@ fn macos_app_launcher_info_plist_path(app_dir: &Path) -> PathBuf {
 }
 
 fn macos_app_launcher_executable_path(app_dir: &Path) -> PathBuf {
-    app_dir
-        .join("Contents")
-        .join("MacOS")
-        .join("wvc-launcher")
+    app_dir.join("Contents").join("MacOS").join("wvc-launcher")
 }
 
 fn macos_app_launcher_icon_path(app_dir: &Path) -> PathBuf {

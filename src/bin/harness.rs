@@ -1,12 +1,12 @@
 use anyhow::Result;
 use clap::Parser;
+use serde_json::json;
+use std::path::PathBuf;
+use std::sync::Arc;
 use weavecoder::id::new_id;
 use weavecoder::message::{Message, ToolDefinition};
 use weavecoder::provider::{EventStream, Provider};
 use weavecoder::tool::{Registry, ToolContext, ToolExecutionMode};
-use serde_json::json;
-use std::path::PathBuf;
-use std::sync::Arc;
 
 #[derive(Parser)]
 #[command(name = "wvc-harness")]

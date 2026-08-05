@@ -6,10 +6,6 @@
 
 use anyhow::{Context, Result};
 use async_trait::async_trait;
-use wvc_base::auth::{claude as claude_auth, oauth};
-use wvc_message_types::{ContentBlock, Message, Role, StreamEvent, ToolDefinition};
-use wvc_provider_core::NativeToolResultSender;
-use wvc_provider_core::{EventStream, Provider};
 use serde::Deserialize;
 use serde_json::{Value, json};
 use std::collections::HashSet;
@@ -21,6 +17,10 @@ use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::Command;
 use tokio::sync::{Mutex, mpsc};
 use tokio_stream::wrappers::ReceiverStream;
+use wvc_base::auth::{claude as claude_auth, oauth};
+use wvc_message_types::{ContentBlock, Message, Role, StreamEvent, ToolDefinition};
+use wvc_provider_core::NativeToolResultSender;
+use wvc_provider_core::{EventStream, Provider};
 
 /// Global mutex to serialize Claude CLI requests
 /// This prevents "ProcessTransport not ready for writing" errors
@@ -750,10 +750,7 @@ impl Provider for ClaudeProvider {
                         let error_str = format!("{e:#}").to_lowercase();
                         // Check if this is a transient/retryable error
                         if is_retryable_error(&error_str) && attempt + 1 < MAX_RETRIES {
-                            wvc_base::logging::info(&format!(
-                                "Transient error, will retry: {}",
-                                e
-                            ));
+                            wvc_base::logging::info(&format!("Transient error, will retry: {}", e));
                             last_error = Some(e);
                             continue;
                         }

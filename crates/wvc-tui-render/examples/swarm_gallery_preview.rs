@@ -2,12 +2,12 @@
 //!
 //! Run with: `cargo run --profile selfdev -p jcode-tui-render --example swarm_gallery_preview`
 
+use ratatui::prelude::*;
 use wvc_tui_render::swarm_gallery::{
     GalleryMember, SwarmStripHint, render_swarm_compact, render_swarm_dock, render_swarm_panel,
     render_swarm_strip, render_swarm_strip_vertical,
 };
 use wvc_tui_render::swarm_tiles::{SwarmGalleryConfig, SwarmTile, render_swarm_gallery};
-use ratatui::prelude::*;
 
 fn accent(status: &str) -> Color {
     match status {

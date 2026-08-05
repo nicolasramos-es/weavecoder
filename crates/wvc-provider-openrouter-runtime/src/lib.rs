@@ -19,6 +19,15 @@
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use futures::StreamExt;
+use models_catalog_parse::parse_openai_compatible_models_response;
+use reqwest::Client;
+use reqwest::header::HeaderName;
+use serde::Deserialize;
+use serde_json::Value;
+use std::collections::{HashMap, HashSet};
+use std::sync::{Arc, Mutex, OnceLock};
+use tokio::sync::{RwLock, mpsc};
+use tokio_stream::wrappers::ReceiverStream;
 use wvc_base::provider_catalog::{
     OPENAI_COMPAT_PROFILE, is_safe_env_file_name, is_safe_env_key_name,
     load_api_key_from_env_or_config, load_env_value_from_env_or_config, normalize_api_base,
@@ -39,15 +48,6 @@ use wvc_provider_openrouter::{
     save_disk_cache_with_source, save_disk_cache_with_source_for_namespace,
     save_endpoints_disk_cache,
 };
-use models_catalog_parse::parse_openai_compatible_models_response;
-use reqwest::Client;
-use reqwest::header::HeaderName;
-use serde::Deserialize;
-use serde_json::Value;
-use std::collections::{HashMap, HashSet};
-use std::sync::{Arc, Mutex, OnceLock};
-use tokio::sync::{RwLock, mpsc};
-use tokio_stream::wrappers::ReceiverStream;
 
 /// Maximum number of retries for transient errors
 const MAX_RETRIES: u32 = 3;

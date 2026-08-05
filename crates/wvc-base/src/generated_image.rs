@@ -95,9 +95,7 @@ impl GeneratedImagePanelInfo {
             &self.output_format,
         ));
         if let Some(byte_count) = self.byte_count {
-            parts.push(wvc_terminal_image::metadata::format_byte_count(
-                byte_count,
-            ));
+            parts.push(wvc_terminal_image::metadata::format_byte_count(byte_count));
         }
         if let Some(source) = self.source_summary() {
             parts.push(source);
@@ -152,9 +150,7 @@ impl GeneratedImagePanelInfo {
         if let Some(byte_count) = self.byte_count {
             markdown.push_str(&format!(
                 "- Bytes: {}\n",
-                markdown_code(&wvc_terminal_image::metadata::format_byte_count(
-                    byte_count
-                ))
+                markdown_code(&wvc_terminal_image::metadata::format_byte_count(byte_count))
             ));
         }
         if let Some(metadata_path) = self.metadata_path.as_deref() {

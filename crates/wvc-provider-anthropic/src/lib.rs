@@ -1,7 +1,7 @@
-use wvc_message_types::{ContentBlock, Message, Role, ToolDefinition, sanitize_tool_id};
-use wvc_provider_core::anthropic_map_tool_name_for_oauth as map_tool_name_for_oauth;
 use serde::Serialize;
 use serde_json::{Value, json};
+use wvc_message_types::{ContentBlock, Message, Role, ToolDefinition, sanitize_tool_id};
+use wvc_provider_core::anthropic_map_tool_name_for_oauth as map_tool_name_for_oauth;
 
 /// Claude Code billing attribution text observed in the official CLI's system
 /// prompt blocks.

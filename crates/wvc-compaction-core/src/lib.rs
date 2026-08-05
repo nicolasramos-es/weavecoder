@@ -1,6 +1,6 @@
-use wvc_message_types::{ContentBlock, Message, Role};
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
+use wvc_message_types::{ContentBlock, Message, Role};
 
 /// Default token budget (200k tokens - matches Claude's actual context limit)
 pub const DEFAULT_TOKEN_BUDGET: usize = 200_000;

@@ -15,11 +15,11 @@ mod notifications;
 pub use comm_format::*;
 pub use notifications::{FeatureToggle, NotificationType};
 
+use std::collections::BTreeMap;
 use wvc_batch_types::BatchProgress;
 use wvc_message_types::{InputShellResult, ToolCall};
 use wvc_plan::{PlanItem, VersionedPlan, next_runnable_item_ids, summarize_plan_graph};
 use wvc_side_panel_types::{SidePanelSnapshot, snapshot_is_empty};
-use std::collections::BTreeMap;
 
 #[path = "protocol_memory.rs"]
 mod memory_snapshots;

@@ -1,5 +1,5 @@
-use wvc_message_types::ToolCall;
 use serde::{Deserialize, Serialize};
+use wvc_message_types::ToolCall;
 
 /// Progress update from a running batch tool call
 #[derive(Clone, Debug, Serialize, Deserialize)]

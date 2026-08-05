@@ -16,10 +16,10 @@
 //! Keeping the resolver pure means the chord/dir layout the user sees is exactly
 //! what we can assert in tests, and the listener stays a thin dispatcher.
 
-use wvc_config_types::{LaunchHotkeyEntry, LaunchHotkeysConfig};
 #[cfg(any(test, target_os = "macos"))]
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+use wvc_config_types::{LaunchHotkeyEntry, LaunchHotkeysConfig};
 
 use crate::keymap::KeyChord;
 

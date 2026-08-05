@@ -1,12 +1,12 @@
 use super::{SwarmMember, SwarmTaskProgress, VersionedPlan};
 use crate::protocol::ServerEvent;
 use crate::storage;
-use wvc_swarm_core::{SwarmLifecycleStatus, SwarmMemberRecord};
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::sync::{Arc, LazyLock, Mutex as StdMutex, Weak};
 use std::time::{Duration, Instant};
 use tokio::sync::mpsc;
+use wvc_swarm_core::{SwarmLifecycleStatus, SwarmMemberRecord};
 
 /// Directory name under the durable state dir (`~/.jcode/state`).
 const SWARM_STATE_DIR: &str = "swarm";

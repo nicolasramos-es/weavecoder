@@ -1,7 +1,7 @@
 use super::{MigrationContext, binary_name};
 use anyhow::Result;
-use wvc_storage as storage;
 use std::path::PathBuf;
+use wvc_storage as storage;
 
 /// Get path to builds directory
 pub fn builds_dir() -> Result<PathBuf> {

@@ -27,12 +27,12 @@ use crate::protocol::{Request, ServerEvent, TranscriptMode, decode_request, enco
 use crate::provider::Provider;
 use crate::transport::Stream;
 use anyhow::Result;
-use wvc_agent_runtime::InterruptSignal;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use std::time::Instant;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::sync::{Mutex, RwLock, broadcast, mpsc};
+use wvc_agent_runtime::InterruptSignal;
 
 type ChannelSubscriptions = Arc<RwLock<HashMap<String, HashMap<String, HashSet<String>>>>>;
 

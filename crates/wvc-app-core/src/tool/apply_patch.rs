@@ -115,8 +115,7 @@ impl Tool for ApplyPatchTool {
                     // cover this path, so apply the same absolute deny here
                     // (#604). Only the catastrophic tier: ordinary file deletes
                     // are this tool's normal job.
-                    let risk_ctx =
-                        wvc_command_risk::RiskContext::from_env(ctx.working_dir.clone());
+                    let risk_ctx = wvc_command_risk::RiskContext::from_env(ctx.working_dir.clone());
                     if wvc_command_risk::is_catastrophic_target(&resolved, &risk_ctx) {
                         results.push(format!(
                             "✗ {}: refused, this path is protected and must never \

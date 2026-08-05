@@ -1,10 +1,10 @@
 use super::{SidePanelSource, make_text};
 use anyhow::{Context, Result};
+use std::fs;
+use std::path::PathBuf;
 use weavecoder::side_panel::{
     SidePanelPage, SidePanelPageFormat, SidePanelPageSource, SidePanelSnapshot,
 };
-use std::fs;
-use std::path::PathBuf;
 
 pub(super) fn make_bench_file(idx: usize, approx_len: usize) -> Result<PathBuf> {
     let base_dir = std::env::temp_dir().join("wvc_tui_bench");

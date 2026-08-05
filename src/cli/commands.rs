@@ -2499,9 +2499,7 @@ async fn wait_for_cold_cache_mcp_tools(registry: &crate::tool::Registry) {
             names.iter().any(|name| name.starts_with(&prefix))
         });
         if covered {
-            crate::logging::info(
-                "wvc run: cold-cache MCP server(s) registered tools; proceeding",
-            );
+            crate::logging::info("wvc run: cold-cache MCP server(s) registered tools; proceeding");
             return;
         }
         if std::time::Instant::now() >= deadline {

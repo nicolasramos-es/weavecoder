@@ -19,11 +19,11 @@
 #[cfg(any(target_os = "macos", target_os = "linux"))]
 use anyhow::Context;
 use anyhow::Result;
-use wvc_storage as storage;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::io::{self, IsTerminal};
 use std::path::PathBuf;
+use wvc_storage as storage;
 
 pub mod keymap;
 

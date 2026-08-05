@@ -21,11 +21,11 @@ use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
+use serde::{Deserialize, Serialize};
 use weavecoder::embedding;
 use weavecoder::memory::format_context_for_relevance;
 use weavecoder::memory_graph::MemoryGraph;
 use weavecoder::session::Session;
-use serde::{Deserialize, Serialize};
 
 // ---- Tunables that mirror production retrieval (memory.rs) ----
 const EMBEDDING_SIMILARITY_THRESHOLD: f32 = 0.5;
@@ -1081,7 +1081,9 @@ fn cmd_metrics(args: &[String]) -> Result<()> {
     // would use. Requires OPENAI_API_KEY (or --openai_key=...). Model/base via
     // --openai_model / --openai_base.
     let openai_backend = if config == "openai_dense" || config == "openai_hybrid" {
-        use weavecoder::embedding_backend::{DEFAULT_OPENAI_EMBEDDING_MODEL, OpenAiEmbeddingBackend};
+        use weavecoder::embedding_backend::{
+            DEFAULT_OPENAI_EMBEDDING_MODEL, OpenAiEmbeddingBackend,
+        };
         let model = opts
             .get("openai_model")
             .cloned()

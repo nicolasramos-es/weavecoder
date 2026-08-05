@@ -119,10 +119,7 @@ pub(super) async fn run_stream_with_retries(
                             }))
                             .await;
                     } else {
-                        wvc_base::logging::info(&format!(
-                            "Transient API error, will retry: {}",
-                            e
-                        ));
+                        wvc_base::logging::info(&format!("Transient API error, will retry: {}", e));
                     }
                     next_retry_delay = wvc_provider_core::retry_after::retry_after_from_error(&e);
                     last_error = Some(e);

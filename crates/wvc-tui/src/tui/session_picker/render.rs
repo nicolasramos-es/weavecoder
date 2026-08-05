@@ -227,8 +227,8 @@ impl SessionPicker {
                     None => "working".to_string(),
                 };
                 Some((
-                    wvc_tui_render::swarm_gallery::STRIP_SPINNER_FRAMES[spinner_frame
-                        % wvc_tui_render::swarm_gallery::STRIP_SPINNER_FRAMES.len()],
+                    wvc_tui_render::swarm_gallery::STRIP_SPINNER_FRAMES
+                        [spinner_frame % wvc_tui_render::swarm_gallery::STRIP_SPINNER_FRAMES.len()],
                     rgb(255, 193, 7),
                     label,
                 ))

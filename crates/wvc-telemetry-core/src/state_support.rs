@@ -1,8 +1,8 @@
 use super::{SESSION_STATE, sanitize_telemetry_label};
 use chrono::{DateTime, Datelike, Timelike, Utc};
-use wvc_storage as storage;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
+use wvc_storage as storage;
 
 pub(super) fn telemetry_id_path() -> Option<PathBuf> {
     storage::wvc_dir().ok().map(|d| d.join("telemetry_id"))

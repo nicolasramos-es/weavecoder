@@ -12,10 +12,10 @@
 //! debug commands `smoothness` and `smoothness:reset`, so live sessions and
 //! offscreen replays (`wvc replay`) can both be benchmarked.
 
-use wvc_tui_core::anchor_stability::{AnchorFrame, AnchorStabilityRecorder, BLANK_ROW_HASH};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use std::sync::{Mutex, OnceLock};
+use wvc_tui_core::anchor_stability::{AnchorFrame, AnchorStabilityRecorder, BLANK_ROW_HASH};
 
 fn recorder() -> &'static Mutex<AnchorStabilityRecorder> {
     static RECORDER: OnceLock<Mutex<AnchorStabilityRecorder>> = OnceLock::new();

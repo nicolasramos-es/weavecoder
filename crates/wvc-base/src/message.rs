@@ -1,12 +1,12 @@
 use crate::logging;
 use base64::Engine as _;
-use wvc_background_types::{
-    BackgroundTaskCompleted, BackgroundTaskProgressEvent, BackgroundTaskStatus,
-};
 use regex::Regex;
 use std::collections::HashSet;
 use std::path::Path;
 use std::sync::OnceLock;
+use wvc_background_types::{
+    BackgroundTaskCompleted, BackgroundTaskProgressEvent, BackgroundTaskStatus,
+};
 
 pub use wvc_message_types::{
     CacheControl, ConnectionPhase, ContentBlock, InputShellResult, Message, Role, StreamEvent,

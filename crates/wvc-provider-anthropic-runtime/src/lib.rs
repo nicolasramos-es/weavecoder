@@ -25,6 +25,14 @@ fn oauth_beta_headers(model: &str) -> &'static str {
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use futures::StreamExt;
+use reqwest::Client;
+use serde::Serialize;
+use serde_json::{Value, json};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
+use tokio::sync::{RwLock, mpsc};
+use tokio_stream::wrappers::ReceiverStream;
+use uuid::Uuid;
 use wvc_base::provider::anthropic::{
     AVAILABLE_MODELS, AnthropicCredentialMode, CLAUDE_CLI_USER_AGENT,
     apply_oauth_attribution_headers, is_cache_ttl_1h, load_anthropic_api_key,
@@ -44,14 +52,6 @@ use wvc_provider_core::{
     anthropic_map_tool_name_from_oauth as map_tool_name_from_oauth,
     anthropic_strip_1m_suffix as strip_1m_suffix,
 };
-use reqwest::Client;
-use serde::Serialize;
-use serde_json::{Value, json};
-use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
-use tokio::sync::{RwLock, mpsc};
-use tokio_stream::wrappers::ReceiverStream;
-use uuid::Uuid;
 
 /// Anthropic Messages API endpoint
 const API_URL: &str = "https://api.anthropic.com/v1/messages";
@@ -831,9 +831,7 @@ impl AnthropicProvider {
                 );
             }
 
-            wvc_base::logging::info(
-                "OAuth token expired or expiring soon, attempting refresh...",
-            );
+            wvc_base::logging::info("OAuth token expired or expiring soon, attempting refresh...");
 
             let active_label = auth::claude::active_account_label()
                 .unwrap_or_else(auth::claude::primary_account_label);
@@ -1290,8 +1288,7 @@ impl Provider for AnthropicProvider {
                     );
                     let refreshed_token =
                         force_refresh_oauth_token(Arc::clone(&self.credentials)).await?;
-                    wvc_base::provider::fetch_anthropic_model_catalog_oauth(&refreshed_token)
-                        .await
+                    wvc_base::provider::fetch_anthropic_model_catalog_oauth(&refreshed_token).await
                 }
                 Err(err) => Err(err),
             }
@@ -2005,9 +2002,9 @@ fn anthropic_model_quality_rank(model: &str) -> usize {
     wvc_provider_core::ALL_CLAUDE_MODELS
         .iter()
         .position(|candidate| {
-            wvc_provider_core::model_id::strip_date_suffix(
-                &wvc_provider_core::model_id::canonical(candidate),
-            ) == normalized
+            wvc_provider_core::model_id::strip_date_suffix(&wvc_provider_core::model_id::canonical(
+                candidate,
+            )) == normalized
         })
         // Curated models keep their position; unknown-but-not-retired models sort
         // just after the curated list so they only win when nothing curated is

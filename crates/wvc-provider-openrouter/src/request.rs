@@ -1,8 +1,6 @@
-use wvc_message_types::{
-    ContentBlock, Message, Role, TOOL_OUTPUT_MISSING_TEXT, sanitize_tool_id,
-};
 use serde_json::Value;
 use std::collections::{HashMap, HashSet};
+use wvc_message_types::{ContentBlock, Message, Role, TOOL_OUTPUT_MISSING_TEXT, sanitize_tool_id};
 
 /// Normalize a tool `parameters` JSON schema for strict OpenAI-compatible
 /// endpoints (issue #446).

@@ -18,11 +18,11 @@
 //!   model's trained maximum.
 
 use anyhow::{Context, Result};
-use wvc_provider_openrouter::ModelInfo;
 use reqwest::Client;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::time::Duration;
+use wvc_provider_openrouter::ModelInfo;
 
 /// Ollama's built-in default serving context when `OLLAMA_CONTEXT_LENGTH` is
 /// unset. Kept as a last resort so an unreachable native API still yields a

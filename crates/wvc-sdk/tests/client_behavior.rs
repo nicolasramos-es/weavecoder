@@ -6,24 +6,22 @@
 //! of that is visible from a passing `cargo build`, so it is driven here
 //! against a scripted server on a real socket pair.
 
+use std::io::{BufRead, BufReader, Write};
+use std::os::unix::net::UnixStream;
+use std::sync::mpsc::channel;
+use std::time::Duration;
 use wvc_harness_api::{
     API_VERSION_MAJOR, ApiEvent, ApiRequest, ClientFrame, ModelRouteInfo, ServerFrame, SessionInfo,
     TextMatch, read_frame, write_frame,
 };
 use wvc_sdk::{ConnectOptions, JcodeClient, SearchTextOptions, Transport};
-use std::io::{BufRead, BufReader, Write};
-use std::os::unix::net::UnixStream;
-use std::sync::mpsc::channel;
-use std::time::Duration;
 
 /// A socket-pair transport, so the test drives the client over the same code
 /// path a real connection uses.
 struct PairTransport(UnixStream);
 
 impl Transport for PairTransport {
-    fn split(
-        self: Box<Self>,
-    ) -> wvc_sdk::Result<(Box<dyn BufRead + Send>, Box<dyn Write + Send>)> {
+    fn split(self: Box<Self>) -> wvc_sdk::Result<(Box<dyn BufRead + Send>, Box<dyn Write + Send>)> {
         let writer = self.0.try_clone().expect("socket pair must clone");
         Ok((Box::new(BufReader::new(self.0)), Box::new(writer)))
     }

@@ -6,11 +6,11 @@ use crate::agent::Agent;
 use crate::build;
 use crate::mcp::McpConfig;
 use anyhow::Result;
-use wvc_agent_runtime::{InterruptSignal, SoftInterruptSource};
 use std::collections::{BTreeMap, HashMap};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::{Mutex, RwLock};
+use wvc_agent_runtime::{InterruptSignal, SoftInterruptSource};
 
 type SessionAgents = Arc<RwLock<HashMap<String, Arc<Mutex<Agent>>>>>;
 
@@ -638,12 +638,12 @@ mod tests {
     use crate::tool::Registry;
     use anyhow::Result;
     use async_trait::async_trait;
-    use wvc_agent_runtime::InterruptSignal;
     use std::collections::HashMap;
     use std::ffi::OsString;
     use std::sync::{Arc, Mutex, OnceLock};
     use std::time::{Duration, Instant};
     use tokio::sync::{Mutex as AsyncMutex, RwLock};
+    use wvc_agent_runtime::InterruptSignal;
 
     /// Serialize env mutation on the *shared* process-wide test lock.
     ///

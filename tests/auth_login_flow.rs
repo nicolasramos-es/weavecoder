@@ -1,11 +1,4 @@
 use anyhow::Result;
-use weavecoder::auth::{AuthState, AuthStatus};
-use weavecoder::provider::Provider;
-use weavecoder::provider_catalog::{
-    OPENAI_COMPAT_LOGIN_PROVIDER, login_providers, openai_compatible_profiles,
-};
-use weavecoder::tui::login_picker::{LoginPicker, LoginPickerItem, LoginPickerSummary};
-use wvc_provider_openrouter_runtime::OpenRouterProvider;
 use ratatui::{Terminal, backend::TestBackend, buffer::Buffer};
 use std::collections::HashSet;
 use std::io::{Read, Write};
@@ -13,6 +6,13 @@ use std::net::TcpListener;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard, OnceLock, mpsc};
 use std::time::{Duration, Instant};
+use weavecoder::auth::{AuthState, AuthStatus};
+use weavecoder::provider::Provider;
+use weavecoder::provider_catalog::{
+    OPENAI_COMPAT_LOGIN_PROVIDER, login_providers, openai_compatible_profiles,
+};
+use weavecoder::tui::login_picker::{LoginPicker, LoginPickerItem, LoginPickerSummary};
+use wvc_provider_openrouter_runtime::OpenRouterProvider;
 
 static ENV_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
 

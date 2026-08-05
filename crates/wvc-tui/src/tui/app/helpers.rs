@@ -687,10 +687,7 @@ pub(super) fn build_resume_command(
             let exe = launch_client_executable();
             let imported_id = crate::import::imported_opencode_session_id(session_id);
             let args = resume_invocation_args(&imported_id, socket);
-            let title = format!(
-                "◌ OpenCode {}",
-                wvc_core::util::truncate_str(session_id, 8)
-            );
+            let title = format!("◌ OpenCode {}", wvc_core::util::truncate_str(session_id, 8));
             (exe, args, title)
         }
         ResumeTarget::CursorSession { session_id, .. } => {

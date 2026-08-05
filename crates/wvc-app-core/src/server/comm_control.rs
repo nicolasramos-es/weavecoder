@@ -24,10 +24,10 @@ use crate::plan::{
     task_control_target_item_id,
 };
 use crate::protocol::{NotificationType, PlanGraphStatus, ServerEvent};
-use wvc_agent_runtime::SoftInterruptSource;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use tokio::sync::{Mutex, RwLock, broadcast, mpsc, watch};
+use wvc_agent_runtime::SoftInterruptSource;
 
 type SessionAgents = Arc<RwLock<HashMap<String, Arc<Mutex<Agent>>>>>;
 
@@ -1611,8 +1611,7 @@ async fn handle_comm_assign_task_with_mode(
                 .unwrap_or(false);
             let effective_content =
                 composite_synthesis_content(&item_id, &raw_content, is_composite_synthesis);
-            let hydrated =
-                wvc_plan::bridge::hydrate_assignment(plan, &item_id, &effective_content);
+            let hydrated = wvc_plan::bridge::hydrate_assignment(plan, &item_id, &effective_content);
             let content =
                 deep_mode_assignment_content(plan, &item_id, is_composite_synthesis, &hydrated);
 

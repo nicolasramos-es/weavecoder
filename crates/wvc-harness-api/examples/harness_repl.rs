@@ -12,10 +12,10 @@
 //! exercise the client against an in-process scripted server:
 //!   cargo run -p jcode-harness-api --example harness_repl -- --demo
 
+use std::io::{BufRead, BufReader, Write};
 use wvc_harness_api::{
     API_VERSION_MAJOR, ApiEvent, ApiRequest, HarnessClient, ServerFrame, write_frame,
 };
-use std::io::{BufRead, BufReader, Write};
 
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();

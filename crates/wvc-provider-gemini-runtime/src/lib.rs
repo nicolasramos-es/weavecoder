@@ -7,6 +7,14 @@
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use chrono::Utc;
+use serde::Serialize;
+use serde::de::DeserializeOwned;
+use serde_json::{Value, json};
+use std::sync::{Arc, RwLock};
+use std::time::Duration;
+use tokio::sync::{Mutex, mpsc};
+use tokio_stream::wrappers::ReceiverStream;
+use uuid::Uuid;
 use wvc_base::auth::gemini as gemini_auth;
 use wvc_message_types::{ConnectionPhase, Message, StreamEvent, ToolDefinition};
 use wvc_provider_core::{EventStream, Provider};
@@ -24,14 +32,6 @@ pub use wvc_provider_gemini::{
     ineligible_or_project_error, is_gemini_model_id, load_code_assist_request,
     merge_gemini_model_lists, validate_load_code_assist_response,
 };
-use serde::Serialize;
-use serde::de::DeserializeOwned;
-use serde_json::{Value, json};
-use std::sync::{Arc, RwLock};
-use std::time::Duration;
-use tokio::sync::{Mutex, mpsc};
-use tokio_stream::wrappers::ReceiverStream;
-use uuid::Uuid;
 
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 struct PersistedCatalog {

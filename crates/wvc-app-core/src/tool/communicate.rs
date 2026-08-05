@@ -15,11 +15,11 @@ use crate::protocol::{
 };
 use anyhow::Result;
 use async_trait::async_trait;
-use wvc_swarm_core::validate_swarm_tldr;
 use serde::Deserialize;
 use serde_json::{Value, json};
 use std::collections::{HashMap, HashSet};
 use std::hash::{Hash, Hasher};
+use wvc_swarm_core::validate_swarm_tldr;
 
 const REQUEST_ID: u64 = 1;
 

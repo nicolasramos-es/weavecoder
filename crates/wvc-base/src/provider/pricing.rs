@@ -1,10 +1,10 @@
 use super::{ALL_OPENAI_MODELS, openrouter};
 use crate::auth;
 use crate::provider::models::provider_for_model;
-use wvc_provider_core::pricing as core_pricing;
-use wvc_provider_core::{RouteCheapnessEstimate, RouteCostConfidence, RouteCostSource};
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
+use wvc_provider_core::pricing as core_pricing;
+use wvc_provider_core::{RouteCheapnessEstimate, RouteCostConfidence, RouteCostSource};
 
 /// Route-catalog builds call the pricing helpers once per route, and the
 /// Anthropic/OpenAI ones re-read credential files (and re-parse config.toml

@@ -1,7 +1,6 @@
 use super::*;
 use bytes::Bytes;
 use futures::StreamExt;
-use wvc_provider_openrouter::stream::OpenRouterStream;
 use std::ffi::OsString;
 use std::io::{Read, Write};
 use std::net::TcpListener;
@@ -9,6 +8,7 @@ use std::sync::Mutex;
 use std::sync::mpsc;
 use std::time::Duration;
 use tempfile::TempDir;
+use wvc_provider_openrouter::stream::OpenRouterStream;
 
 pub(crate) struct SharedEnvLock;
 
@@ -767,10 +767,7 @@ fn openai_compatible_profiles_with_unverified_live_catalogs_have_static_fallback
             "Qwen/Qwen3-Coder-480B-A35B-Instruct",
         ),
         (wvc_provider_metadata::MOONSHOT_PROFILE, "kimi-k2.5"),
-        (
-            wvc_provider_metadata::NEBIUS_PROFILE,
-            "openai/gpt-oss-120b",
-        ),
+        (wvc_provider_metadata::NEBIUS_PROFILE, "openai/gpt-oss-120b"),
         (
             wvc_provider_metadata::SCALEWAY_PROFILE,
             "qwen3-coder-30b-a3b-instruct",

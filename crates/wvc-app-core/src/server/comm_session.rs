@@ -301,8 +301,8 @@ fn explicit_route_for_configured_model(model: &str) -> Option<SwarmSpawnSelectio
     // explicit credential decision worth pinning. The canonical parser maps the
     // prefix to its stable route id, which `ModelRouteApiMethod::parse` round-
     // trips back to the exact auth method when the spawned session is restored.
-    let route_id = wvc_provider_core::AuthRoute::parse_explicit_credential_prefix(prefix)?
-        .route_api_method();
+    let route_id =
+        wvc_provider_core::AuthRoute::parse_explicit_credential_prefix(prefix)?.route_api_method();
     Some(SwarmSpawnSelection {
         model: Some(bare.to_string()),
         provider_key: Some(route_id.to_string()),

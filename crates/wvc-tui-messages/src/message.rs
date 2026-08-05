@@ -1,8 +1,8 @@
-use wvc_message_types::ToolCall;
-use wvc_session_types::RenderedMessage;
 use serde_json::Value;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use wvc_message_types::ToolCall;
+use wvc_session_types::RenderedMessage;
 
 /// A message in the conversation for TUI display.
 #[derive(Clone, Debug)]

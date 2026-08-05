@@ -214,10 +214,8 @@ fn side_panel_generated_image_marker_renders_as_image_placement() {
 fn side_panel_markdown_image_path_renders_as_image_placement() {
     with_serialized_mermaid_state(|| {
         clear_side_panel_render_caches();
-        let dir = std::env::temp_dir().join(format!(
-            "wvc-side-panel-image-test-{}",
-            std::process::id()
-        ));
+        let dir =
+            std::env::temp_dir().join(format!("wvc-side-panel-image-test-{}", std::process::id()));
         std::fs::create_dir_all(&dir).expect("create temp image dir");
         let path = dir.join("generated.png");
         ::image::RgbaImage::from_pixel(3, 2, ::image::Rgba([255, 0, 0, 255]))

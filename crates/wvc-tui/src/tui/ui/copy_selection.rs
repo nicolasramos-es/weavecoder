@@ -269,11 +269,11 @@ fn raw_selection_point(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use wvc_tui_markdown::CopyTargetKind;
-    use wvc_tui_messages::{CopyTarget, PreparedChatFrame, PreparedMessages, WrappedLineMap};
     use ratatui::layout::Rect;
     use ratatui::text::Line;
     use std::sync::Arc;
+    use wvc_tui_markdown::CopyTargetKind;
+    use wvc_tui_messages::{CopyTarget, PreparedChatFrame, PreparedMessages, WrappedLineMap};
 
     fn math_snapshot() -> CopyViewportSnapshot {
         let plain = vec![

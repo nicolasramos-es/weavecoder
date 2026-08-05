@@ -506,16 +506,15 @@ fn cached_imported_session_preserves_existing_history_verbatim() {
     });
     legacy.save().unwrap();
 
-    let resolved =
-        resolve_resume_target_to_jcode(&wvc_session_types::ResumeTarget::CodexSession {
-            session_id: "legacy-tools".to_string(),
-            session_path: temp
-                .path()
-                .join("source-no-longer-present.jsonl")
-                .to_string_lossy()
-                .to_string(),
-        })
-        .unwrap();
+    let resolved = resolve_resume_target_to_jcode(&wvc_session_types::ResumeTarget::CodexSession {
+        session_id: "legacy-tools".to_string(),
+        session_path: temp
+            .path()
+            .join("source-no-longer-present.jsonl")
+            .to_string_lossy()
+            .to_string(),
+    })
+    .unwrap();
     assert_eq!(
         resolved,
         wvc_session_types::ResumeTarget::JcodeSession {
@@ -927,15 +926,14 @@ fn test_resolve_resume_target_to_wvc_imports_codex_session() {
         )
         .unwrap();
 
-    let resolved =
-        resolve_resume_target_to_jcode(&wvc_session_types::ResumeTarget::CodexSession {
-            session_id: "codex-resolve-test".to_string(),
-            session_path: codex_dir
-                .join("rollout.jsonl")
-                .to_string_lossy()
-                .to_string(),
-        })
-        .unwrap();
+    let resolved = resolve_resume_target_to_jcode(&wvc_session_types::ResumeTarget::CodexSession {
+        session_id: "codex-resolve-test".to_string(),
+        session_path: codex_dir
+            .join("rollout.jsonl")
+            .to_string_lossy()
+            .to_string(),
+    })
+    .unwrap();
 
     assert_eq!(
         resolved,

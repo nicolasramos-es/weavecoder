@@ -1396,8 +1396,7 @@ impl NativeProviderKind {
                 // route identity is the managed Jcode subscription. Model
                 // switches use a bare model id so they stay on that runtime.
                 contract: WiringContract {
-                    api_method: wvc_base::subscription_catalog::JCODE_ROUTE_API_METHOD
-                        .to_string(),
+                    api_method: wvc_base::subscription_catalog::JCODE_ROUTE_API_METHOD.to_string(),
                     route_provider: wvc_base::subscription_catalog::JCODE_PROVIDER_DISPLAY_NAME
                         .to_string(),
                     expected_runtime: "wvc",
@@ -1437,23 +1436,20 @@ impl NativeProviderKind {
         use wvc_base::provider::Provider;
         let runtime: std::sync::Arc<dyn Provider> = match self {
             Self::OpenAi => {
-                let credentials =
-                    wvc_base::auth::codex::load_credentials().unwrap_or_else(|_| {
-                        wvc_base::auth::codex::CodexCredentials {
-                            access_token: String::new(),
-                            refresh_token: String::new(),
-                            id_token: None,
-                            account_id: None,
-                            expires_at: None,
-                        }
-                    });
+                let credentials = wvc_base::auth::codex::load_credentials().unwrap_or_else(|_| {
+                    wvc_base::auth::codex::CodexCredentials {
+                        access_token: String::new(),
+                        refresh_token: String::new(),
+                        id_token: None,
+                        account_id: None,
+                        expires_at: None,
+                    }
+                });
                 std::sync::Arc::new(wvc_provider_openai_runtime::OpenAIProvider::new(
                     credentials,
                 ))
             }
-            Self::Gemini => {
-                std::sync::Arc::new(wvc_provider_gemini_runtime::GeminiProvider::new())
-            }
+            Self::Gemini => std::sync::Arc::new(wvc_provider_gemini_runtime::GeminiProvider::new()),
             Self::Cursor => {
                 std::sync::Arc::new(wvc_provider_cursor_runtime::CursorCliProvider::new())
             }

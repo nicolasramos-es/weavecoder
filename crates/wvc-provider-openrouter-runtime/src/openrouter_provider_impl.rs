@@ -746,10 +746,9 @@ impl Provider for OpenRouterProvider {
             return super::ollama_context::OLLAMA_DEFAULT_SERVING_CONTEXT as usize;
         }
         if let Some(profile_id) = self.profile_id.as_deref()
-            && let Some(limit) =
-                wvc_base::provider_catalog::openai_compatible_profile_context_limit(
-                    profile_id, &model_id,
-                )
+            && let Some(limit) = wvc_base::provider_catalog::openai_compatible_profile_context_limit(
+                profile_id, &model_id,
+            )
         {
             return limit;
         }

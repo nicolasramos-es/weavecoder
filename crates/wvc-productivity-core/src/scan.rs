@@ -35,9 +35,7 @@ struct Cache {
 const CACHE_VERSION: u32 = 1;
 
 fn cache_path() -> Result<PathBuf> {
-    let dir = wvc_storage::wvc_dir()?
-        .join("cache")
-        .join("productivity");
+    let dir = wvc_storage::wvc_dir()?.join("cache").join("productivity");
     std::fs::create_dir_all(&dir).ok();
     Ok(dir.join("summaries.json"))
 }

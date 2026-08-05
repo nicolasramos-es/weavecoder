@@ -1,11 +1,11 @@
 use super::{SetupHintsState, StartupHints, read_choice};
 use crate::windows_hotkeys::{self, WindowsHotkey};
 use anyhow::{Context, Result};
+use std::io::{self, Write};
+use std::path::{Path, PathBuf};
 use wvc_config_types::{LaunchHotkeyEntry, LaunchHotkeysConfig};
 use wvc_core::{terminal_eprint as eprint, terminal_eprintln as eprintln};
 use wvc_storage as storage;
-use std::io::{self, Write};
-use std::path::{Path, PathBuf};
 
 fn detect_terminal() -> &'static str {
     if std::env::var("WT_SESSION").is_ok() {
@@ -151,9 +151,7 @@ fn hotkey_vbs_path() -> Result<PathBuf> {
 }
 
 fn legacy_hotkey_ps1_path() -> Result<PathBuf> {
-    Ok(storage::wvc_dir()?
-        .join("hotkey")
-        .join("wvc-hotkey.ps1"))
+    Ok(storage::wvc_dir()?.join("hotkey").join("wvc-hotkey.ps1"))
 }
 
 fn remove_file_if_exists(path: &Path) -> Result<()> {

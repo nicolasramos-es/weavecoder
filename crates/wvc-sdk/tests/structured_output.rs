@@ -1,20 +1,18 @@
-use wvc_harness_api::{
-    API_VERSION_MAJOR, ApiEvent, ApiRequest, ClientFrame, ServerFrame, read_frame, write_frame,
-};
-use wvc_sdk::{ConnectOptions, JcodeClient, RunStructuredError, RunStructuredOptions, Transport};
 use serde::Deserialize;
 use serde_json::json;
 use std::io::{BufRead, BufReader, Write};
 use std::os::unix::net::UnixStream;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use wvc_harness_api::{
+    API_VERSION_MAJOR, ApiEvent, ApiRequest, ClientFrame, ServerFrame, read_frame, write_frame,
+};
+use wvc_sdk::{ConnectOptions, JcodeClient, RunStructuredError, RunStructuredOptions, Transport};
 
 struct PairTransport(UnixStream);
 
 impl Transport for PairTransport {
-    fn split(
-        self: Box<Self>,
-    ) -> wvc_sdk::Result<(Box<dyn BufRead + Send>, Box<dyn Write + Send>)> {
+    fn split(self: Box<Self>) -> wvc_sdk::Result<(Box<dyn BufRead + Send>, Box<dyn Write + Send>)> {
         let writer = self.0.try_clone().expect("socket pair must clone");
         Ok((Box::new(BufReader::new(self.0)), Box::new(writer)))
     }

@@ -825,8 +825,7 @@ pub(super) async fn try_persistent_ws_continuation(
             Ok(WsMessage::Text(text)) => {
                 let text = text.to_string();
                 if !logged_first_server_event {
-                    emit_connection_phase(tx, wvc_message_types::ConnectionPhase::Streaming)
-                        .await;
+                    emit_connection_phase(tx, wvc_message_types::ConnectionPhase::Streaming).await;
                     wvc_base::logging::info(&format!(
                         "Persistent WS first server event after {}ms ({})",
                         stream_started.elapsed().as_millis(),

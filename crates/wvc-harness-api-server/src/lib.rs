@@ -18,10 +18,10 @@ pub mod background_progress;
 pub mod translate;
 
 use anyhow::{Context, Result};
-use wvc_harness_api::{API_VERSION_MAJOR, ApiEvent, ErrorCode, ServerFrame};
 use serde_json::Value;
 use std::path::PathBuf;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use wvc_harness_api::{API_VERSION_MAJOR, ApiEvent, ErrorCode, ServerFrame};
 // Unix sockets on Unix, named pipes on Windows, one API. Without this the
 // bridge simply did not compile for Windows, so the SDK could not run there at
 // all.

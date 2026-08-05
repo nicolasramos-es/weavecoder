@@ -590,9 +590,7 @@ impl Provider for OpenAIProvider {
                                     elapsed_ms, error
                                 ));
                                 next_retry_delay =
-                                    wvc_provider_core::retry_after::retry_after_from_error(
-                                        &error,
-                                    );
+                                    wvc_provider_core::retry_after::retry_after_from_error(&error);
                                 last_error = Some(error);
                                 continue;
                             }
@@ -645,10 +643,7 @@ impl Provider for OpenAIProvider {
                 } else {
                     "unknown panic".to_string()
                 };
-                wvc_base::logging::error(&format!(
-                    "OpenAI provider stream task panicked: {}",
-                    msg
-                ));
+                wvc_base::logging::error(&format!("OpenAI provider stream task panicked: {}", msg));
                 let _ = panic_tx
                     .send(Err(anyhow::anyhow!(
                         "OpenAI provider stream task panicked: {}",
@@ -702,8 +697,7 @@ impl Provider for OpenAIProvider {
         }
         let availability = wvc_base::provider::model_availability_for_account(model);
         if !is_chatgpt_web_model(model)
-            && availability.state
-                == wvc_base::provider::AccountModelAvailabilityState::Unavailable
+            && availability.state == wvc_base::provider::AccountModelAvailabilityState::Unavailable
         {
             let detail =
                 wvc_base::provider::format_account_model_availability_detail(&availability)

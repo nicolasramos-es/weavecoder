@@ -299,10 +299,7 @@ fn present_swarm_notification_inner(
                     sender
                 ),
                 message: if has_details {
-                    wvc_tui_messages::encode_collapsible_swarm_content(
-                        &summary_line,
-                        &detail_body,
-                    )
+                    wvc_tui_messages::encode_collapsible_swarm_content(&summary_line, &detail_body)
                 } else {
                     summary_line
                 },
@@ -368,9 +365,7 @@ mod tests {
             "DM from sheep: short note",
             false,
         );
-        assert!(
-            wvc_tui_messages::parse_collapsible_swarm_content(&presentation.message).is_none()
-        );
+        assert!(wvc_tui_messages::parse_collapsible_swarm_content(&presentation.message).is_none());
         assert_eq!(presentation.message, "short note");
     }
 

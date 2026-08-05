@@ -14,6 +14,12 @@ use crate::storage;
 use anyhow::Result;
 use async_trait::async_trait;
 use chrono::{DateTime, NaiveDate, Utc};
+use serde::Deserialize;
+use serde_json::{Value, json};
+use std::cmp::Reverse;
+use std::collections::{BinaryHeap, HashMap};
+use std::path::{Path, PathBuf};
+use std::time::SystemTime;
 use wvc_import_core::{
     ExternalMessageRecord, ExternalSessionRecord, ImportCoreResult, collect_recent_files_recursive,
     load_claude_external_messages, load_codex_external_session, load_cursor_external_session,
@@ -33,12 +39,6 @@ use wvc_session_types::{
     session_search_truncate_title_text as truncate_title_text,
     session_search_working_dir_matches as working_dir_matches,
 };
-use serde::Deserialize;
-use serde_json::{Value, json};
-use std::cmp::Reverse;
-use std::collections::{BinaryHeap, HashMap};
-use std::path::{Path, PathBuf};
-use std::time::SystemTime;
 
 /// Max session snapshots/journals to deserialize after raw pre-filtering.
 const MAX_DESERIALIZE: usize = 500;

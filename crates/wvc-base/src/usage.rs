@@ -13,9 +13,9 @@ mod provider_fetch;
 pub use accessors::*;
 use api_keys::enqueue_api_key_usage_tasks;
 use cache::*;
-pub use wvc_usage_types::{ProviderUsage, ProviderUsageProgress, UsageLimit};
 pub use model::*;
 use provider_fetch::*;
+pub use wvc_usage_types::{ProviderUsage, ProviderUsageProgress, UsageLimit};
 
 use anyhow::{Context, Result};
 pub use display::{format_reset_time, format_usage_bar};

@@ -1,11 +1,11 @@
 use super::{Session, StoredDisplayRole};
 use crate::message::{ContentBlock, Role, ToolCall};
+use std::collections::HashMap;
 use wvc_config_types::ReasoningDisplayMode;
 pub use wvc_session_types::{
     RenderedCompactedHistoryInfo, RenderedImage, RenderedImageAnchor, RenderedImageSource,
     RenderedMessage,
 };
-use std::collections::HashMap;
 
 /// Number of compacted historical messages shown by default in the UI.
 ///

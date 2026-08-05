@@ -2,11 +2,11 @@
 
 use super::osa;
 use anyhow::{Result, bail};
-use wvc_tool_types::ToolOutput;
 use serde_json::json;
 use std::process::Command;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
+use wvc_tool_types::ToolOutput;
 
 pub fn get_clipboard() -> Result<ToolOutput> {
     // pbpaste is the most reliable text read.

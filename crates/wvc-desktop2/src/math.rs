@@ -8,10 +8,10 @@
 //! table of a vendored math font; this module owns the font handle and turns
 //! the resulting positions into Vello draw calls.
 
-use wvc_math::{Item, LayoutBox, MathLayoutEngine, MathLines};
 use vello::Scene;
 use vello::kurbo::{Affine, Rect};
 use vello::peniko::{Blob, Color, Fill, FontData};
+use wvc_math::{Item, LayoutBox, MathLayoutEngine, MathLines};
 
 /// Extra leading between the lines of a multi-line display, as a fraction of
 /// the font size. Lines of one display are parts of one statement, so they are

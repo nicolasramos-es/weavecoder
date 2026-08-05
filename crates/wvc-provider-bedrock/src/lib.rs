@@ -23,15 +23,6 @@ use aws_smithy_types::Blob;
 use base64::Engine;
 #[cfg(feature = "aws-sdk")]
 use base64::engine::general_purpose::STANDARD as BASE64;
-#[cfg(feature = "aws-sdk")]
-use wvc_message_types::{ContentBlock as JContentBlock, Role as JRole, StreamEvent};
-use wvc_message_types::{Message as JMessage, ToolDefinition};
-#[cfg(feature = "aws-sdk")]
-use wvc_provider_core::summarize_model_catalog_refresh;
-use wvc_provider_core::{
-    DEFAULT_CONTEXT_LIMIT, EventStream, ModelCatalogRefreshSummary, ModelRoute, Provider,
-    RouteCheapnessEstimate, RouteCostConfidence, RouteCostSource,
-};
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "aws-sdk")]
 use serde_json::{Value, json};
@@ -43,6 +34,15 @@ use std::sync::{Arc, RwLock};
 use tokio::sync::mpsc;
 #[cfg(feature = "aws-sdk")]
 use tokio_stream::wrappers::ReceiverStream;
+#[cfg(feature = "aws-sdk")]
+use wvc_message_types::{ContentBlock as JContentBlock, Role as JRole, StreamEvent};
+use wvc_message_types::{Message as JMessage, ToolDefinition};
+#[cfg(feature = "aws-sdk")]
+use wvc_provider_core::summarize_model_catalog_refresh;
+use wvc_provider_core::{
+    DEFAULT_CONTEXT_LIMIT, EventStream, ModelCatalogRefreshSummary, ModelRoute, Provider,
+    RouteCheapnessEstimate, RouteCostConfidence, RouteCostSource,
+};
 
 const DEFAULT_MODEL: &str = "anthropic.claude-3-5-sonnet-20241022-v2:0";
 const DEFAULT_MAX_OUTPUT_TOKENS: usize = 4096;

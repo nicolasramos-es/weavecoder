@@ -35,8 +35,8 @@ pub use control::{
     PairingInvite, RemoteCommand, RemoteStatus, ToggleOutcome, create_pairing_invite,
     parse_remote_command, revoke_device, set_gateway_enabled,
 };
-pub use wvc_gateway_types::{PairedDevice, PairingCode};
 pub use registry::DeviceRegistry;
+pub use wvc_gateway_types::{PairedDevice, PairingCode};
 
 /// Default gateway port ("jc" on phone keypad = 52, but we use 7643)
 pub const DEFAULT_PORT: u16 = 7643;

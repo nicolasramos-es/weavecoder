@@ -1,7 +1,7 @@
 use crate::WrappedLineMap;
-use wvc_tui_markdown::CopyTargetKind;
 use ratatui::text::Line;
 use std::sync::Arc;
+use wvc_tui_markdown::CopyTargetKind;
 
 /// Pre-computed image region from line scanning.
 #[derive(Clone, Copy)]

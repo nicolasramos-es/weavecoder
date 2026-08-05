@@ -1,9 +1,9 @@
 use crate::DisplayMessage;
-use wvc_config_types::{DiagramDisplayMode, DiffDisplayMode};
 use ratatui::layout::Alignment;
 use ratatui::text::{Line, Span};
 use std::collections::{HashMap, VecDeque};
 use std::sync::{Arc, Mutex, OnceLock};
+use wvc_config_types::{DiagramDisplayMode, DiffDisplayMode};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct MessageCacheKey {

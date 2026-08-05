@@ -1,8 +1,8 @@
+use unicode_width::UnicodeWidthStr;
 use wvc_render_core::{
     BlockKind, StyleRole, normalize_latex_math, parse_markdown, render_display_latex,
     render_inline_latex,
 };
-use unicode_width::UnicodeWidthStr;
 
 fn assert_visible_and_deterministic(source: &str) {
     let inline = render_inline_latex(source);

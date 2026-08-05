@@ -1,11 +1,11 @@
 use anyhow::{Context, Result};
+use std::hash::{Hash as _, Hasher as _};
+use std::path::{Path, PathBuf};
+use std::time::{SystemTime, UNIX_EPOCH};
 pub use wvc_side_panel_types::{
     PersistedSidePanelPage, PersistedSidePanelState, SidePanelPage, SidePanelPageFormat,
     SidePanelPageSource, SidePanelSnapshot, snapshot_is_empty,
 };
-use std::hash::{Hash as _, Hasher as _};
-use std::path::{Path, PathBuf};
-use std::time::{SystemTime, UNIX_EPOCH};
 
 pub fn snapshot_for_session(session_id: &str) -> Result<SidePanelSnapshot> {
     let state = load_state(session_id)?;

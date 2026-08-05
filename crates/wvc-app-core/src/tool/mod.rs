@@ -37,17 +37,17 @@ use crate::compaction::CompactionManager;
 use crate::provider::Provider;
 use crate::skill::SkillRegistry;
 use anyhow::Result;
-use wvc_message_types::ToolDefinition;
 use serde_json::Value;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use std::sync::{LazyLock, RwLock as StdRwLock};
 use tokio::sync::RwLock;
+use wvc_message_types::ToolDefinition;
 
+pub(crate) use session_search::spawn_recent_index_warmup;
 pub(crate) use wvc_tool_core::intent_schema_property;
 pub use wvc_tool_core::{StdinInputRequest, Tool, ToolContext, ToolExecutionMode};
 pub use wvc_tool_types::{ToolImage, ToolOutput};
-pub(crate) use session_search::spawn_recent_index_warmup;
 
 #[derive(Clone, Debug, Default)]
 struct SessionToolPolicy {

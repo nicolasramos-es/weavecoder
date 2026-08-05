@@ -23,10 +23,10 @@
 //! cancellation reaches the in-flight provider stream no matter which handle
 //! instance received the request.
 
-use wvc_agent_runtime::InterruptSignal;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{LazyLock, Mutex};
+use wvc_agent_runtime::InterruptSignal;
 
 static NEXT_TOKEN: AtomicU64 = AtomicU64::new(1);
 /// All interrupt signals registered for one session's in-flight turns.

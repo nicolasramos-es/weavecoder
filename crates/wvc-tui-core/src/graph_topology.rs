@@ -55,8 +55,8 @@ fn truncate_smart(s: &str, max_len: usize) -> String {
     format!("{}...", prefix)
 }
 
-use wvc_memory_types::{EdgeKind, MemoryGraph};
 use std::collections::{HashMap, HashSet};
+use wvc_memory_types::{EdgeKind, MemoryGraph};
 
 /// Build graph topology (nodes + edges) from a MemoryGraph for visualization.
 /// Combines project and global graphs, sampling nodes if there are too many.

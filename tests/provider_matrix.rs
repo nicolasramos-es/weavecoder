@@ -1,4 +1,7 @@
 use anyhow::Result;
+use std::collections::HashSet;
+use std::path::PathBuf;
+use std::sync::{Mutex, MutexGuard, OnceLock};
 use weavecoder::auth::{AuthState, AuthStatus};
 use weavecoder::cli::provider_init::{
     ProviderChoice, apply_login_provider_profile_env, choice_for_login_provider,
@@ -13,9 +16,6 @@ use weavecoder::provider_catalog::{
     server_bootstrap_login_providers,
 };
 use wvc_provider_openrouter_runtime::OpenRouterProvider;
-use std::collections::HashSet;
-use std::path::PathBuf;
-use std::sync::{Mutex, MutexGuard, OnceLock};
 
 static ENV_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
 

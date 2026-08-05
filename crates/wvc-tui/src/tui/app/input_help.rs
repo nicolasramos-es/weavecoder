@@ -223,10 +223,7 @@ impl App {
         };
         let help = help.replace("{resume_shortcut}", &resume_shortcut);
         // Mac keyboards have no "Alt" key; show the ⌥ keycap instead.
-        let help = help.replace(
-            "Alt+",
-            &format!("{}+", wvc_tui_core::keybind::alt_label()),
-        );
+        let help = help.replace("Alt+", &format!("{}+", wvc_tui_core::keybind::alt_label()));
         Some(help)
     }
 }

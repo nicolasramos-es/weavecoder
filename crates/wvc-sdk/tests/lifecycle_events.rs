@@ -1,6 +1,12 @@
 //! Lifecycle and all-session event behavior which cannot be exercised by the
 //! protocol-only socket-pair tests.
 
+use std::io::BufReader;
+use std::os::unix::net::{UnixListener, UnixStream};
+use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 use wvc_harness_api::{
     API_VERSION_MAJOR, ApiEvent, ApiRequest, ClientFrame, ServerFrame, SessionInfo, read_frame,
     write_frame,
@@ -8,12 +14,6 @@ use wvc_harness_api::{
 use wvc_sdk::{
     ConnectOptions, GlobalEventsOptions, JcodeClient, LaunchOptions, inherit_credentials,
 };
-use std::io::BufReader;
-use std::os::unix::net::{UnixListener, UnixStream};
-use std::path::PathBuf;
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
-use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
 
 fn session(id: &str) -> SessionInfo {
     SessionInfo {

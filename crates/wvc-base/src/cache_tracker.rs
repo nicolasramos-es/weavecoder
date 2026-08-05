@@ -7,8 +7,8 @@
 //! This is a fallback mechanism for providers like Fireworks (via OpenRouter) that
 //! have automatic caching but don't report cache hit/miss metrics.
 
-use wvc_message_types::{Message, stable_message_hash};
 use std::collections::VecDeque;
+use wvc_message_types::{Message, stable_message_hash};
 
 /// Maximum number of prefix hashes to remember (for detecting intermittent violations)
 const MAX_HISTORY: usize = 10;

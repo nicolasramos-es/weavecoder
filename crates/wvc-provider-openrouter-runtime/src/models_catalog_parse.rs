@@ -5,8 +5,8 @@
 //! clouds) live in one small, testable place.
 
 use anyhow::{Context, Result};
-use wvc_provider_openrouter::{ModelInfo, ModelPricing};
 use serde_json::Value;
+use wvc_provider_openrouter::{ModelInfo, ModelPricing};
 
 pub(crate) fn parse_openai_compatible_models_response(raw_body: &str) -> Result<Vec<ModelInfo>> {
     let value: Value = serde_json::from_str(raw_body)?;

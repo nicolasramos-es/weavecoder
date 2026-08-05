@@ -530,8 +530,7 @@ impl AcpRuntime {
                 }
                 other => {
                     if self.profile.is_extended() {
-                        self.write_wvc_extension_event(&attached_id, &other)
-                            .await?;
+                        self.write_wvc_extension_event(&attached_id, &other).await?;
                     }
                 }
             }
@@ -678,11 +677,7 @@ impl AcpRuntime {
         .await
     }
 
-    async fn write_wvc_extension_event(
-        &self,
-        session_id: &str,
-        event: &ServerEvent,
-    ) -> Result<()> {
+    async fn write_wvc_extension_event(&self, session_id: &str, event: &ServerEvent) -> Result<()> {
         self.write_notification(
             "_jcode/server_event",
             json!({

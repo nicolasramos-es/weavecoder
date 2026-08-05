@@ -7,8 +7,8 @@
 //! label the error so UIs can stay quiet about it.
 
 use super::update_metadata::UpdateMetadata;
-use wvc_update_core::format_duration_estimate;
 use std::time::{Duration, SystemTime};
+use wvc_update_core::format_duration_estimate;
 
 /// How long to stop checking after GitHub reports the rate limit is exhausted
 /// and gives us no usable reset hint.

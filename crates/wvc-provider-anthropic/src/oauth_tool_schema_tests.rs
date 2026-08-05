@@ -7,8 +7,8 @@
 //! the arguments. These tests pin the two drifts that reached users.
 
 use super::*;
-use wvc_message_types::ToolDefinition;
 use serde_json::json;
+use wvc_message_types::ToolDefinition;
 
 fn tool_def(name: &str) -> ToolDefinition {
     ToolDefinition {

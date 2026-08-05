@@ -1,9 +1,6 @@
 use anyhow::Result;
 use chrono::Utc;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind, KeyModifiers};
-use wvc_base::safety::{self, PermissionRequest, Urgency};
-use wvc_core::util::truncate_str;
-use wvc_tui_style::rgb;
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
@@ -14,6 +11,9 @@ use ratatui::{
 use serde_json::{Map, Value};
 use std::io::IsTerminal;
 use std::time::Duration;
+use wvc_base::safety::{self, PermissionRequest, Urgency};
+use wvc_core::util::truncate_str;
+use wvc_tui_style::rgb;
 
 struct PermissionsApp {
     requests: Vec<PermissionRequest>,

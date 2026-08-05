@@ -8,10 +8,13 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use chrono::Utc;
+use serde_json::{Value, json};
+use std::sync::{Arc, RwLock};
+use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
+use uuid::Uuid;
 use wvc_base::auth::copilot as copilot_auth;
-use wvc_message_types::{
-    ContentBlock, Message as ChatMessage, Role, StreamEvent, ToolDefinition,
-};
+use wvc_message_types::{ContentBlock, Message as ChatMessage, Role, StreamEvent, ToolDefinition};
 #[cfg(test)]
 use wvc_provider_copilot::max_token_parameter_for_model as copilot_max_token_parameter_for_model;
 use wvc_provider_copilot::{
@@ -22,11 +25,6 @@ use wvc_provider_copilot::{
 use wvc_provider_copilot::{DEFAULT_MODEL, FALLBACK_MODELS};
 pub use wvc_provider_core::PremiumMode;
 use wvc_provider_core::{EventStream, Provider};
-use serde_json::{Value, json};
-use std::sync::{Arc, RwLock};
-use tokio::sync::mpsc;
-use tokio_stream::wrappers::ReceiverStream;
-use uuid::Uuid;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum CatalogSource {
@@ -742,11 +740,7 @@ impl CopilotApiProvider {
                                 }))
                                 .await;
                         }
-                        wvc_base::copilot_usage::record_request(
-                            input_tokens,
-                            output_tokens,
-                            true,
-                        );
+                        wvc_base::copilot_usage::record_request(input_tokens, output_tokens, true);
                         let _ = tx
                             .send(Ok(StreamEvent::MessageEnd { stop_reason: None }))
                             .await;

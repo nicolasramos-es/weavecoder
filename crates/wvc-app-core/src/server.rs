@@ -95,16 +95,16 @@ use crate::runtime_memory_log::{
 use crate::tool::selfdev::ReloadContext;
 use crate::transport::Listener;
 use anyhow::Result;
-use wvc_agent_runtime::{InterruptSignal, SoftInterruptSource};
-use wvc_swarm_core::{
-    append_swarm_completion_report_instructions, format_structured_completion_report,
-    summarize_plan_items, truncate_detail,
-};
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::{Mutex, OnceCell, RwLock, broadcast, mpsc};
+use wvc_agent_runtime::{InterruptSignal, SoftInterruptSource};
+use wvc_swarm_core::{
+    append_swarm_completion_report_instructions, format_structured_completion_report,
+    summarize_plan_items, truncate_detail,
+};
 
 pub(super) type SessionAgents = Arc<RwLock<HashMap<String, Arc<Mutex<Agent>>>>>;
 pub(super) type ChannelSubscriptions =

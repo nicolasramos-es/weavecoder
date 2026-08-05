@@ -194,9 +194,7 @@ fn bench_real_session_search_corpus() {
         return;
     }
 
-    let sessions_dir = crate::storage::wvc_dir()
-        .expect("wvc dir")
-        .join("sessions");
+    let sessions_dir = crate::storage::wvc_dir().expect("wvc dir").join("sessions");
     let mut options = SearchOptions::for_test("benchmark-current-session");
     options.include_external = false;
     options.max_scan_sessions = 1000;

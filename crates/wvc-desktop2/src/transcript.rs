@@ -22,11 +22,11 @@
 
 use crate::text::{ParagraphStyle, TextSystem};
 use crate::theme::Theme;
+use parley::{Layout, StyleProperty};
+use vello::peniko::{Brush, Color};
 use wvc_render_core::{
     Alignment, Block, BlockKind, Document, FillRole, StyleRole, StyledLine, parse_markdown,
 };
-use parley::{Layout, StyleProperty};
-use vello::peniko::{Brush, Color};
 
 /// Who produced a message. The transcript's structure, and the thing that
 /// replaces the `>` marker: roles are styled, not labelled.
@@ -2066,9 +2066,7 @@ fn wrap_cell(cell: &str, width: usize) -> Vec<String> {
 }
 
 /// Drop the leading run of spaces from a line's first span.
-fn strip_leading_indent(
-    spans: &[wvc_render_core::StyledSpan],
-) -> Vec<wvc_render_core::StyledSpan> {
+fn strip_leading_indent(spans: &[wvc_render_core::StyledSpan]) -> Vec<wvc_render_core::StyledSpan> {
     let mut spans = spans.to_vec();
     if let Some(first) = spans.first_mut() {
         first.text = first.text.trim_start_matches(' ').to_string();
