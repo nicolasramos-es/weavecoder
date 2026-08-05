@@ -509,6 +509,9 @@ pub(crate) async fn run_main(mut args: Args) -> Result<()> {
             )
             .await?;
         }
+        Some(Command::Init { path }) => {
+            super::init::run_init(&path).await?;
+        }
         Some(Command::AuthTest {
             login,
             all_configured,

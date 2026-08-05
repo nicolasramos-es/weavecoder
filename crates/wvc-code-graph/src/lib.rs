@@ -24,6 +24,11 @@ pub use symbols::{Symbol, SymbolKind, SymbolInsert, SymbolQuery, SymbolResult};
 pub use relations::{Relation, RelationKind, RelationInsert};
 pub use fts::{FtsSearchResult, FtsQuery};
 
+// Init module — wvc init orchestration (scan + AST extraction + storage)
+mod init;
+
+pub use init::{InitConfig, InitSummary, run_init};
+
 pub const SCHEMA_VERSION: u32 = 1;
 
 /// Parse a file's contents as a string and produce a tree-sitter Tree.

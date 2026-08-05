@@ -465,6 +465,12 @@ pub(crate) enum Command {
         json: bool,
     },
 
+    /// Initialize a Code Knowledge Graph from project source files (scan + AST extraction + SQLite storage).
+    Init {
+        /// Project directory to scan.
+        path: String,
+    },
+
     /// Test authentication end-to-end: login (optional), credential probe, refresh, and provider smoke
     AuthTest {
         /// Run the provider login flow before validation (interactive/browser-based)

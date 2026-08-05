@@ -23,6 +23,7 @@ pub fn detect_language(ext: &str) -> Option<tree_sitter::Language> {
 }
 
 /// Get a human-readable name for a language.
+#[allow(dead_code)]
 pub fn language_name(lang: Language) -> &'static str {
     match lang {
         Language::Go => "go",
@@ -33,6 +34,7 @@ pub fn language_name(lang: Language) -> &'static str {
 }
 
 /// Detect language from extension with a Language enum for downstream use.
+#[allow(dead_code)]
 pub fn detect_language_enum(ext: &str) -> Option<Language> {
     match ext {
         "go" => Some(Language::Go),

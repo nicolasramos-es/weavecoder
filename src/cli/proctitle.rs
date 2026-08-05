@@ -59,6 +59,7 @@ pub(crate) fn initial_title(args: &Args) -> String {
         Some(Command::Model(_)) => "wvc model".to_string(),
         Some(Command::ProviderTestCoverage { .. }) => "wvc provider-test-coverage".to_string(),
         Some(Command::ProviderDoctor { .. }) => "wvc provider-doctor".to_string(),
+        Some(Command::Init { .. }) => "wvc init".to_string(),
         Some(Command::AuthTest { .. }) => "wvc auth-test".to_string(),
         Some(Command::Restart { .. }) => "wvc restart".to_string(),
         Some(Command::Menubar { .. }) => "wvc menubar".to_string(),
