@@ -20,20 +20,27 @@ CLI de coding agent en **Rust** con Agent Swarm nativo para múltiples peticione
   - Indexación incremental: solo re-indexa los archivos modificados
 - **Embeddings locales** (all-MiniLM-L6-v2) para búsqueda semántica por significado
 
-## Instalación
+## Installation
 
-### macOS (arm64)
+### macOS & Linux
 
 ```bash
-# Descarga el binario desde GitHub Releases
-curl -fsSL https://github.com/nicolasramos/weavecoder/releases/latest/download/wvc-macos-arm64 -o ~/bin/wvc
-chmod +x ~/bin/wvc
-xattr -d com.apple.quarantine ~/bin/wvc   # primer uso
-
-wvc --version
+curl -fsSL https://weavecoder.sh/install | bash
 ```
 
-> Instalador de una línea (`curl | bash`) en desarrollo — [NRA-510].
+### Windows 11 (PowerShell 5.1+)
+
+```powershell
+irm https://weavecoder.sh/install.ps1 | iex
+```
+
+> ⚠️ El dominio `weavecoder.sh` está pendiente de registro (NRA-508). Hasta entonces, el instalador funciona directamente desde GitHub Releases:
+>
+> ```bash
+> curl -fsSL https://raw.githubusercontent.com/nicolasramos/weavecoder/main/install.sh | bash
+> ```
+
+Need Homebrew, source builds, provider setup, or want an agent to set it up for you? Sigue leyendo — [Quick Start](#quick-start) y [Desde fuente](#desde-fuente).
 
 ### Desde fuente
 
