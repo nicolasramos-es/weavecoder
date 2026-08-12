@@ -15,18 +15,16 @@ command -v curl >/dev/null 2>&1 || err "curl is required but not found in PATH"
 
 # --- GitHub auth helper for private repos ---
 GITHUB_TOKEN="${GITHUB_TOKEN:-${GH_TOKEN:-}}"
-GITHUB_AUTH_HEADER=""
-if [ -n "$GITHUB_TOKEN" ]; then
-  GITHUB_AUTH_HEADER="-H \"Authorization: token ${GITHUB_TOKEN}\""
-fi
 
 gh_curl() {
   # Usage: gh_curl <url> [output_file]
   # Wraps curl with GitHub auth when a token is available.
-  if [ -n "$GITHUB_AUTH_HEADER" ]; then
-    curl -fsSL $GITHUB_AUTH_HEADER "$1" ${2:+-o "$2"}
+  local url="$1"
+  local outfile="${2:-}"
+  if [ -n "$GITHUB_TOKEN" ]; then
+    curl -fsSL -H "Authorization: token ${GITHUB_TOKEN}" "$url" ${outfile:+-o "$outfile"}
   else
-    curl -fsSL "$1" ${2:+-o "$2"}
+    curl -fsSL "$url" ${outfile:+-o "$outfile"}
   fi
 }
 
