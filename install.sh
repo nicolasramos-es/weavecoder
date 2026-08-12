@@ -10,6 +10,9 @@ VERSION="${WVC_VERSION:-latest}"
 info() { printf '\033[1;34m%s\033[0m\n' "$*"; }
 err()  { printf '\033[1;31merror: %s\033[0m\n' "$*" >&2; exit 1; }
 
+# --- Pre-flight: curl is required ---
+command -v curl >/dev/null 2>&1 || err "curl is required but not found in PATH"
+
 # Detect OS + arch
 OS="$(uname -s)"
 ARCH="$(uname -m)"
@@ -49,6 +52,35 @@ trap 'rm -f "$TMP"' EXIT
 info "Downloading..."
 curl -fsSL "$URL" -o "$TMP" || err "Download failed: $URL"
 chmod +x "$TMP"
+
+# --- SHA-256 checksum verification ---
+# Fetch the release JSON and extract the digest for this asset.
+RELEASE_JSON="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/tags/${VERSION}")"
+EXPECTED_DIGEST="$(printf '%s' "$RELEASE_JSON" | grep -o "\"digest\": *\"sha256:[a-f0-9]*\"" | grep -o '"sha256:[a-f0-9]*"' | head -1 || true)"
+
+if [ -z "$EXPECTED_DIGEST" ]; then
+  err "Could not obtain SHA-256 digest for $ASSET from release ${VERSION}; aborting for safety"
+fi
+
+# Strip the "sha256:" prefix to get the raw hex.
+EXPECTED_HASH="${EXPECTED_DIGEST#sha256:}"
+
+# Compute local hash (portable across macOS / Linux).
+if command -v shasum >/dev/null 2>&1; then
+  ACTUAL_HASH="$(shasum -a 256 "$TMP" | awk '{print $1}')"
+elif command -v sha256sum >/dev/null 2>&1; then
+  ACTUAL_HASH="$(sha256sum "$TMP" | awk '{print $1}')"
+elif command -v openssl >/dev/null 2>&1; then
+  ACTUAL_HASH="$(openssl dgst -sha256 "$TMP" | awk '{print $NF}')"
+else
+  err "No SHA-256 tool available (need shasum, sha256sum, or openssl)"
+fi
+
+if [ "$ACTUAL_HASH" != "$EXPECTED_HASH" ]; then
+  err "Checksum mismatch for $ASSET — expected ${EXPECTED_HASH}, got ${ACTUAL_HASH}"
+fi
+
+info "SHA-256 verified: $ASSET"
 
 # Verify it is the real binary before installing
 if ! "$TMP" --version >/dev/null 2>&1; then

@@ -33,7 +33,35 @@ Write-Host "  Version: $Version"
 Write-Host "  URL:     $url"
 
 Write-Host "Downloading..."
-Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing
+Invoke-RestMethod -Uri $url -OutFile $out -UseBasicParsing
+
+# --- SHA-256 checksum verification ---
+# Fetch the release JSON and extract the digest for this asset.
+$releaseJson = Invoke-RestMethod "https://api.github.com/repos/$Repo/releases/tags/$Version"
+$digests = $releaseJson.assets | Where-Object { $_.digest } | ForEach-Object { $_.digest }
+$expectedDigest = $null
+foreach ($d in $digests) {
+    if ($d -match '^sha256:([0-9a-f]{64})$') {
+        $expectedDigest = $Matches[1]
+        break
+    }
+}
+
+if (-not $expectedDigest) {
+    Write-Host "error: Could not obtain SHA-256 digest for $asset from release $Version; aborting for safety" -ForegroundColor Red
+    exit 1
+}
+
+# Compute local hash
+$actualHash = (Get-FileHash -Path $out -Algorithm SHA256).Hash.ToLower()
+
+if ($actualHash -ne $expectedDigest) {
+    Write-Host "error: Checksum mismatch for $asset — expected $expectedDigest, got $actualHash" -ForegroundColor Red
+    Remove-Item $out -Force
+    exit 1
+}
+
+Write-Host "SHA-256 verified: $asset" -ForegroundColor Green
 
 # Verify it is the real binary before finishing
 $versionOut = & $out --version 2>&1
