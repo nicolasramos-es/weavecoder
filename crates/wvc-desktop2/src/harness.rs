@@ -3,7 +3,7 @@
 //! This is the app's half of the conversation: it maps SDK events onto the
 //! `HarnessUpdate`s the UI draws, and UI `Command`s onto SDK calls. Everything
 //! that is not desktop2-specific (starting the runtime, correlating replies,
-//! explaining a lost connection) lives in `jcode-sdk`, so this file is about
+//! explaining a lost connection) lives in `wvc-sdk`, so this file is about
 //! the app rather than about the protocol.
 //!
 //! Desktop2 is built on the SDK deliberately: it is the SDK's only large,
@@ -14,7 +14,7 @@ use std::path::PathBuf;
 use std::sync::mpsc::{Receiver, Sender, channel};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
-use wvc_sdk::{ApiEvent, ConnectOptions, JcodeClient, LaunchOptions};
+use wvc_sdk::{ApiEvent, ConnectOptions, WeavecoderClient, LaunchOptions};
 
 /// Failure wording and connection-stage reporting are the SDK's, so the app
 /// and any other client describe the same failure the same way.
@@ -147,7 +147,7 @@ pub fn api_socket_path() -> PathBuf {
 /// else gets an agent that assumes it is working on the TUI. Overridable so a
 /// desktop2 build can be pointed at another project.
 fn default_working_dir() -> Option<String> {
-    if let Some(raw) = std::env::var_os("JCODE_DESKTOP2_WORKING_DIR") {
+    if let Some(raw) = std::env::var_os("WVC_DESKTOP2_WORKING_DIR") {
         let path = PathBuf::from(raw);
         if path.is_dir() {
             return Some(path.display().to_string());
@@ -266,7 +266,7 @@ fn run(
     })?;
 
     set_stage(Stage::Connecting);
-    let client = JcodeClient::connect(ConnectOptions {
+    let client = WeavecoderClient::connect(ConnectOptions {
         client_name: concat!("wvc-desktop2/", env!("CARGO_PKG_VERSION")).to_string(),
         // The runtime is already up; a second check would only cost a dial.
         ensure_runtime: false,

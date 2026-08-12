@@ -363,7 +363,7 @@ fn subscribe_working_dir_ignores_home_when_session_has_a_project_dir() {
 /// Issue #481: agent cwd, swarm grouping, and project-local MCP resolution must
 /// all bind to the *same* directory. If a rejected home-dir report still reached
 /// the swarm id or the MCP resolver, tools would run in the project while swarm
-/// membership and `.jcode/mcp.json` discovery pointed at home.
+/// membership and `.wvc/mcp.json` discovery pointed at home.
 #[test]
 fn effective_subscribe_working_dir_binds_all_consumers_to_one_directory() {
     let home = std::path::Path::new("/home/tester");

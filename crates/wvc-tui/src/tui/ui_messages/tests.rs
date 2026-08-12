@@ -88,11 +88,11 @@ fn render_compact_launch_and_divergence_notices_as_one_line() {
     let saved = crate::tui::markdown::center_code_blocks();
     let notices = [
         DisplayMessage::system(
-            "Configured Jcode launch hotkeys (niri):\nSuper+; → jcode (/home/user/project)\n\nBound system-wide.",
+            "Configured Weavecoder launch hotkeys (niri):\nSuper+; → wvc (/home/user/project)\n\nBound system-wide.",
         )
         .with_title("Launch hotkeys"),
         DisplayMessage::system(
-            "Update diverged. Press Ctrl+Y to let a jcode agent merge local and upstream (or run `git pull` / `git rebase` yourself).",
+            "Update diverged. Press Ctrl+Y to let a wvc agent merge local and upstream (or run `git pull` / `git rebase` yourself).",
         )
         .with_title("Update"),
     ];
@@ -1242,7 +1242,7 @@ fn render_background_task_messages_prefer_display_name() {
 #[test]
 fn render_system_message_uses_scheduled_task_card() {
     let msg = DisplayMessage::system(
-        "[Scheduled task]\nA scheduled task for this session is now due.\n\nTask: Follow up on the scheduler test\nWorking directory: /home/jeremy/jcode\nRelevant files: src/tui/ui_messages.rs\nBranch: master\n\nBackground: Verify the scheduled task card styling\nSuccess criteria: The due task renders clearly\nScheduled by session: session_test",
+        "[Scheduled task]\nA scheduled task for this session is now due.\n\nTask: Follow up on the scheduler test\nWorking directory: /home/jeremy/wvc\nRelevant files: src/tui/ui_messages.rs\nBranch: master\n\nBackground: Verify the scheduled task card styling\nSuccess criteria: The due task renders clearly\nScheduled by session: session_test",
     );
 
     let lines = render_system_message(&msg, 100, crate::config::DiffDisplayMode::Off);
@@ -1267,7 +1267,7 @@ fn render_system_message_uses_scheduled_task_card() {
 fn render_tool_message_uses_scheduled_card() {
     let msg = DisplayMessage {
         role: "tool".to_string(),
-        content: "Scheduled task 'Follow up on the scheduler test' for in 1m (id: sched_abc123)\nWorking directory: /home/jeremy/jcode\nRelevant files: src/tui/ui_messages.rs\nTarget: resume session session_test".to_string(),
+        content: "Scheduled task 'Follow up on the scheduler test' for in 1m (id: sched_abc123)\nWorking directory: /home/jeremy/wvc\nRelevant files: src/tui/ui_messages.rs\nTarget: resume session session_test".to_string(),
         tool_calls: Vec::new(),
         duration_secs: None,
         title: Some("scheduled: Follow up on the scheduler test".to_string()),
@@ -1348,7 +1348,7 @@ fn render_assistant_message_plan_card_keeps_nested_fences_inside() {
     let saved = crate::tui::markdown::center_code_blocks();
     crate::tui::markdown::set_center_code_blocks(false);
     let msg = DisplayMessage::assistant(
-        "```plan\n# Validation plan\n\n```bash\ncargo test -p jcode-tui\n```\n\nAfter the block.\n```\n\nOutside text.",
+        "```plan\n# Validation plan\n\n```bash\ncargo test -p wvc-tui\n```\n\nAfter the block.\n```\n\nOutside text.",
     );
 
     let lines = render_assistant_message(&msg, 100, crate::config::DiffDisplayMode::Off);
@@ -1360,14 +1360,14 @@ fn render_assistant_message_plan_card_keeps_nested_fences_inside() {
         .join("\n");
 
     assert!(plain.contains("⛭ Validation plan"), "plain: {plain}");
-    assert!(plain.contains("cargo test -p jcode-tui"), "plain: {plain}");
+    assert!(plain.contains("cargo test -p wvc-tui"), "plain: {plain}");
     assert!(plain.contains("After the block."), "plain: {plain}");
     assert!(plain.contains("Outside text."), "plain: {plain}");
     // The nested bash content stays inside the card borders.
     let bash_line = lines
         .iter()
         .map(extract_line_text)
-        .find(|line| line.contains("cargo test -p jcode-tui"))
+        .find(|line| line.contains("cargo test -p wvc-tui"))
         .expect("missing bash line");
     assert!(
         bash_line.trim_start().starts_with('│'),
@@ -1613,7 +1613,7 @@ fn render_system_message_uses_reload_card_for_reload_title() {
 #[test]
 fn render_system_message_uses_connection_card_for_reconnect_status() {
     let msg = DisplayMessage::system(
-        "⚡ Connection lost - retrying (attempt 2, 7s) - connection reset by server · resume: jcode --resume koala",
+        "⚡ Connection lost - retrying (attempt 2, 7s) - connection reset by server · resume: wvc --resume koala",
     )
     .with_title("Connection");
 
@@ -1639,7 +1639,7 @@ fn render_swarm_message_centered_mode_caps_wrap_width_for_long_notifications() {
     crate::tui::markdown::set_center_code_blocks(true);
     let msg = DisplayMessage::swarm(
         "File activity",
-        "/home/jeremy/jcode/src/tui/ui_messages.rs - moss just edited this file while you were working nearby, so the notification should still read as centered in wide layouts.",
+        "/home/jeremy/wvc/src/tui/ui_messages.rs - moss just edited this file while you were working nearby, so the notification should still read as centered in wide layouts.",
     );
 
     let lines = render_swarm_message(&msg, 120, crate::config::DiffDisplayMode::Off);
@@ -1753,7 +1753,7 @@ fn render_tool_message_shows_intent_and_technical_preview_on_one_line() {
             id: "call_intent".to_string(),
             name: "bash".to_string(),
             input: serde_json::json!({
-                "command": "cargo test -p jcode render_background_task --lib",
+                "command": "cargo test -p wvc render_background_task --lib",
                 "intent": "Verify compact progress card"
             }),
             intent: Some("Verify compact progress card".to_string()),
@@ -1788,7 +1788,7 @@ fn render_tool_message_hides_technical_preview_by_default() {
             id: "call_intent".to_string(),
             name: "bash".to_string(),
             input: serde_json::json!({
-                "command": "cargo test -p jcode render_background_task --lib",
+                "command": "cargo test -p wvc render_background_task --lib",
                 "intent": "Verify compact progress card"
             }),
             intent: Some("Verify compact progress card".to_string()),
@@ -2129,7 +2129,7 @@ fn discovery_message(content: &str, input: serde_json::Value) -> DisplayMessage 
 #[test]
 fn render_tool_message_shows_discovery_browse_results_and_rationale() {
     let msg = discovery_message(
-        "Discoverable tools in 'payments' (Jcode tool directory; recommendations must be based only on fit; details: https://jcode.sh/discovery-tools):\n\n- agentcard: prepaid virtual Visa cards for AI agents (https://agentcard.sh/?via=jcode-discovery)\n\nSearch request ID: `11111111-2222-4333-8444-555555555555`",
+        "Discoverable tools in 'payments' (Weavecoder tool directory; recommendations must be based only on fit; details: https://weavecoder.sh/discovery-tools):\n\n- agentcard: prepaid virtual Visa cards for AI agents (https://agentcard.sh/?via=wvc-discovery)\n\nSearch request ID: `11111111-2222-4333-8444-555555555555`",
         serde_json::json!({
             "action": "search",
             "category": "payments",
@@ -2190,7 +2190,7 @@ fn render_tool_message_shows_discovery_browse_results_and_rationale() {
 fn batched_discovery_renders_without_disclosure_notice() {
     let msg = DisplayMessage {
         role: "tool".to_string(),
-        content: "--- [1] integration_tools ---\nAvailable integrations in 'payments' (Jcode tool directory; recommendations must be based only on fit; details: https://jcode.sh/discovery-tools):\n\n- agentcard: prepaid virtual Visa cards for AI agents (https://agentcard.sh/?via=jcode-discovery)\n\nSearch request ID: `11111111-2222-4333-8444-555555555555`\n\nCompleted: 1 succeeded, 0 failed".to_string(),
+        content: "--- [1] integration_tools ---\nAvailable integrations in 'payments' (Weavecoder tool directory; recommendations must be based only on fit; details: https://weavecoder.sh/discovery-tools):\n\n- agentcard: prepaid virtual Visa cards for AI agents (https://agentcard.sh/?via=wvc-discovery)\n\nSearch request ID: `11111111-2222-4333-8444-555555555555`\n\nCompleted: 1 succeeded, 0 failed".to_string(),
         tool_calls: Vec::new(),
         duration_secs: None,
         title: None,
@@ -2240,7 +2240,7 @@ fn batched_discovery_renders_without_disclosure_notice() {
 #[test]
 fn render_tool_message_shows_selected_discovery_setup() {
     let msg = discovery_message(
-        "Selected 'agentcard' from 'payments' (Jcode tool directory; selection must be based only on fit; details: https://jcode.sh/discovery-tools):\n\nagentcard: prepaid virtual Visa cards for AI agents (https://agentcard.sh/?via=jcode-discovery)\n\nSetup: Run `npx -y agentcard-mcp@1.2.3`, then connect the resulting MCP server.\n\nConsequential actions (signups, spending) must note the partnership in the confirmation shown to the user.",
+        "Selected 'agentcard' from 'payments' (Weavecoder tool directory; selection must be based only on fit; details: https://weavecoder.sh/discovery-tools):\n\nagentcard: prepaid virtual Visa cards for AI agents (https://agentcard.sh/?via=wvc-discovery)\n\nSetup: Run `npx -y agentcard-mcp@1.2.3`, then connect the resulting MCP server.\n\nConsequential actions (signups, spending) must note the partnership in the confirmation shown to the user.",
         serde_json::json!({
             "action": "select",
             "category": "payments",
@@ -2273,7 +2273,7 @@ fn render_tool_message_shows_selected_discovery_setup() {
 #[test]
 fn render_tool_message_shows_catalog_suggestion_receipt_and_trust_line() {
     let msg = discovery_message(
-        "Catalog suggestion submitted.\n\nSuggestion ID: aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee\nCategory: payments\nKind: known_product\nCapability: manage Stripe sandbox products\nCatalog gap: no matching catalog entry\nProduct: Stripe sandbox MCP\nPublic URL: https://example.com/stripe-mcp\n\nStatus: received for Jcode maintainer review. Suggestions are not sent to partners. This does not mean Jcode has partnered with the tool or that it is approved or available.",
+        "Catalog suggestion submitted.\n\nSuggestion ID: aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee\nCategory: payments\nKind: known_product\nCapability: manage Stripe sandbox products\nCatalog gap: no matching catalog entry\nProduct: Stripe sandbox MCP\nPublic URL: https://example.com/stripe-mcp\n\nStatus: received for Weavecoder maintainer review. Suggestions are not sent to partners. This does not mean Weavecoder has partnered with the tool or that it is approved or available.",
         serde_json::json!({
             "action": "suggest",
             "category": "payments",
@@ -2314,7 +2314,7 @@ fn render_tool_message_shows_catalog_suggestion_receipt_and_trust_line() {
 #[test]
 fn discovery_cards_wrap_within_narrow_transcript_width() {
     let msg = discovery_message(
-        "Catalog suggestion submitted.\n\nStatus: received for Jcode maintainer review.",
+        "Catalog suggestion submitted.\n\nStatus: received for Weavecoder maintainer review.",
         serde_json::json!({
             "action": "suggest",
             "category": "cloud-infrastructure",

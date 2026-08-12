@@ -16,7 +16,7 @@ pub type ImportCoreResult<T> = Result<T, Box<dyn std::error::Error + Send + Sync
 /// Returns a slice of at most `max_bytes` bytes, ending at a valid char
 /// boundary so it never panics on multibyte input. This mirrors
 /// `wvc_core::util::truncate_str`, duplicated here to keep this leaf crate
-/// free of the heavier `jcode-core` dependency.
+/// free of the heavier `wvc-core` dependency.
 fn truncate_str(s: &str, max_bytes: usize) -> &str {
     if s.len() <= max_bytes {
         return s;
@@ -1500,8 +1500,8 @@ mod tests {
         );
         assert_eq!(claude_title_candidate("   "), None);
         assert_eq!(
-            claude_title_candidate("can you fix my jcode server version?"),
-            Some("can you fix my jcode server version?".into())
+            claude_title_candidate("can you fix my wvc server version?"),
+            Some("can you fix my wvc server version?".into())
         );
     }
 

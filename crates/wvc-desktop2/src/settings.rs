@@ -22,8 +22,8 @@ pub enum Row {
     Reasoning,
     Motion,
     CopyOnSelect,
-    /// Not a setting of its own: opens `~/.jcode/config.toml`, where the rest
-    /// of jcode's configuration lives. The panel is for the handful of choices
+    /// Not a setting of its own: opens `~/.wvc/config.toml`, where the rest
+    /// of wvc's configuration lives. The panel is for the handful of choices
     /// worth a click; everything else belongs in the file, and this row is the
     /// way there rather than a second copy of it.
     More,
@@ -69,7 +69,7 @@ pub struct Settings {
     /// come here expecting.
     ///
     /// Not in the panel: it is set once and never again, so it lives in the
-    /// settings file and `JCODE_DESKTOP2_COPY_ON_SELECT` rather than spending
+    /// settings file and `WVC_DESKTOP2_COPY_ON_SELECT` rather than spending
     /// a row on a click nobody repeats.
     pub copy_on_select: bool,
 }
@@ -169,14 +169,14 @@ impl Settings {
     }
 
     /// Defaults from the environment, so a user who already exports
-    /// `JCODE_DESKTOP2_THEME` and friends sees the panel agree with the window
+    /// `WVC_DESKTOP2_THEME` and friends sees the panel agree with the window
     /// on first run instead of contradicting it.
     pub fn from_env() -> Self {
         Self {
             theme: crate::theme::Theme::preference_from_env(),
             reasoning: ReasoningMode::from_env(),
             motion: !crate::donut_disabled(),
-            copy_on_select: std::env::var("JCODE_DESKTOP2_COPY_ON_SELECT")
+            copy_on_select: std::env::var("WVC_DESKTOP2_COPY_ON_SELECT")
                 .is_ok_and(|value| matches!(value.trim(), "1" | "on" | "true")),
         }
     }
@@ -235,7 +235,7 @@ impl Settings {
         let home = std::env::var_os("HOME")?;
         Some(
             PathBuf::from(home)
-                .join(".jcode")
+                .join(".wvc")
                 .join("desktop2-settings.conf"),
         )
     }
@@ -523,7 +523,7 @@ mod tests {
     #[test]
     fn the_saved_path_lives_under_the_wvc_directory() {
         if let Some(path) = Settings::path() {
-            assert!(path.to_string_lossy().contains("/.jcode/"));
+            assert!(path.to_string_lossy().contains("/.wvc/"));
         }
     }
 

@@ -503,8 +503,8 @@ mod tests {
         let _guard = crate::storage::lock_test_env();
         let home = tempfile::tempdir().expect("home");
         let project = tempfile::tempdir().expect("project");
-        let prev_home = std::env::var_os("JCODE_HOME");
-        crate::env::set_var("JCODE_HOME", home.path());
+        let prev_home = std::env::var_os("WVC_HOME");
+        crate::env::set_var("WVC_HOME", home.path());
 
         let tool = MemoryTool::new();
         let remember = tool
@@ -534,9 +534,9 @@ mod tests {
         );
 
         if let Some(prev_home) = prev_home {
-            crate::env::set_var("JCODE_HOME", prev_home);
+            crate::env::set_var("WVC_HOME", prev_home);
         } else {
-            crate::env::remove_var("JCODE_HOME");
+            crate::env::remove_var("WVC_HOME");
         }
     }
 
@@ -557,8 +557,8 @@ mod tests {
         let _guard = crate::storage::lock_test_env();
         let home = tempfile::tempdir().expect("home");
         let project = tempfile::tempdir().expect("project");
-        let prev_home = std::env::var_os("JCODE_HOME");
-        crate::env::set_var("JCODE_HOME", home.path());
+        let prev_home = std::env::var_os("WVC_HOME");
+        crate::env::set_var("WVC_HOME", home.path());
 
         // The session that spawns a worker records something project-scoped.
         let spawner = MemoryTool::new();
@@ -607,9 +607,9 @@ mod tests {
         );
 
         if let Some(prev_home) = prev_home {
-            crate::env::set_var("JCODE_HOME", prev_home);
+            crate::env::set_var("WVC_HOME", prev_home);
         } else {
-            crate::env::remove_var("JCODE_HOME");
+            crate::env::remove_var("WVC_HOME");
         }
     }
 }

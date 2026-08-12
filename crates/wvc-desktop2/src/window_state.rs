@@ -121,7 +121,7 @@ impl Geometry {
         let home = std::env::var_os("HOME")?;
         Some(
             PathBuf::from(home)
-                .join(".jcode")
+                .join(".wvc")
                 .join("desktop2-window.conf"),
         )
     }
@@ -367,7 +367,7 @@ mod tests {
     fn the_saved_path_lives_under_the_wvc_directory() {
         // Guards against writing config into the working directory.
         if let Some(path) = Geometry::path() {
-            assert!(path.to_string_lossy().contains("/.jcode/"));
+            assert!(path.to_string_lossy().contains("/.wvc/"));
         }
     }
 }

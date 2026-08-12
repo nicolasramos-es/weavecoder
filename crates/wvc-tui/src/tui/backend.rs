@@ -231,7 +231,7 @@ pub struct BackendInfo {
     pub skills: Vec<String>,
 }
 
-/// Remote connection to jcode server
+/// Remote connection to wvc server
 pub struct RemoteConnection {
     reader: BufReader<crate::transport::ReadHalf>,
     writer: Arc<Mutex<WriteHalf>>,
@@ -379,7 +379,7 @@ impl RemoteConnection {
         // draw stalls during scrolling. The TUI hydrates the persisted remote
         // catalog cache for normal `/model` use; explicit refresh paths still
         // request fresh catalog data when needed.
-        if std::env::var_os("JCODE_REMOTE_BOOTSTRAP_MODEL_CATALOG").is_some() {
+        if std::env::var_os("WVC_REMOTE_BOOTSTRAP_MODEL_CATALOG").is_some() {
             conn.send_request(Request::GetModelCatalog {
                 id: conn.next_request_id,
             })

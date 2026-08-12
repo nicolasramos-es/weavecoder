@@ -430,7 +430,7 @@ done
         let client = McpClient::connect_in_dir(
             "cwd-fallback-test".to_string(),
             &fake_server_config(),
-            Some(std::path::Path::new("/nonexistent/jcode-557")),
+            Some(std::path::Path::new("/nonexistent/wvc-557")),
         )
         .await
         .expect("connect should fall back to inherited cwd");

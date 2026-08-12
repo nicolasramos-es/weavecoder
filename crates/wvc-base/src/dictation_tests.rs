@@ -113,7 +113,7 @@ fn select_candidate_prefers_title_match() {
         },
     ];
 
-    let selected = select_candidate(&candidates, Some("🦀 jcode/sleeping Crab [self-dev]"))
+    let selected = select_candidate(&candidates, Some("🦀 wvc/sleeping Crab [self-dev]"))
         .expect("should select matching candidate");
     assert_eq!(selected.short_name, "crab");
 }
@@ -126,11 +126,11 @@ fn read_resumed_session_id_from_cmdline_for_current_process() {
 #[test]
 fn extract_session_short_name_from_wvc_window_title() {
     assert_eq!(
-        extract_session_short_name_from_window_title("🦢 jcode/cliff Swan [self-dev]"),
+        extract_session_short_name_from_window_title("🦢 wvc/cliff Swan [self-dev]"),
         Some("swan".to_string())
     );
     assert_eq!(
-        extract_session_short_name_from_window_title("🦊 jcode Fox"),
+        extract_session_short_name_from_window_title("🦊 wvc Fox"),
         Some("fox".to_string())
     );
 }
@@ -150,9 +150,9 @@ fn normalize_session_short_name_strips_wrapping_punctuation() {
 #[test]
 fn remember_and_read_last_focused_session() {
     let _guard = crate::storage::lock_test_env();
-    let prev = std::env::var_os("JCODE_HOME");
+    let prev = std::env::var_os("WVC_HOME");
     let temp = tempfile::TempDir::new().expect("tempdir");
-    crate::env::set_var("JCODE_HOME", temp.path());
+    crate::env::set_var("WVC_HOME", temp.path());
 
     let active_dir = temp.path().join("active_pids");
     std::fs::create_dir_all(&active_dir).expect("create active_pids");
@@ -165,9 +165,9 @@ fn remember_and_read_last_focused_session() {
     );
 
     if let Some(prev) = prev {
-        crate::env::set_var("JCODE_HOME", prev);
+        crate::env::set_var("WVC_HOME", prev);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -176,7 +176,7 @@ fn remember_and_read_last_focused_session() {
 fn focused_wvc_session_uses_niri_window_title_when_process_name_is_generic() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().expect("tempdir");
-    let _home = EnvVarGuard::set("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set("WVC_HOME", temp.path());
 
     let active_dir = temp.path().join("active_pids");
     std::fs::create_dir_all(&active_dir).expect("create active_pids");
@@ -187,7 +187,7 @@ fn focused_wvc_session_uses_niri_window_title_when_process_name_is_generic() {
     install_fake_niri(
         &bin_dir,
         focused_process.pid(),
-        "🦢 jcode/cliff Swan [self-dev]",
+        "🦢 wvc/cliff Swan [self-dev]",
     );
 
     let prev_path = std::env::var_os("PATH").unwrap_or_default();

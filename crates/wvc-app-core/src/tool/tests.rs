@@ -345,9 +345,9 @@ async fn registry_execute_pre_tool_hook_blocks_and_allows() {
     std::fs::set_permissions(&policy, std::fs::Permissions::from_mode(0o755))
         .expect("chmod policy");
 
-    let prev = std::env::var_os("JCODE_HOOK_PRE_TOOL");
-    crate::env::set_var("JCODE_HOOK_PRE_TOOL", policy.to_string_lossy().to_string());
-    // jcode-base is compiled without cfg(test) here, so the config cache only
+    let prev = std::env::var_os("WVC_HOOK_PRE_TOOL");
+    crate::env::set_var("WVC_HOOK_PRE_TOOL", policy.to_string_lossy().to_string());
+    // wvc-base is compiled without cfg(test) here, so the config cache only
     // re-checks env every 500ms; force a reload so the hook is visible now.
     crate::config::invalidate_config_cache();
 
@@ -381,8 +381,8 @@ async fn registry_execute_pre_tool_hook_blocks_and_allows() {
         .await;
 
     match prev {
-        Some(value) => crate::env::set_var("JCODE_HOOK_PRE_TOOL", value),
-        None => crate::env::remove_var("JCODE_HOOK_PRE_TOOL"),
+        Some(value) => crate::env::set_var("WVC_HOOK_PRE_TOOL", value),
+        None => crate::env::remove_var("WVC_HOOK_PRE_TOOL"),
     }
     crate::config::invalidate_config_cache();
 
@@ -504,7 +504,7 @@ fn collect_param_descriptions(schema: &Value, path: &str, out: &mut Vec<(String,
 /// Parameter descriptions inside tool schemas are also always-on prompt cost,
 /// so each is capped. Longer guidance belongs in runtime error messages, docs,
 /// or the system prompt (the todo calibration rubrics, for example, live in
-/// the gate continuation messages in jcode-base::todo).
+/// the gate continuation messages in wvc-base::todo).
 #[tokio::test]
 async fn tool_parameter_descriptions_stay_under_token_cap() {
     const PARAM_DESCRIPTION_TOKEN_CAP: usize = 25;
@@ -955,7 +955,7 @@ async fn unknown_tool_error_lists_available_tools_and_suggestions() {
 
 #[tokio::test]
 async fn gemini_build_tools_from_registry_definitions_omits_const_keywords() {
-    // Moved from jcode-base/src/provider/gemini_tests.rs: this is the one test
+    // Moved from wvc-base/src/provider/gemini_tests.rs: this is the one test
     // that needs the upper-layer tool::Registry, so it lives here instead of
     // forcing a base -> app-core dev-dependency cycle.
     fn schema_contains_key(schema: &serde_json::Value, key: &str) -> bool {

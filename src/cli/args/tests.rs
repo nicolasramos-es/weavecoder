@@ -67,7 +67,7 @@ fn remote_working_dir_option_parses() {
     let args = Args::try_parse_from([
         "wvc",
         "--socket",
-        "/tmp/jcode.sock",
+        "/tmp/wvc.sock",
         "--remote-working-dir",
         "/home/agent/project",
     ])
@@ -725,7 +725,7 @@ fn restart_save_auto_restore_flag_parses() {
 }
 
 /// Contract test for the onboarding agent-repair brief (see
-/// `jcode-tui::tui::app::onboarding_repair::build_repair_brief`). The brief
+/// `wvc-tui::tui::app::onboarding_repair::build_repair_brief`). The brief
 /// tells a coding agent to run these exact commands to diagnose and fix a
 /// failed login. If any flag here stops parsing, the brief would hand the agent
 /// a broken command, so this guards the agent-facing CLI contract.

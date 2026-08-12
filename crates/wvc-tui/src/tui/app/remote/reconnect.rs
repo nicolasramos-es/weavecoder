@@ -108,7 +108,7 @@ pub(super) fn reconnect_status_message(app: &App, state: &RemoteRunState, detail
                 .and_then(|id| crate::id::extract_session_name(id))
         });
     let resume_hint = if let Some(name) = &session_name {
-        format!(" · resume: jcode --resume {}", name)
+        format!(" · resume: wvc --resume {}", name)
     } else {
         String::new()
     };
@@ -147,7 +147,7 @@ pub(super) fn reload_wait_status_message(
                 .and_then(|id| crate::id::extract_session_name(id))
         });
     let resume_hint = if let Some(name) = &session_name {
-        format!(" · resume: jcode --resume {}", name)
+        format!(" · resume: wvc --resume {}", name)
     } else {
         String::new()
     };

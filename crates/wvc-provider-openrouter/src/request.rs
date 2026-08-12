@@ -169,7 +169,7 @@ fn flatten_top_level_combinators(schema: &mut Value) {
 ///
 /// This stays in the OpenRouter leaf crate so provider-specific message normalization,
 /// tool-call repair, and reasoning-content compatibility do not type-check inside
-/// `jcode-base` on every provider edit.
+/// `wvc-base` on every provider edit.
 pub fn build_chat_messages(
     messages: &[Message],
     system: &str,

@@ -22,7 +22,7 @@
 //    simulation-checked.)
 //
 // Run the human-readable scorecard with:
-//   cargo test -p jcode-tui onboarding_eval_scorecard -- --nocapture
+//   cargo test -p wvc-tui onboarding_eval_scorecard -- --nocapture
 //
 // NOTE: `include!`d into `crate::tui::app::tests`, which already imports the
 // onboarding types and the `render_onboarding_text` / `create_test_app` test
@@ -1205,7 +1205,7 @@ fn looks_like_instruction(line: &str) -> bool {
         || lower.starts_with("select ")
         || lower.starts_with("pick ")
         || lower.starts_with("run ")
-        // A "<command>" CTA: jcode phrases these as both "run /login" and
+        // A "<command>" CTA: wvc phrases these as both "run /login" and
         // "type /login", so recognize both spellings of the same directive.
         || lower.contains("run /")
         || lower.contains("type /")
@@ -1841,7 +1841,7 @@ fn action_row_follows_prose() -> bool {
     let lines: Vec<&str> = text.lines().collect();
     let prose_idx = lines.iter().position(|l| {
         let lc = l.to_ascii_lowercase();
-        lc.contains("welcome to jcode") || lc.contains("log in")
+        lc.contains("welcome to wvc") || lc.contains("log in")
     });
     let action_idx = lines.iter().position(|l| {
         let lc = l.to_ascii_lowercase();

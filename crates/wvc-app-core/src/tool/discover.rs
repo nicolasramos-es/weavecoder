@@ -12,20 +12,20 @@ use std::time::Instant;
 /// continues with its normal toolset. No cache, no offline fallback, no retry.
 const DISCOVERY_TIMEOUT: Duration = Duration::from_secs(3);
 const MAX_RESPONSE_BYTES: usize = 64 * 1024;
-const DISCOVERY_REQUEST_ID_HEADER: &str = "x-jcode-discovery-request-id";
-const DISCOVERY_CORRELATION_ID_HEADER: &str = "x-jcode-session-correlation-id";
-const DISCOVERY_BENCHMARK_HEADER: &str = "x-jcode-discovery-benchmark";
-const DISCOVERY_SESSION_ID_HEADER: &str = "x-jcode-discovery-session-id";
-const DISCOVERY_SESSION_METADATA_HEADER: &str = "x-jcode-discovery-session-metadata";
-const DISCOVERY_SELF_DEV_HEADER: &str = "x-jcode-discovery-self-dev";
-const DISCOVERY_DEBUG_HEADER: &str = "x-jcode-discovery-debug";
-const DISCOVERY_CANARY_HEADER: &str = "x-jcode-discovery-canary";
-const DISCOVERY_EXECUTION_MODE_HEADER: &str = "x-jcode-discovery-execution-mode";
-const DISCOVERY_BUILD_CHANNEL_HEADER: &str = "x-jcode-discovery-build-channel";
-const DISCOVERY_GIT_CHECKOUT_HEADER: &str = "x-jcode-discovery-git-checkout";
-const DISCOVERY_CI_HEADER: &str = "x-jcode-discovery-ci";
-const DISCOVERY_RAN_FROM_CARGO_HEADER: &str = "x-jcode-discovery-ran-from-cargo";
-const DISCOVERY_BENCHMARK_ENV: &str = "JCODE_DISCOVERY_BENCHMARK";
+const DISCOVERY_REQUEST_ID_HEADER: &str = "x-wvc-discovery-request-id";
+const DISCOVERY_CORRELATION_ID_HEADER: &str = "x-wvc-session-correlation-id";
+const DISCOVERY_BENCHMARK_HEADER: &str = "x-wvc-discovery-benchmark";
+const DISCOVERY_SESSION_ID_HEADER: &str = "x-wvc-discovery-session-id";
+const DISCOVERY_SESSION_METADATA_HEADER: &str = "x-wvc-discovery-session-metadata";
+const DISCOVERY_SELF_DEV_HEADER: &str = "x-wvc-discovery-self-dev";
+const DISCOVERY_DEBUG_HEADER: &str = "x-wvc-discovery-debug";
+const DISCOVERY_CANARY_HEADER: &str = "x-wvc-discovery-canary";
+const DISCOVERY_EXECUTION_MODE_HEADER: &str = "x-wvc-discovery-execution-mode";
+const DISCOVERY_BUILD_CHANNEL_HEADER: &str = "x-wvc-discovery-build-channel";
+const DISCOVERY_GIT_CHECKOUT_HEADER: &str = "x-wvc-discovery-git-checkout";
+const DISCOVERY_CI_HEADER: &str = "x-wvc-discovery-ci";
+const DISCOVERY_RAN_FROM_CARGO_HEADER: &str = "x-wvc-discovery-ran-from-cargo";
+const DISCOVERY_BENCHMARK_ENV: &str = "WVC_DISCOVERY_BENCHMARK";
 const DISCOVERY_QUERY_MIN_CHARS: usize = 20;
 const DISCOVERY_QUERY_MAX_CHARS: usize = 500;
 const DISCOVERY_REASON_MIN_CHARS: usize = 40;
@@ -185,9 +185,9 @@ fn record_discovery_telemetry(
 /// `discover_tools`: fetch discoverable third-party tools for a category from
 /// the hosted integration directory.
 ///
-/// Disclosure contract: some providers may share revenue with Jcode, but
+/// Disclosure contract: some providers may share revenue with Weavecoder, but
 /// partnership status never influences recommendations. The policy is
-/// disclosed in the tool schema and at <https://jcode.sh/discovery-tools>.
+/// disclosed in the tool schema and at <https://weavecoder.sh/discovery-tools>.
 /// The request carries the category, a short search query, a reason string,
 /// and coarse session/build provenance used to separate likely user demand from
 /// self-dev and test traffic. It never includes transcript content, file paths,
@@ -1362,7 +1362,7 @@ fn render_listing(category: &str, listing: &Value, request_id: &str) -> Result<S
         ));
     }
     let mut out = format!(
-        "Available integrations in '{category}' (Jcode tool directory; recommendations must be based \
+        "Available integrations in '{category}' (Weavecoder tool directory; recommendations must be based \
          only on fit; details: {}):\n",
         crate::sponsors::DISCOVERY_PARTNERS_URL
     );
@@ -1434,7 +1434,7 @@ fn render_suggestion(
         }
     }
     out.push_str(
-        "\n\nStatus: received for Jcode maintainer review. Suggestions are not sent to partners. This does not mean Jcode has partnered with the tool or that it is approved or available.",
+        "\n\nStatus: received for Weavecoder maintainer review. Suggestions are not sent to partners. This does not mean Weavecoder has partnered with the tool or that it is approved or available.",
     );
     Ok(out)
 }
@@ -1451,7 +1451,7 @@ fn render_selection(category: &str, tool_name: &str, listing: &Value) -> Result<
         .unwrap_or(tool_name);
     let blurb = tool.get("blurb").and_then(|v| v.as_str()).unwrap_or("");
     let mut out = format!(
-        "Set up '{name}' from '{category}' (Jcode tool directory; the choice must be based only \
+        "Set up '{name}' from '{category}' (Weavecoder tool directory; the choice must be based only \
          on fit; details: {}):\n\n{name}: {blurb}",
         crate::sponsors::DISCOVERY_PARTNERS_URL
     );
@@ -1492,7 +1492,7 @@ mod tests {
     fn discovery_requests_attach_only_the_ephemeral_session_correlation_id() {
         let correlation_id = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee";
         let request = header_test_provenance(Some(correlation_id))
-            .apply(reqwest::Client::new().get("https://api.jcode.sh/v1/discovery"))
+            .apply(reqwest::Client::new().get("https://api.weavecoder.sh/v1/discovery"))
             .build()
             .unwrap();
         assert_eq!(
@@ -1507,7 +1507,7 @@ mod tests {
     #[test]
     fn discovery_requests_omit_correlation_header_when_telemetry_has_no_id() {
         let request = header_test_provenance(None)
-            .apply(reqwest::Client::new().get("https://api.jcode.sh/v1/discovery"))
+            .apply(reqwest::Client::new().get("https://api.weavecoder.sh/v1/discovery"))
             .build()
             .unwrap();
         assert!(
@@ -1594,10 +1594,10 @@ mod tests {
             "tool": {
                 "name": "agentmail",
                 "blurb": "programmable email inboxes and messaging APIs for AI agents",
-                "url": "https://www.agentmail.to/?via=jcode-discovery",
+                "url": "https://www.agentmail.to/?via=wvc-discovery",
                 "setup": concat!(
                     "POST https://api.agentmail.to/v0/agent/sign-up with JSON ",
-                    "{\"source\":\"wvc\",\"referrer\":\"https://jcode.sh/discovery-tools\"}. ",
+                    "{\"source\":\"wvc\",\"referrer\":\"https://weavecoder.sh/discovery-tools\"}. ",
                     "Then connect with npx -y agentmail-mcp@1.0.0."
                 ),
                 "mcp": {
@@ -1610,7 +1610,7 @@ mod tests {
         let rendered = render_selection("email-messaging", "agentmail", &listing).unwrap();
         assert!(rendered.contains("Set up 'agentmail'"));
         assert!(rendered.contains("\"source\":\"wvc\""));
-        assert!(rendered.contains("\"referrer\":\"https://jcode.sh/discovery-tools\""));
+        assert!(rendered.contains("\"referrer\":\"https://weavecoder.sh/discovery-tools\""));
         assert!(rendered.contains("agentmail-mcp@1.0.0"));
         assert!(rendered.contains("must note the partnership"));
 
@@ -1731,7 +1731,7 @@ mod tests {
         let mut known = capability;
         known.suggestion_kind = Some("known_product".to_string());
         known.product_name = Some("Example Stripe MCP".to_string());
-        known.product_url = Some("https://example.com/tool?via=jcode#setup".to_string());
+        known.product_url = Some("https://example.com/tool?via=wvc#setup".to_string());
         let validated = validate_suggestion(&known).unwrap();
         assert_eq!(
             validated.product_name.as_deref(),
@@ -1815,7 +1815,7 @@ mod tests {
         assert!(out.contains("Catalog suggestion submitted"));
         assert!(out.contains("Product: Stripe sandbox MCP"));
         assert!(out.contains("Suggestions are not sent to partners"));
-        assert!(out.contains("does not mean Jcode has partnered with the tool"));
+        assert!(out.contains("does not mean Weavecoder has partnered with the tool"));
     }
 
     #[test]
@@ -1956,27 +1956,27 @@ mod tests {
         assert!(
             request
                 .to_ascii_lowercase()
-                .contains("x-jcode-discovery-request-id: request-test-1"),
+                .contains("x-wvc-discovery-request-id: request-test-1"),
             "{request}"
         );
         assert!(
             request
                 .to_ascii_lowercase()
-                .contains("x-jcode-discovery-benchmark: 1"),
+                .contains("x-wvc-discovery-benchmark: 1"),
             "{request}"
         );
         for expected in [
-            "x-jcode-discovery-session-id: session-test-1",
-            "x-jcode-session-correlation-id: aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
-            "x-jcode-discovery-session-metadata: 1",
-            "x-jcode-discovery-self-dev: 1",
-            "x-jcode-discovery-debug: 0",
-            "x-jcode-discovery-canary: 1",
-            "x-jcode-discovery-execution-mode: agent_turn",
-            "x-jcode-discovery-build-channel: selfdev",
-            "x-jcode-discovery-git-checkout: 1",
-            "x-jcode-discovery-ci: 0",
-            "x-jcode-discovery-ran-from-cargo: 1",
+            "x-wvc-discovery-session-id: session-test-1",
+            "x-wvc-session-correlation-id: aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+            "x-wvc-discovery-session-metadata: 1",
+            "x-wvc-discovery-self-dev: 1",
+            "x-wvc-discovery-debug: 0",
+            "x-wvc-discovery-canary: 1",
+            "x-wvc-discovery-execution-mode: agent_turn",
+            "x-wvc-discovery-build-channel: selfdev",
+            "x-wvc-discovery-git-checkout: 1",
+            "x-wvc-discovery-ci: 0",
+            "x-wvc-discovery-ran-from-cargo: 1",
         ] {
             assert!(request.to_ascii_lowercase().contains(expected), "{request}");
         }
@@ -2046,11 +2046,11 @@ mod tests {
             "{request}"
         );
         assert!(
-            lower.contains("x-jcode-discovery-request-id: aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee"),
+            lower.contains("x-wvc-discovery-request-id: aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee"),
             "{request}"
         );
         assert!(
-            lower.contains("x-jcode-discovery-benchmark: 1"),
+            lower.contains("x-wvc-discovery-benchmark: 1"),
             "{request}"
         );
         assert!(request.contains("\"suggestion_kind\":\"known_product\""));
@@ -2107,9 +2107,9 @@ mod tests {
     #[tokio::test]
     async fn execute_end_to_end_with_enabled_config_and_local_server() {
         let _guard = crate::storage::lock_test_env();
-        let prev_home = std::env::var_os("JCODE_HOME");
+        let prev_home = std::env::var_os("WVC_HOME");
         let temp = tempfile::tempdir().unwrap();
-        crate::env::set_var("JCODE_HOME", temp.path());
+        crate::env::set_var("WVC_HOME", temp.path());
 
         let body = json!({"tools": [{"name": "agentcard", "blurb": "single-use virtual visa cards", "url": "https://agentcard.example", "setup": "MCP server: npx agentcard-mcp"}]}).to_string();
         let (endpoint, _server) = one_shot_server("HTTP/1.1 200 OK", body).await;
@@ -2159,9 +2159,9 @@ mod tests {
         assert!(err.to_string().contains("disabled"));
 
         if let Some(prev) = prev_home {
-            crate::env::set_var("JCODE_HOME", prev);
+            crate::env::set_var("WVC_HOME", prev);
         } else {
-            crate::env::remove_var("JCODE_HOME");
+            crate::env::remove_var("WVC_HOME");
         }
         crate::config::Config::invalidate_cache();
     }

@@ -28,23 +28,23 @@ fn tracked_env_vars() -> Vec<String> {
         "HOME",
         "APPDATA",
         "XDG_CONFIG_HOME",
-        "JCODE_HOME",
+        "WVC_HOME",
         "NO_PROXY",
         "no_proxy",
-        "JCODE_OPENROUTER_API_BASE",
-        "JCODE_OPENROUTER_API_KEY_NAME",
-        "JCODE_OPENROUTER_ENV_FILE",
-        "JCODE_OPENROUTER_CACHE_NAMESPACE",
-        "JCODE_OPENROUTER_PROVIDER_FEATURES",
-        "JCODE_OPENROUTER_ALLOW_NO_AUTH",
-        "JCODE_OPENROUTER_MODEL_CATALOG",
-        "JCODE_OPENROUTER_MODEL",
-        "JCODE_OPENROUTER_STATIC_MODELS",
-        "JCODE_OPENROUTER_AUTH_HEADER",
-        "JCODE_OPENROUTER_AUTH_HEADER_NAME",
-        "JCODE_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
-        "JCODE_OPENROUTER_PROVIDER",
-        "JCODE_OPENROUTER_NO_FALLBACK",
+        "WVC_OPENROUTER_API_BASE",
+        "WVC_OPENROUTER_API_KEY_NAME",
+        "WVC_OPENROUTER_ENV_FILE",
+        "WVC_OPENROUTER_CACHE_NAMESPACE",
+        "WVC_OPENROUTER_PROVIDER_FEATURES",
+        "WVC_OPENROUTER_ALLOW_NO_AUTH",
+        "WVC_OPENROUTER_MODEL_CATALOG",
+        "WVC_OPENROUTER_MODEL",
+        "WVC_OPENROUTER_STATIC_MODELS",
+        "WVC_OPENROUTER_AUTH_HEADER",
+        "WVC_OPENROUTER_AUTH_HEADER_NAME",
+        "WVC_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
+        "WVC_OPENROUTER_PROVIDER",
+        "WVC_OPENROUTER_NO_FALLBACK",
         "OPENROUTER_API_KEY",
         "AUTH_FLOW_TEST_KEY",
     ]
@@ -88,7 +88,7 @@ impl TestEnv {
         weavecoder::env::set_var("HOME", temp.path());
         weavecoder::env::set_var("XDG_CONFIG_HOME", temp.path().join("config"));
         weavecoder::env::set_var("APPDATA", temp.path().join("AppData").join("Roaming"));
-        weavecoder::env::set_var("JCODE_HOME", temp.path().join("wvc-home"));
+        weavecoder::env::set_var("WVC_HOME", temp.path().join("wvc-home"));
         weavecoder::env::set_var("NO_PROXY", "127.0.0.1,localhost");
         weavecoder::env::set_var("no_proxy", "127.0.0.1,localhost");
         AuthStatus::invalidate_cache();
@@ -108,21 +108,21 @@ impl TestEnv {
         allow_no_auth: bool,
     ) {
         let _ = self.temp.path();
-        weavecoder::env::set_var("JCODE_OPENROUTER_API_BASE", api_base);
-        weavecoder::env::set_var("JCODE_OPENROUTER_API_KEY_NAME", "AUTH_FLOW_TEST_KEY");
-        weavecoder::env::set_var("JCODE_OPENROUTER_ENV_FILE", "auth-flow-test.env");
-        weavecoder::env::set_var("JCODE_OPENROUTER_CACHE_NAMESPACE", cache_namespace);
-        weavecoder::env::set_var("JCODE_OPENROUTER_PROVIDER_FEATURES", "0");
-        weavecoder::env::set_var("JCODE_OPENROUTER_MODEL_CATALOG", "1");
+        weavecoder::env::set_var("WVC_OPENROUTER_API_BASE", api_base);
+        weavecoder::env::set_var("WVC_OPENROUTER_API_KEY_NAME", "AUTH_FLOW_TEST_KEY");
+        weavecoder::env::set_var("WVC_OPENROUTER_ENV_FILE", "auth-flow-test.env");
+        weavecoder::env::set_var("WVC_OPENROUTER_CACHE_NAMESPACE", cache_namespace);
+        weavecoder::env::set_var("WVC_OPENROUTER_PROVIDER_FEATURES", "0");
+        weavecoder::env::set_var("WVC_OPENROUTER_MODEL_CATALOG", "1");
         if let Some(key) = key {
             weavecoder::env::set_var("AUTH_FLOW_TEST_KEY", key);
         } else {
             weavecoder::env::remove_var("AUTH_FLOW_TEST_KEY");
         }
         if allow_no_auth {
-            weavecoder::env::set_var("JCODE_OPENROUTER_ALLOW_NO_AUTH", "1");
+            weavecoder::env::set_var("WVC_OPENROUTER_ALLOW_NO_AUTH", "1");
         } else {
-            weavecoder::env::remove_var("JCODE_OPENROUTER_ALLOW_NO_AUTH");
+            weavecoder::env::remove_var("WVC_OPENROUTER_ALLOW_NO_AUTH");
         }
         AuthStatus::invalidate_cache();
     }
@@ -320,8 +320,8 @@ fn live_models_contract_supports_api_key_header_mode() -> Result<()> {
         Some("sk-header-contract"),
         false,
     );
-    weavecoder::env::set_var("JCODE_OPENROUTER_AUTH_HEADER", "api-key");
-    weavecoder::env::set_var("JCODE_OPENROUTER_AUTH_HEADER_NAME", "x-api-key");
+    weavecoder::env::set_var("WVC_OPENROUTER_AUTH_HEADER", "api-key");
+    weavecoder::env::set_var("WVC_OPENROUTER_AUTH_HEADER_NAME", "x-api-key");
 
     let provider = OpenRouterProvider::new()?;
     let models = run_current_thread(provider.fetch_models())?;
@@ -390,7 +390,7 @@ fn model_picker_cache_miss_schedules_single_background_refresh_and_updates_route
         None,
         true,
     );
-    weavecoder::env::set_var("JCODE_OPENROUTER_MODEL", "background-race-selected-model");
+    weavecoder::env::set_var("WVC_OPENROUTER_MODEL", "background-race-selected-model");
 
     let provider = OpenRouterProvider::new()?;
     run_current_thread(async {
@@ -463,9 +463,9 @@ fn live_model_catalog_failure_keeps_static_and_selected_model_picker_fallbacks()
         Some("sk-catalog-failure"),
         false,
     );
-    weavecoder::env::set_var("JCODE_OPENROUTER_MODEL", "selected-fallback-model");
+    weavecoder::env::set_var("WVC_OPENROUTER_MODEL", "selected-fallback-model");
     weavecoder::env::set_var(
-        "JCODE_OPENROUTER_STATIC_MODELS",
+        "WVC_OPENROUTER_STATIC_MODELS",
         "selected-fallback-model\nstatic-fallback-model",
     );
 

@@ -2,7 +2,7 @@
 name = "wvc-provider-claude-cli-runtime"
 version = "0.1.0"
 edition = "2024"
-description = "Deprecated Claude CLI provider runtime (subprocess transport) for jcode, kept downstream of wvc-base so provider edits do not rebuild the app spine"
+description = "Deprecated Claude CLI provider runtime (subprocess transport) for wvc, kept downstream of wvc-base so provider edits do not rebuild the app spine"
 
 [lib]
 name = "wvc_provider_claude_cli_runtime"

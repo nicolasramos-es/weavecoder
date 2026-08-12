@@ -1,13 +1,13 @@
 //! Keymap discovery: snapshot the key bindings that exist on the machine
-//! (macOS system shortcuts + terminal emulator bindings) so jcode can detect
-//! when one of them intercepts a key jcode wants to use.
+//! (macOS system shortcuts + terminal emulator bindings) so wvc can detect
+//! when one of them intercepts a key wvc wants to use.
 //!
 //! This module is the data layer. It:
 //!   1. discovers bindings from each source ([`macos_hotkeys`], [`terminal`]),
 //!   2. normalizes them to [`KeyChord`]s ([`chord`]),
 //!   3. records them in a durable JSON snapshot ([`KeymapSnapshot`]).
 //!
-//! Conflict detection against jcode's own bindings is built on top of this in a
+//! Conflict detection against wvc's own bindings is built on top of this in a
 //! later layer.
 
 pub mod chord;
@@ -19,7 +19,7 @@ pub mod source;
 pub mod terminal;
 
 pub use chord::KeyChord;
-pub use conflicts::{Conflict, JcodeBinding, conflict_signature, detect_conflicts, wvc_bindings};
+pub use conflicts::{Conflict, WeavecoderBinding, conflict_signature, detect_conflicts, wvc_bindings};
 pub use report::{render_report, render_status_line};
 pub use source::{DiscoveredBinding, KeySource};
 
@@ -115,7 +115,7 @@ pub fn snapshot_path() -> anyhow::Result<std::path::PathBuf> {
     Ok(wvc_storage::wvc_dir()?.join("keymap-snapshot.json"))
 }
 
-/// Collect a fresh snapshot and persist it to `~/.jcode/keymap-snapshot.json`.
+/// Collect a fresh snapshot and persist it to `~/.wvc/keymap-snapshot.json`.
 /// Returns the snapshot regardless of whether the write succeeded.
 pub fn refresh_and_save() -> KeymapSnapshot {
     let snapshot = collect_snapshot();

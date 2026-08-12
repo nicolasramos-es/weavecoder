@@ -183,11 +183,11 @@ wvc-build-meta = { path = "crates/wvc-build-meta" }
 # Presentation layer: the terminal UI (`tui`) + offline replay (`video_export`),
 # compiled as a separate rustc unit. It re-exports the application core
 # (`wvc-app-core`, which re-exports `wvc-base`), so the root crate (cli +
-# bin) re-exports everything via `pub use jcode_tui::*`. default-features=false
+# bin) re-exports everything via `pub use wvc_tui::*`. default-features=false
 # so the root feature set fully controls the downstream features (see
 # [features]).
 wvc-tui = { path = "crates/wvc-tui", default-features = false }
-# `jcode provider-doctor` / provider diagnostics; sits downstream of wvc-base
+# `wvc provider-doctor` / provider diagnostics; sits downstream of wvc-base
 # so doctor edits do not rebuild the base -> app-core -> tui spine.
 wvc-provider-doctor = { path = "crates/wvc-provider-doctor" }
 # Gemini provider runtime; sits downstream of wvc-base so gemini edits do
@@ -210,7 +210,7 @@ tempfile = "3"
 [features]
 # Include local ONNX/tokenizer embeddings in default builds so memory recall,
 # semantic retrieval, and embedding-backed features work out of the box.
-# Use `JCODE_DEV_FEATURE_PROFILE=minimal` for compile-speed probes that need
+# Use `WVC_DEV_FEATURE_PROFILE=minimal` for compile-speed probes that need
 # to skip optional default feature stacks.
 default = ["pdf", "embeddings", "bedrock"]
 dev-bins = ["wvc-tui/dev-bins"]
@@ -236,10 +236,10 @@ linux-compat-vendored-openssl = ["wvc-tui/linux-compat-vendored-openssl"]
 mmdr-size-api = ["wvc-tui/mmdr-size-api"]
 pdf = ["wvc-tui/pdf"]
 
-# The harness API bridge ships inside the released binary as `jcode api-bridge`.
+# The harness API bridge ships inside the released binary as `wvc api-bridge`.
 # SDK users must not need a Rust toolchain to reach the API: requiring
 # `cargo run -p wvc-harness-api-server` made the TypeScript SDK unusable for
-# anyone who installed jcode from a release artifact. Unix-only because the
+# anyone who installed wvc from a release artifact. Unix-only because the
 # bridge listens on a Unix socket.
 [target.'cfg(unix)'.dependencies]
 wvc-harness-api-server = { path = "crates/wvc-harness-api-server" }
@@ -427,9 +427,9 @@ opt-level = 3
 # scrolling real (emoji/markdown-heavy) transcripts janky in dev/selfdev builds
 # even though the production release build was smooth. These are stable
 # third-party crates that almost never recompile, so pinning them to opt-level =
-# 3 costs a one-time compile and is then reused across every iterative jcode
+# 3 costs a one-time compile and is then reused across every iterative wvc
 # rebuild (same rationale as wvc-tui-anim above). It does NOT slow down
-# recompiles of jcode's own crates.
+# recompiles of wvc's own crates.
 [profile.dev.package.cosmic-text]
 opt-level = 3
 [profile.selfdev.package.cosmic-text]
@@ -477,7 +477,7 @@ opt-level = 3
 # Inline transcript images decode (png/zune-jpeg/fdeflate/miniz_oxide), resize
 # (image), and base64-encode (kitty transmit) at draw time; at opt-level 0 a
 # single screenshot costs 100-200ms per decode/resize, which reads as input
-# lag. These are pure pixel crates with no jcode logic, so optimizing them
+# lag. These are pure pixel crates with no wvc logic, so optimizing them
 # does not hurt rebuild times for our own code.
 [profile.dev.package.image]
 opt-level = 3
@@ -541,7 +541,7 @@ opt-level = 3
 # streaming visibly laggy in selfdev builds while the same code was smooth at
 # opt-level 3. These are stable third-party crates that almost never
 # recompile, so pinning them costs one compile and does not slow rebuilds of
-# jcode's own crates (same rationale as the ratatui/cosmic-text pins above).
+# wvc's own crates (same rationale as the ratatui/cosmic-text pins above).
 [profile.dev.package.vello]
 opt-level = 3
 [profile.selfdev.package.vello]

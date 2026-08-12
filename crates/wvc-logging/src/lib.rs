@@ -1,6 +1,6 @@
-//! Logging infrastructure for jcode
+//! Logging infrastructure for wvc
 //!
-//! Logs to ~/.jcode/logs/ with automatic rotation
+//! Logs to ~/.wvc/logs/ with automatic rotation
 //!
 //! Supports thread-local context for server, session, provider, and model info.
 
@@ -40,7 +40,7 @@ impl LogLevel {
     }
 
     fn is_enabled(self) -> bool {
-        !matches!(self, Self::Debug) || std::env::var("JCODE_TRACE").is_ok()
+        !matches!(self, Self::Debug) || std::env::var("WVC_TRACE").is_ok()
     }
 }
 
@@ -230,7 +230,7 @@ pub fn init() {
 
     // Prune stale daily log files once per process, off the startup path so
     // disk I/O never blocks launch. cleanup_old_logs is scoped to our own
-    // `jcode-*.log` files, so it is safe to run unconditionally.
+    // `wvc-*.log` files, so it is safe to run unconditionally.
     // Detect silent hangs in long sessions: without this a freeze leaves the
     // log simply stopping, with no phase or thread-state evidence.
     watchdog::start();
@@ -294,13 +294,13 @@ pub fn truncate_for_log(value: &str, max_chars: usize) -> String {
     format!("{}… [{} chars total]", truncated, value.chars().count())
 }
 
-/// Log a debug message (only if JCODE_TRACE is set)
+/// Log a debug message (only if WVC_TRACE is set)
 #[expect(
     clippy::collapsible_if,
     reason = "Debug logging keeps env gating and logger access explicit"
 )]
 pub fn debug(message: &str) {
-    if std::env::var("JCODE_TRACE").is_ok() {
+    if std::env::var("WVC_TRACE").is_ok() {
         if let Ok(mut guard) = LOGGER.lock() {
             if let Some(logger) = guard.as_mut() {
                 logger.write("DEBUG", message);
@@ -459,7 +459,7 @@ where
 
 fn structured_json_enabled() -> bool {
     matches!(
-        std::env::var("JCODE_LOG_JSON").as_deref(),
+        std::env::var("WVC_LOG_JSON").as_deref(),
         Ok("1" | "true" | "TRUE" | "yes" | "YES")
     )
 }
@@ -567,7 +567,7 @@ pub fn log_path() -> Option<PathBuf> {
     Some(log_dir.join(format!("wvc-{}.log", date)))
 }
 
-/// Remove daily `jcode-*.log` / `jcode-desktop-*.log` files older than 7 days.
+/// Remove daily `wvc-*.log` / `wvc-desktop-*.log` files older than 7 days.
 ///
 /// Scoped deliberately to the date-stamped log files this logger produces. The
 /// log directory also holds non-log data (e.g. `memory/`, `memory-events-*.jsonl`)
@@ -780,9 +780,9 @@ mod tests {
 
         cleanup_old_logs_in(&dir, Local::now());
 
-        assert!(!old_log.exists(), "old jcode log should be deleted");
+        assert!(!old_log.exists(), "old wvc log should be deleted");
         assert!(!old_desktop.exists(), "old desktop log should be deleted");
-        assert!(new_log.exists(), "recent jcode log must survive");
+        assert!(new_log.exists(), "recent wvc log must survive");
         assert!(old_memory.exists(), "memory-events jsonl must survive");
         assert!(old_other.exists(), "unrelated files must survive");
         assert!(subdir.is_dir(), "subdirectories must survive");

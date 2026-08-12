@@ -89,7 +89,7 @@ fn test_convert_blocks_content() {
 fn imported_tool_history_is_provider_neutral() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     let transcript = temp.path().join("tool-history.jsonl");
     std::fs::write(
         &transcript,
@@ -168,7 +168,7 @@ fn imported_history_is_bounded_for_fast_initial_render() {
 fn repeated_external_resume_reuses_the_imported_snapshot() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     let transcript = temp.path().join("cached.jsonl");
     std::fs::write(
         &transcript,
@@ -180,9 +180,9 @@ fn repeated_external_resume_reuses_the_imported_snapshot() {
         session_path: transcript.to_string_lossy().to_string(),
     };
 
-    let first = resolve_resume_target_to_jcode(&target).unwrap();
+    let first = resolve_resume_target_to_wvc(&target).unwrap();
     std::fs::remove_file(&transcript).unwrap();
-    let second = resolve_resume_target_to_jcode(&target).unwrap();
+    let second = resolve_resume_target_to_wvc(&target).unwrap();
     assert_eq!(first, second);
     assert!(Session::load(&imported_claude_code_session_id("cached")).is_ok());
 }
@@ -243,7 +243,7 @@ fn ordinary_resume_never_stops_a_live_claude_process() {
 
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     let external = temp.path().join("external/.claude");
     let transcript = external.join("projects/demo/ordinary-live.jsonl");
     std::fs::create_dir_all(transcript.parent().unwrap()).unwrap();
@@ -261,10 +261,10 @@ fn ordinary_resume_never_stops_a_live_claude_process() {
         session_path: transcript.to_string_lossy().to_string(),
     };
 
-    let resolved = resolve_resume_target_to_jcode(&target).unwrap();
+    let resolved = resolve_resume_target_to_wvc(&target).unwrap();
     assert!(matches!(
         resolved,
-        wvc_session_types::ResumeTarget::JcodeSession { .. }
+        wvc_session_types::ResumeTarget::WeavecoderSession { .. }
     ));
     assert!(claude.try_wait().unwrap().is_none());
 
@@ -279,7 +279,7 @@ fn explicit_takeover_preserves_history_and_stops_only_matching_process() {
 
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     let external = temp.path().join("external/.claude");
     let transcript = external.join("projects/demo/takeover-live.jsonl");
     std::fs::create_dir_all(transcript.parent().unwrap()).unwrap();
@@ -305,8 +305,8 @@ fn explicit_takeover_preserves_history_and_stops_only_matching_process() {
     };
 
     let resolved = take_over_live_claude_session(&target).unwrap();
-    let wvc_session_types::ResumeTarget::JcodeSession { session_id } = resolved else {
-        panic!("expected Jcode session");
+    let wvc_session_types::ResumeTarget::WeavecoderSession { session_id } = resolved else {
+        panic!("expected Weavecoder session");
     };
     assert!(session_id.starts_with("session_"));
     claude.wait().unwrap();
@@ -342,7 +342,7 @@ fn takeover_with_no_complete_messages_leaves_claude_running() {
 
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     let external = temp.path().join("external/.claude");
     let transcript = external.join("projects/demo/incomplete-live.jsonl");
     std::fs::create_dir_all(transcript.parent().unwrap()).unwrap();
@@ -379,7 +379,7 @@ fn takeover_rejects_a_transcript_from_a_different_live_session() {
 
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     let external = temp.path().join("external/.claude");
     let transcript = external.join("projects/demo/wrong-session.jsonl");
     std::fs::create_dir_all(transcript.parent().unwrap()).unwrap();
@@ -413,7 +413,7 @@ fn takeover_timeout_preserves_the_staged_wvc_session_after_sigterm() {
 
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     let external = temp.path().join("external/.claude");
     let transcript = external.join("projects/demo/slow-exit.jsonl");
     std::fs::create_dir_all(transcript.parent().unwrap()).unwrap();
@@ -462,7 +462,7 @@ fn takeover_timeout_preserves_the_staged_wvc_session_after_sigterm() {
 fn cached_imported_session_preserves_existing_history_verbatim() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     let imported_id = imported_codex_session_id("legacy-tools");
     let mut legacy = Session::create_with_id(imported_id.clone(), None, None);
     legacy.append_stored_message(StoredMessage {
@@ -496,7 +496,7 @@ fn cached_imported_session_preserves_existing_history_verbatim() {
         id: "wvc-continuation".to_string(),
         role: Role::Assistant,
         content: vec![ContentBlock::Text {
-            text: "continued inside jcode".to_string(),
+            text: "continued inside wvc".to_string(),
             cache_control: None,
         }],
         display_role: None,
@@ -506,7 +506,7 @@ fn cached_imported_session_preserves_existing_history_verbatim() {
     });
     legacy.save().unwrap();
 
-    let resolved = resolve_resume_target_to_jcode(&wvc_session_types::ResumeTarget::CodexSession {
+    let resolved = resolve_resume_target_to_wvc(&wvc_session_types::ResumeTarget::CodexSession {
         session_id: "legacy-tools".to_string(),
         session_path: temp
             .path()
@@ -517,7 +517,7 @@ fn cached_imported_session_preserves_existing_history_verbatim() {
     .unwrap();
     assert_eq!(
         resolved,
-        wvc_session_types::ResumeTarget::JcodeSession {
+        wvc_session_types::ResumeTarget::WeavecoderSession {
             session_id: imported_id.clone(),
         }
     );
@@ -543,7 +543,7 @@ fn message_role_prefilter_accepts_json_whitespace() {
 fn test_discover_projects_uses_sandboxed_external_home() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
 
     let project_dir = temp.path().join("external/.claude/projects/demo");
     std::fs::create_dir_all(&project_dir).unwrap();
@@ -561,7 +561,7 @@ fn test_discover_projects_uses_sandboxed_external_home() {
 fn test_list_claude_code_sessions_uses_live_transcripts_when_index_is_stale() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
 
     let project_dir = temp.path().join("external/.claude/projects/demo-project");
     std::fs::create_dir_all(&project_dir).unwrap();
@@ -629,7 +629,7 @@ fn test_list_claude_code_sessions_uses_live_transcripts_when_index_is_stale() {
 fn test_list_claude_code_sessions_uses_index_metadata_without_parsing_transcript() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
 
     let project_dir = temp.path().join("external/.claude/projects/demo-project");
     std::fs::create_dir_all(&project_dir).unwrap();
@@ -675,7 +675,7 @@ fn test_list_claude_code_sessions_uses_index_metadata_without_parsing_transcript
 fn test_list_claude_code_sessions_skips_empty_index_entries_without_messages() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
 
     let project_dir = temp.path().join("external/.claude/projects/demo-project");
     std::fs::create_dir_all(&project_dir).unwrap();
@@ -715,7 +715,7 @@ fn test_list_claude_code_sessions_skips_empty_index_entries_without_messages() {
 fn test_import_claude_session_uses_recovered_live_transcript() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
 
     let project_dir = temp.path().join("external/.claude/projects/demo-project");
     std::fs::create_dir_all(&project_dir).unwrap();
@@ -762,7 +762,7 @@ fn test_import_claude_session_uses_recovered_live_transcript() {
 fn test_import_pi_session_creates_wvc_snapshot() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
 
     let pi_dir = temp.path().join("external/.pi/agent/sessions/project");
     std::fs::create_dir_all(&pi_dir).unwrap();
@@ -793,7 +793,7 @@ fn test_import_pi_session_creates_wvc_snapshot() {
 fn test_import_opencode_session_creates_wvc_snapshot() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
 
     let session_dir = temp
         .path()
@@ -912,7 +912,7 @@ fn test_import_opencode_session_creates_wvc_snapshot() {
 fn test_resolve_resume_target_to_wvc_imports_codex_session() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
 
     let codex_dir = temp.path().join("external/.codex/sessions/2026/04/05");
     std::fs::create_dir_all(&codex_dir).unwrap();
@@ -926,7 +926,7 @@ fn test_resolve_resume_target_to_wvc_imports_codex_session() {
         )
         .unwrap();
 
-    let resolved = resolve_resume_target_to_jcode(&wvc_session_types::ResumeTarget::CodexSession {
+    let resolved = resolve_resume_target_to_wvc(&wvc_session_types::ResumeTarget::CodexSession {
         session_id: "codex-resolve-test".to_string(),
         session_path: codex_dir
             .join("rollout.jsonl")
@@ -937,7 +937,7 @@ fn test_resolve_resume_target_to_wvc_imports_codex_session() {
 
     assert_eq!(
         resolved,
-        wvc_session_types::ResumeTarget::JcodeSession {
+        wvc_session_types::ResumeTarget::WeavecoderSession {
             session_id: imported_codex_session_id("codex-resolve-test"),
         }
     );
@@ -947,15 +947,15 @@ fn test_resolve_resume_target_to_wvc_imports_codex_session() {
 
 /// The resume picker builds a `ClaudeCodeSession` target with id `claude:<id>`
 /// and a transcript path; selecting it routes through
-/// `resolve_resume_target_to_jcode`, which must import the transcript and hand
-/// back a resumable `imported_cc_<id>` jcode session. This guards the full
+/// `resolve_resume_target_to_wvc`, which must import the transcript and hand
+/// back a resumable `imported_cc_<id>` wvc session. This guards the full
 /// detect -> import -> resume round-trip for Claude Code (previously only Codex
 /// had coverage here).
 #[test]
 fn test_resolve_resume_target_to_wvc_imports_claude_code_session() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
 
     let project_dir = temp.path().join("external/.claude/projects/demo-project");
     std::fs::create_dir_all(&project_dir).unwrap();
@@ -970,7 +970,7 @@ fn test_resolve_resume_target_to_wvc_imports_claude_code_session() {
         .unwrap();
 
     let resolved =
-        resolve_resume_target_to_jcode(&wvc_session_types::ResumeTarget::ClaudeCodeSession {
+        resolve_resume_target_to_wvc(&wvc_session_types::ResumeTarget::ClaudeCodeSession {
             session_id: "claude-resolve-test".to_string(),
             session_path: transcript_path.to_string_lossy().to_string(),
         })
@@ -979,7 +979,7 @@ fn test_resolve_resume_target_to_wvc_imports_claude_code_session() {
     let imported_id = imported_claude_code_session_id("claude-resolve-test");
     assert_eq!(
         resolved,
-        wvc_session_types::ResumeTarget::JcodeSession {
+        wvc_session_types::ResumeTarget::WeavecoderSession {
             session_id: imported_id.clone(),
         }
     );
@@ -1003,17 +1003,17 @@ fn test_resolve_resume_target_to_wvc_imports_claude_code_session() {
     assert_eq!(loaded.provider_key.as_deref(), Some("claude-code"));
 }
 
-/// Regression for silent data loss: the picker hides the imported jcode session
+/// Regression for silent data loss: the picker hides the imported wvc session
 /// (any `imported_*` stem) and only shows the external `claude:<id>` entry, so
 /// re-selecting a Claude session re-enters `import_session_from_file`. If the
-/// user already resumed and continued that imported session inside jcode, a
-/// blind re-import previously overwrote the snapshot and dropped the jcode-side
+/// user already resumed and continued that imported session inside wvc, a
+/// blind re-import previously overwrote the snapshot and dropped the wvc-side
 /// messages. The continuation must be preserved instead.
 #[test]
 fn test_reimporting_claude_session_preserves_wvc_continuation() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
 
     let project_dir = temp.path().join("external/.claude/projects/demo-project");
     std::fs::create_dir_all(&project_dir).unwrap();
@@ -1032,7 +1032,7 @@ fn test_reimporting_claude_session_preserves_wvc_continuation() {
     assert_eq!(imported.messages.len(), 2);
     let imported_id = imported_claude_code_session_id("claude-continued");
 
-    // User resumes inside jcode and appends a jcode-only follow-up message.
+    // User resumes inside wvc and appends a wvc-only follow-up message.
     let mut session = Session::load(&imported_id).unwrap();
     session.append_stored_message(StoredMessage {
         id: "wvc-continuation".to_string(),
@@ -1051,14 +1051,14 @@ fn test_reimporting_claude_session_preserves_wvc_continuation() {
 
     // Re-selecting the external entry re-enters import; the continuation must survive.
     let resumed =
-        resolve_resume_target_to_jcode(&wvc_session_types::ResumeTarget::ClaudeCodeSession {
+        resolve_resume_target_to_wvc(&wvc_session_types::ResumeTarget::ClaudeCodeSession {
             session_id: "claude-continued".to_string(),
             session_path: transcript_path.to_string_lossy().to_string(),
         })
         .unwrap();
     assert_eq!(
         resumed,
-        wvc_session_types::ResumeTarget::JcodeSession {
+        wvc_session_types::ResumeTarget::WeavecoderSession {
             session_id: imported_id.clone(),
         }
     );
@@ -1074,7 +1074,7 @@ fn test_reimporting_claude_session_preserves_wvc_continuation() {
     );
     assert!(
         preserved,
-        "the jcode-only follow up message must be preserved"
+        "the wvc-only follow up message must be preserved"
     );
 }
 
@@ -1082,7 +1082,7 @@ fn test_reimporting_claude_session_preserves_wvc_continuation() {
 fn test_import_cursor_session_creates_wvc_snapshot() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
 
     // Cursor stores transcripts at
     // ~/.cursor/projects/<project>/agent-transcripts/<uuid>/<uuid>.jsonl where the
@@ -1125,8 +1125,8 @@ fn test_import_cursor_session_creates_wvc_snapshot() {
         "expected assistant text to import: {all_text:?}"
     );
 
-    // Resolving the resume target should import and remap to the jcode snapshot.
-    let resumed = crate::import::resolve_resume_target_to_jcode(
+    // Resolving the resume target should import and remap to the wvc snapshot.
+    let resumed = crate::import::resolve_resume_target_to_wvc(
         &wvc_session_types::ResumeTarget::CursorSession {
             session_id: session_id.to_string(),
             session_path: transcript_path.to_string_lossy().to_string(),
@@ -1135,7 +1135,7 @@ fn test_import_cursor_session_creates_wvc_snapshot() {
     .unwrap();
     assert_eq!(
         resumed,
-        wvc_session_types::ResumeTarget::JcodeSession {
+        wvc_session_types::ResumeTarget::WeavecoderSession {
             session_id: imported_cursor_session_id(session_id),
         }
     );

@@ -46,10 +46,10 @@ use std::path::Path;
 use std::sync::{Mutex, RwLock};
 use std::time::Instant;
 
-/// Cached auth status plus the `JCODE_HOME` it was computed under.
+/// Cached auth status plus the `WVC_HOME` it was computed under.
 ///
-/// Auth probes read credential files relative to `JCODE_HOME`. Tests swap
-/// `JCODE_HOME` to per-test temp dirs, and a status computed under one home
+/// Auth probes read credential files relative to `WVC_HOME`. Tests swap
+/// `WVC_HOME` to per-test temp dirs, and a status computed under one home
 /// must never be served for another (issue #361: parallel provider tests
 /// intermittently observed another test's auth snapshot through this global
 /// cache). In production the home never changes, so the key check is free.
@@ -61,7 +61,7 @@ static AUTH_STATUS_FAST_CACHE: std::sync::LazyLock<RwLock<Option<CachedAuthStatu
     std::sync::LazyLock::new(|| RwLock::new(None));
 
 fn auth_cache_home_key() -> Option<std::ffi::OsString> {
-    std::env::var_os("JCODE_HOME")
+    std::env::var_os("WVC_HOME")
 }
 
 const AUTH_STATUS_CACHE_TTL_SECS: u64 = 30;
@@ -96,7 +96,7 @@ static AUTH_REFRESH_IN_FLIGHT: std::sync::atomic::AtomicBool =
     std::sync::atomic::AtomicBool::new(false);
 
 /// Per-process cache for command existence lookups.
-/// CLI tools don't get installed/uninstalled while jcode is running, so caching
+/// CLI tools don't get installed/uninstalled while wvc is running, so caching
 /// indefinitely per process is correct and avoids repeated PATH scans.
 static COMMAND_EXISTS_CACHE: std::sync::LazyLock<Mutex<HashMap<String, bool>>> =
     std::sync::LazyLock::new(|| Mutex::new(HashMap::new()));
@@ -110,14 +110,14 @@ enum AuthProbeMode {
 pub fn browser_suppressed(cli_no_browser: bool) -> bool {
     cli_no_browser
         || env_truthy("NO_BROWSER")
-        || env_truthy("JCODE_NO_BROWSER")
+        || env_truthy("WVC_NO_BROWSER")
         || running_in_test_harness()
         || browser_unusable_here()
 }
 
 /// True when the probed environment says a browser launch cannot work.
 ///
-/// Without this, jcode would open a browser that does not exist (or that opens
+/// Without this, wvc would open a browser that does not exist (or that opens
 /// on the wrong machine, over SSH) and then wait out a callback timeout before
 /// telling the user anything. Probing first turns a 60-second dead end into an
 /// immediate fallback to a paste/device flow.
@@ -135,17 +135,17 @@ fn browser_unusable_here() -> bool {
 
 /// True when the current process is a Rust test binary (`cargo test` /
 /// `cargo nextest`). Test binaries always run from `target/**/deps/`, a
-/// location no installed or self-dev jcode binary ever runs from.
+/// location no installed or self-dev wvc binary ever runs from.
 ///
 /// Used to keep tests from opening real browser windows (OAuth login pages,
 /// files) on the developer's desktop: many login/onboarding flows are
 /// exercised by TUI tests, and without this guard each test run could pop
-/// multiple browser tabs. Set `JCODE_ALLOW_BROWSER_IN_TESTS=1` to opt out
+/// multiple browser tabs. Set `WVC_ALLOW_BROWSER_IN_TESTS=1` to opt out
 /// (e.g. for an intentionally interactive live test).
 pub fn running_in_test_harness() -> bool {
     static IN_TEST_HARNESS: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
     *IN_TEST_HARNESS.get_or_init(|| {
-        if env_truthy("JCODE_ALLOW_BROWSER_IN_TESTS") {
+        if env_truthy("WVC_ALLOW_BROWSER_IN_TESTS") {
             return false;
         }
         std::env::current_exe()
@@ -169,7 +169,7 @@ fn env_truthy(key: &str) -> bool {
 }
 
 fn auth_timing_logging_enabled() -> bool {
-    env_truthy("JCODE_AUTH_TIMING")
+    env_truthy("WVC_AUTH_TIMING")
 }
 
 fn openai_api_key_configured() -> bool {
@@ -195,7 +195,7 @@ fn log_auth_status_snapshot(event: &str, status: &AuthStatus) {
         event,
         "all",
         &[
-            ("wvc", auth_state_label(status.jcode)),
+            ("wvc", auth_state_label(status.wvc)),
             ("claude", auth_state_label(status.anthropic.state)),
             ("openai", auth_state_label(status.openai)),
             ("openrouter", auth_state_label(status.openrouter)),
@@ -335,7 +335,7 @@ impl AuthStatus {
     /// The only blocking case is the very first call in a process with no
     /// cached snapshot at all, which matches the old behavior for frame one.
     /// Tests always take the blocking path: background refreshes racing
-    /// per-test `JCODE_HOME` swaps would poison the shared cache.
+    /// per-test `WVC_HOME` swaps would poison the shared cache.
     pub fn check_fast_nonblocking() -> Self {
         if running_in_test_harness() {
             return Self::check_fast();
@@ -390,7 +390,7 @@ impl AuthStatus {
     /// Returns true if at least one provider has usable credentials.
     pub fn has_any_available(&self) -> bool {
         self.anthropic.state == AuthState::Available
-            || self.jcode == AuthState::Available
+            || self.wvc == AuthState::Available
             || self.openai == AuthState::Available
             || self.openrouter == AuthState::Available
             || self.azure == AuthState::Available
@@ -405,7 +405,7 @@ impl AuthStatus {
     /// credentials configured. This is the single best line to ask a user to
     /// share when debugging "my model picker is empty / only OpenAI+Anthropic
     /// show / login silently failed" reports: it records, per provider, whether
-    /// jcode believes credentials are available/expired/missing without leaking
+    /// wvc believes credentials are available/expired/missing without leaking
     /// any token or key material.
     ///
     /// `surface` describes where the snapshot was taken from (for example
@@ -417,7 +417,7 @@ impl AuthStatus {
             vec![
                 ("surface", surface.to_string()),
                 ("any_available", self.has_any_available().to_string()),
-                ("wvc", self.jcode.label().to_string()),
+                ("wvc", self.wvc.label().to_string()),
                 ("anthropic", self.anthropic.state.label().to_string()),
                 ("anthropic_oauth", self.anthropic.has_oauth.to_string()),
                 ("anthropic_api", self.anthropic.has_api_key.to_string()),
@@ -456,7 +456,7 @@ impl AuthStatus {
                     AuthState::NotConfigured
                 }
             }
-            LoginProviderAuthStateKey::Jcode => self.jcode,
+            LoginProviderAuthStateKey::Weavecoder => self.wvc,
             LoginProviderAuthStateKey::Anthropic => self.anthropic.state,
             LoginProviderAuthStateKey::OpenAi => self.openai,
             LoginProviderAuthStateKey::Azure => self.azure,
@@ -479,7 +479,7 @@ impl AuthStatus {
                     AuthState::NotConfigured
                 }
             }
-            crate::provider_catalog::LoginProviderTarget::Jcode => {
+            crate::provider_catalog::LoginProviderTarget::Weavecoder => {
                 if crate::subscription_catalog::has_credentials() {
                     AuthState::Available
                 } else {
@@ -550,17 +550,17 @@ impl AuthStatus {
                     "No importable external logins found".to_string()
                 }
             }
-            crate::provider_catalog::LoginProviderTarget::Jcode => {
+            crate::provider_catalog::LoginProviderTarget::Weavecoder => {
                 if self.state_for_provider(provider) == AuthState::Available {
                     if crate::subscription_catalog::has_router_base() {
                         format!(
                             "API key (`{}`) + router base",
-                            crate::subscription_catalog::JCODE_API_KEY_ENV
+                            crate::subscription_catalog::WVC_API_KEY_ENV
                         )
                     } else {
                         format!(
                             "API key (`{}`), router base pending",
-                            crate::subscription_catalog::JCODE_API_KEY_ENV
+                            crate::subscription_catalog::WVC_API_KEY_ENV
                         )
                     }
                 } else {
@@ -711,13 +711,13 @@ impl AuthStatus {
                 AuthRefreshSupport::ExternalManaged,
                 AuthValidationMethod::TrustedImportScan,
             ),
-            crate::provider_catalog::LoginProviderTarget::Jcode => {
+            crate::provider_catalog::LoginProviderTarget::Weavecoder => {
                 let (source, detail) = summarize_sources(vec![
-                    env_source(crate::subscription_catalog::JCODE_API_KEY_ENV),
+                    env_source(crate::subscription_catalog::WVC_API_KEY_ENV),
                     config_source(
-                        crate::subscription_catalog::JCODE_API_KEY_ENV,
-                        crate::subscription_catalog::JCODE_ENV_FILE,
-                        "~/.config/jcode/jcode-subscription.env",
+                        crate::subscription_catalog::WVC_API_KEY_ENV,
+                        crate::subscription_catalog::WVC_ENV_FILE,
+                        "~/.config/wvc/wvc-subscription.env",
                     ),
                 ]);
                 (
@@ -734,7 +734,7 @@ impl AuthStatus {
                     config_source(
                         "OPENROUTER_API_KEY",
                         "openrouter.env",
-                        "~/.config/jcode/openrouter.env",
+                        "~/.config/wvc/openrouter.env",
                     ),
                     external_api_key_source("OPENROUTER_API_KEY"),
                 ]);
@@ -749,7 +749,7 @@ impl AuthStatus {
             crate::provider_catalog::LoginProviderTarget::OpenAiApiKey => {
                 let (source, detail) = summarize_sources(vec![
                     env_source("OPENAI_API_KEY"),
-                    config_source("OPENAI_API_KEY", "openai.env", "~/.config/jcode/openai.env"),
+                    config_source("OPENAI_API_KEY", "openai.env", "~/.config/wvc/openai.env"),
                     external_api_key_source("OPENAI_API_KEY"),
                 ]);
                 (
@@ -762,8 +762,8 @@ impl AuthStatus {
             }
             crate::provider_catalog::LoginProviderTarget::ClaudeApiKey => {
                 // The Anthropic API key is most commonly stored in the app
-                // config file (`~/.config/jcode/anthropic.env`), *not* an env
-                // var and *not* `~/.jcode/auth.json` (which holds the separate
+                // config file (`~/.config/wvc/anthropic.env`), *not* an env
+                // var and *not* `~/.wvc/auth.json` (which holds the separate
                 // OAuth accounts). List every place it can live so the real
                 // source is always discoverable instead of looking "absent".
                 let (source, detail) = summarize_sources(vec![
@@ -771,7 +771,7 @@ impl AuthStatus {
                     config_source(
                         "ANTHROPIC_API_KEY",
                         "anthropic.env",
-                        "~/.config/jcode/anthropic.env",
+                        "~/.config/wvc/anthropic.env",
                     ),
                     external_api_key_source("ANTHROPIC_API_KEY"),
                 ]);
@@ -790,7 +790,7 @@ impl AuthStatus {
                     config_source(
                         crate::auth::azure::API_KEY_ENV,
                         crate::auth::azure::ENV_FILE,
-                        "~/.config/jcode/azure-openai.env",
+                        "~/.config/wvc/azure-openai.env",
                     ),
                 ]);
                 (
@@ -811,10 +811,10 @@ impl AuthStatus {
                     config_source(
                         crate::provider::bedrock::API_KEY_ENV,
                         crate::provider::bedrock::ENV_FILE,
-                        "~/.config/jcode/bedrock.env",
+                        "~/.config/wvc/bedrock.env",
                     ),
                     env_source("AWS_PROFILE"),
-                    env_source("JCODE_BEDROCK_PROFILE"),
+                    env_source("WVC_BEDROCK_PROFILE"),
                     env_source("AWS_ACCESS_KEY_ID"),
                 ]);
                 (
@@ -834,7 +834,7 @@ impl AuthStatus {
                 {
                     summarize_sources(vec![
                         env_source(&key_env),
-                        config_source(&key_env, &env_file, format!("~/.config/jcode/{}", env_file)),
+                        config_source(&key_env, &env_file, format!("~/.config/wvc/{}", env_file)),
                         external_api_key_source(&key_env),
                     ])
                 } else {
@@ -845,7 +845,7 @@ impl AuthStatus {
                         config_source(
                             &resolved.api_key_env,
                             &resolved.env_file,
-                            format!("~/.config/jcode/{}", resolved.env_file),
+                            format!("~/.config/wvc/{}", resolved.env_file),
                         ),
                         external_api_key_source(&resolved.api_key_env),
                     ])
@@ -994,7 +994,7 @@ fn token_state(result: anyhow::Result<bool>) -> AuthState {
 
 fn probe_wvc_status(status: &mut AuthStatus) {
     if crate::subscription_catalog::has_credentials() {
-        status.jcode = AuthState::Available;
+        status.wvc = AuthState::Available;
     }
 }
 
@@ -1258,7 +1258,7 @@ fn assessment_for_key(
                 AuthValidationMethod::TimestampCheck,
             )
         }
-        LoginProviderAuthStateKey::Jcode
+        LoginProviderAuthStateKey::Weavecoder
         | LoginProviderAuthStateKey::Azure
         | LoginProviderAuthStateKey::Bedrock
         | LoginProviderAuthStateKey::OpenRouterLike
@@ -1351,8 +1351,8 @@ fn anthropic_oauth_source(status: &AuthStatus) -> Option<(AuthCredentialSource, 
         .is_empty()
     {
         return Some((
-            AuthCredentialSource::JcodeManagedFile,
-            "~/.jcode/auth.json".to_string(),
+            AuthCredentialSource::WeavecoderManagedFile,
+            "~/.wvc/auth.json".to_string(),
         ));
     }
     if let Some(source) = crate::auth::claude::preferred_external_auth_source()
@@ -1382,8 +1382,8 @@ fn openai_oauth_source(status: &AuthStatus) -> Option<(AuthCredentialSource, Str
         .is_empty()
     {
         return Some((
-            AuthCredentialSource::JcodeManagedFile,
-            "~/.jcode/openai-auth.json".to_string(),
+            AuthCredentialSource::WeavecoderManagedFile,
+            "~/.wvc/openai-auth.json".to_string(),
         ));
     }
     if crate::auth::codex::legacy_auth_allowed() && crate::auth::codex::legacy_auth_source_exists()
@@ -1407,7 +1407,7 @@ fn gemini_source() -> Option<(AuthCredentialSource, String)> {
         && path.exists()
     {
         return Some((
-            AuthCredentialSource::JcodeManagedFile,
+            AuthCredentialSource::WeavecoderManagedFile,
             format!("{}", path.display()),
         ));
     }
@@ -1436,7 +1436,7 @@ fn antigravity_source() -> Option<(AuthCredentialSource, String)> {
         && path.exists()
     {
         return Some((
-            AuthCredentialSource::JcodeManagedFile,
+            AuthCredentialSource::WeavecoderManagedFile,
             format!("{}", path.display()),
         ));
     }
@@ -1456,7 +1456,7 @@ fn google_source() -> Option<(AuthCredentialSource, String)> {
         && credentials_path.exists()
     {
         return Some((
-            AuthCredentialSource::JcodeManagedFile,
+            AuthCredentialSource::WeavecoderManagedFile,
             format!("{} + {}", credentials_path.display(), tokens_path.display()),
         ));
     }
@@ -1494,8 +1494,8 @@ fn cursor_source() -> Option<(AuthCredentialSource, String)> {
             format!("trusted Cursor app state ({})", path.display()),
         ));
     }
-    if config_source("CURSOR_API_KEY", "cursor.env", "~/.config/jcode/cursor.env").is_some() {
-        return config_source("CURSOR_API_KEY", "cursor.env", "~/.config/jcode/cursor.env");
+    if config_source("CURSOR_API_KEY", "cursor.env", "~/.config/wvc/cursor.env").is_some() {
+        return config_source("CURSOR_API_KEY", "cursor.env", "~/.config/wvc/cursor.env");
     }
     None
 }

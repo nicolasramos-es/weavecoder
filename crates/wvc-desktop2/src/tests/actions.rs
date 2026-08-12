@@ -1130,14 +1130,14 @@ mod session_strip {
             Entry {
                 session_id: "s_a1".into(),
                 title: None,
-                working_dir: Some("/home/j/jcode".into()),
+                working_dir: Some("/home/j/wvc".into()),
                 busy: false,
                 weight: 0.0,
             },
             Entry {
                 session_id: "s_a2".into(),
                 title: None,
-                working_dir: Some("/home/j/jcode".into()),
+                working_dir: Some("/home/j/wvc".into()),
                 busy: false,
                 weight: 0.0,
             },
@@ -1160,7 +1160,7 @@ mod session_strip {
     #[test]
     fn switching_sessions_renames_the_place() {
         let mut app = app_with_sessions("s_a1");
-        app.model.working_dir = Some("/home/j/jcode".into());
+        app.model.working_dir = Some("/home/j/wvc".into());
         app.apply(Action::SessionDown, None);
         assert_eq!(app.model.session_id.as_deref(), Some("s_b1"));
         assert_eq!(app.model.working_dir.as_deref(), Some("/home/j/site"));
@@ -1175,7 +1175,7 @@ mod session_strip {
     #[test]
     fn a_lone_session_with_a_directory_gets_the_top_row() {
         let mut app = App::default();
-        app.model.working_dir = Some("/home/j/jcode".into());
+        app.model.working_dir = Some("/home/j/wvc".into());
         assert!(
             App::frame_for_model((1400, 900), 1.0, &app.model)
                 .strip()
@@ -1320,14 +1320,14 @@ mod session_strip {
                 Entry {
                     session_id: "s_a1".into(),
                     title: None,
-                    working_dir: Some("/home/j/jcode".into()),
+                    working_dir: Some("/home/j/wvc".into()),
                     busy: false,
                     weight: 0.0,
                 },
                 Entry {
                     session_id: "s_a2".into(),
                     title: None,
-                    working_dir: Some("/home/j/jcode".into()),
+                    working_dir: Some("/home/j/wvc".into()),
                     busy: false,
                     weight: 0.0,
                 },

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::path::PathBuf;
 
-const ALLOW_LEGACY_AUTH_ENV: &str = "JCODE_ALLOW_CODEX_LEGACY_AUTH";
+const ALLOW_LEGACY_AUTH_ENV: &str = "WVC_ALLOW_CODEX_LEGACY_AUTH";
 pub const LEGACY_CODEX_AUTH_SOURCE_ID: &str = "openai_codex_auth_json";
 
 #[derive(Debug, Clone)]
@@ -32,7 +32,7 @@ pub struct OpenAiAccount {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct JcodeOpenAiAuthFile {
+pub struct WeavecoderOpenAiAuthFile {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub openai_accounts: Vec<OpenAiAccount>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -90,7 +90,7 @@ pub fn login_target_label(requested: Option<&str>) -> Result<String> {
     ))
 }
 
-fn relabel_accounts(auth: &mut JcodeOpenAiAuthFile) -> bool {
+fn relabel_accounts(auth: &mut WeavecoderOpenAiAuthFile) -> bool {
     let outcome = crate::auth::account_store::relabel_accounts(
         ACCOUNT_LABEL_PREFIX,
         &mut auth.openai_accounts,
@@ -157,14 +157,14 @@ pub fn has_unconsented_legacy_credentials() -> bool {
     legacy_auth_source_exists() && !legacy_auth_allowed()
 }
 
-pub fn load_auth_file() -> Result<JcodeOpenAiAuthFile> {
+pub fn load_auth_file() -> Result<WeavecoderOpenAiAuthFile> {
     let path = wvc_auth_path()?;
     let mut auth = if path.exists() {
         crate::storage::harden_secret_file_permissions(&path);
         crate::storage::read_json(&path)
             .with_context(|| format!("Could not read OpenAI credentials from {:?}", path))?
     } else {
-        JcodeOpenAiAuthFile::default()
+        WeavecoderOpenAiAuthFile::default()
     };
 
     if relabel_accounts(&mut auth) {
@@ -177,9 +177,9 @@ pub fn load_auth_file() -> Result<JcodeOpenAiAuthFile> {
     Ok(auth)
 }
 
-pub fn save_auth_file(auth: &JcodeOpenAiAuthFile) -> Result<()> {
+pub fn save_auth_file(auth: &WeavecoderOpenAiAuthFile) -> Result<()> {
     let auth_path = wvc_auth_path()?;
-    let clean = JcodeOpenAiAuthFile {
+    let clean = WeavecoderOpenAiAuthFile {
         openai_accounts: auth.openai_accounts.clone(),
         active_openai_account: auth.active_openai_account.clone(),
     };
@@ -435,7 +435,7 @@ pub fn upsert_account_from_tokens(
 fn load_wvc_credentials() -> Result<CodexCredentials> {
     let auth = load_auth_file()?;
     if auth.openai_accounts.is_empty() {
-        anyhow::bail!("No OpenAI accounts configured in jcode auth file")
+        anyhow::bail!("No OpenAI accounts configured in wvc auth file")
     }
 
     let active_label = get_active_account_override()
@@ -447,7 +447,7 @@ fn load_wvc_credentials() -> Result<CodexCredentials> {
         .iter()
         .find(|account| account.label == active_label)
         .or_else(|| auth.openai_accounts.first())
-        .context("No OpenAI accounts in jcode auth file")?;
+        .context("No OpenAI accounts in wvc auth file")?;
 
     Ok(credentials_from_account(account))
 }
@@ -563,7 +563,7 @@ fn decode_jwt_payload(token: &str) -> Option<Value> {
 /// Derive an access-token expiry (epoch millis) from the JWT `exp` claim.
 ///
 /// The Codex CLI's `auth.json` does not persist an `expires_at`; it only stores
-/// the raw tokens plus a `last_refresh` timestamp. Without an expiry, jcode
+/// the raw tokens plus a `last_refresh` timestamp. Without an expiry, wvc
 /// would never *proactively* refresh an imported token and would send a stale
 /// (often already-expired) access token on the first request, triggering a 401
 /// and an unnecessary "token refresh needed" / re-login. The OpenAI access
@@ -572,7 +572,7 @@ fn decode_jwt_payload(token: &str) -> Option<Value> {
 pub(crate) fn expires_at_from_access_token(access_token: &str) -> Option<i64> {
     let payload = decode_jwt_payload(access_token)?;
     let exp = payload.get("exp")?.as_i64()?;
-    // `exp` is in seconds since epoch; the rest of jcode tracks expiry in millis.
+    // `exp` is in seconds since epoch; the rest of wvc tracks expiry in millis.
     exp.checked_mul(1000)
 }
 

@@ -657,12 +657,12 @@ done
     /// the manager are metered, non-matching servers are not.
     #[tokio::test]
     // The test-env mutex must intentionally stay held across awaits so the
-    // JCODE_HOME/config mutation stays serialized for the whole test.
+    // WVC_HOME/config mutation stays serialized for the whole test.
     #[allow(clippy::await_holding_lock)]
     async fn discovery_provenance_end_to_end_with_real_mcp_server() {
         let env_guard = crate::storage::lock_test_env();
         let temp = tempfile::tempdir().unwrap();
-        crate::env::set_var("JCODE_HOME", temp.path());
+        crate::env::set_var("WVC_HOME", temp.path());
         std::fs::write(
             temp.path().join("config.toml"),
             "[sponsors]\nenabled = true\n",

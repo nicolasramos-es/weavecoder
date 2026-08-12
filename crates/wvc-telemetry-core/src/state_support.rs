@@ -322,7 +322,7 @@ fn find_wvc_repo_in_ancestors(start: &Path) -> Option<PathBuf> {
 }
 
 fn telemetry_wvc_repo_dir() -> Option<PathBuf> {
-    if let Ok(path) = std::env::var("JCODE_REPO_DIR") {
+    if let Ok(path) = std::env::var("WVC_REPO_DIR") {
         let path = PathBuf::from(path);
         if is_wvc_repo_dir(&path) {
             return Some(path);
@@ -400,7 +400,7 @@ pub(super) fn is_ci() -> bool {
     // Test harnesses are automation too: a `cargo test` / nextest run that
     // exercises telemetry mints a throwaway id per process and never reaches
     // session_end, which is exactly the traffic shape that inflated DAU.
-    std::env::var("NEXTEST").is_ok() || std::env::var("JCODE_E2E_BIN").is_ok()
+    std::env::var("NEXTEST").is_ok() || std::env::var("WVC_E2E_BIN").is_ok()
 }
 
 pub(super) fn ran_from_cargo() -> bool {

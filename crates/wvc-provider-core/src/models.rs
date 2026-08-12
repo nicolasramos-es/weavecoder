@@ -54,7 +54,7 @@ pub fn is_openai_api_only_pro_model(model: &str) -> bool {
 pub const ALL_OPENAI_MODELS: &[&str] = &[
     DEFAULT_OPENAI_MODEL,
     // ChatGPT web-only route. The `[web]` suffix is intentionally part of the
-    // jcode model id so it can never be mistaken for an API/Codex model with
+    // wvc model id so it can never be mistaken for an API/Codex model with
     // the same upstream slug.
     CHATGPT_WEB_MODEL,
     "gpt-5.5-pro",

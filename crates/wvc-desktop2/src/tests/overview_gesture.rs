@@ -19,21 +19,21 @@ fn app() -> App {
         Entry {
             session_id: "session_clover_1_a".into(),
             title: None,
-            working_dir: Some("/home/j/jcode".into()),
+            working_dir: Some("/home/j/wvc".into()),
             busy: false,
             weight: 480_000.0,
         },
         Entry {
             session_id: "session_mushroom_2_b".into(),
             title: None,
-            working_dir: Some("/home/j/jcode".into()),
+            working_dir: Some("/home/j/wvc".into()),
             busy: true,
             weight: 90_000.0,
         },
         Entry {
             session_id: "session_pebble_3_c".into(),
             title: None,
-            working_dir: Some("/home/j/jcode".into()),
+            working_dir: Some("/home/j/wvc".into()),
             busy: false,
             weight: 6_000.0,
         },
@@ -512,7 +512,7 @@ fn dead_axes_move_but_live_edges_clamp() {
             .map(|i| Entry {
                 session_id: format!("session_{i}"),
                 title: None,
-                working_dir: Some("/home/j/jcode".into()),
+                working_dir: Some("/home/j/wvc".into()),
                 busy: false,
                 weight: 1_000.0 * f64::from(i + 1),
             })

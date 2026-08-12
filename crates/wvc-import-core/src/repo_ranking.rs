@@ -1,9 +1,9 @@
 //! Rank the repositories a user works in most, from the working directories
-//! recorded across their agent sessions (jcode + imported Claude/Codex/etc.).
+//! recorded across their agent sessions (wvc + imported Claude/Codex/etc.).
 //!
 //! The motivating use case is one-time keybinding setup: during auto-import we
 //! want to guess a user's top project directories so we can offer to bind global
-//! launch hotkeys (e.g. `Cmd+[`, `Cmd+]`) to "open jcode here". The ranking is a
+//! launch hotkeys (e.g. `Cmd+[`, `Cmd+]`) to "open wvc here". The ranking is a
 //! pure function over `(working_dir, last_used)` observations so it can be unit
 //! tested without touching the filesystem, and a thin [`resolve_git_root`]
 //! helper folds subdirectories into their repository root.
@@ -63,7 +63,7 @@ pub struct RankOptions {
     /// sessions) so old-but-frequent repos still register.
     pub floor_weight: f64,
     /// Paths to exclude entirely (exact match after normalization). Typically
-    /// the user's home directory, which is noise from launching jcode at `$HOME`.
+    /// the user's home directory, which is noise from launching wvc at `$HOME`.
     pub excluded_paths: Vec<PathBuf>,
     /// When true, only keep candidates whose resolved path is an actual git
     /// root (i.e. [`resolve_git_root`] found a `.git`). Raw, non-repo working
@@ -297,13 +297,13 @@ pub fn half_life_from_duration(d: Duration) -> f64 {
 }
 
 /// A planned global launch hotkey: a chord plus the directory it should open
-/// jcode in. Produced by [`build_launch_hotkey_plan`] from a ranking, then
+/// wvc in. Produced by [`build_launch_hotkey_plan`] from a ranking, then
 /// persisted to config so the mapping is baked once and does not move around.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PlannedHotkey {
-    /// jcode-style chord string, e.g. `cmd+;` or `cmd+[`.
+    /// wvc-style chord string, e.g. `cmd+;` or `cmd+[`.
     pub chord: String,
-    /// Absolute directory the hotkey opens jcode in.
+    /// Absolute directory the hotkey opens wvc in.
     pub dir: String,
     /// Short human label (usually the repo's directory name) for notices.
     pub label: String,
@@ -368,7 +368,7 @@ fn dir_label(path: &str) -> String {
         .unwrap_or_else(|| path.to_string())
 }
 
-/// Scan a jcode sessions directory and extract one [`SessionLocation`] per
+/// Scan a wvc sessions directory and extract one [`SessionLocation`] per
 /// session file that records a `working_dir`.
 ///
 /// This is deliberately lightweight: it reads each `*.json` (skipping `.bak`
@@ -412,7 +412,7 @@ pub fn collect_wvc_session_locations(sessions_dir: &Path) -> Vec<SessionLocation
     out
 }
 
-/// Compute the baked launch-hotkey plan from a jcode sessions directory.
+/// Compute the baked launch-hotkey plan from a wvc sessions directory.
 ///
 /// Convenience wrapper that scans `sessions_dir`, ranks the repos (excluding
 /// `home`, requiring real git roots), and assigns the default chord layout. Pass
@@ -665,7 +665,7 @@ mod tests {
     #[test]
     fn plan_assigns_top_repo_home_then_next_repos() {
         let ranked = vec![
-            repo("/u/jeremy/jcode", 600.0),
+            repo("/u/jeremy/wvc", 600.0),
             repo("/u/jeremy/scrollwm", 100.0),
             repo("/u/jeremy/sideproj", 50.0),
             repo("/u/jeremy/fourth", 10.0),
@@ -679,7 +679,7 @@ mod tests {
         // Slots: top, home, #2, #3, #4 -> 5 chords total.
         assert_eq!(plan.len(), 5);
         assert_eq!(plan[0].chord, "cmd+;");
-        assert_eq!(plan[0].dir, "/u/jeremy/jcode");
+        assert_eq!(plan[0].dir, "/u/jeremy/wvc");
         assert_eq!(plan[1].chord, "cmd+'");
         assert_eq!(plan[1].dir, "/u/jeremy");
         assert_eq!(plan[1].label, "home");
@@ -695,15 +695,15 @@ mod tests {
     fn plan_skips_home_if_it_appears_in_ranking() {
         let ranked = vec![
             repo("/u/jeremy", 999.0), // home ranked #1, should not take a repo slot
-            repo("/u/jeremy/jcode", 600.0),
+            repo("/u/jeremy/wvc", 600.0),
         ];
         let plan = build_launch_hotkey_plan(
             Path::new("/u/jeremy"),
             &ranked,
             &DEFAULT_LAUNCH_HOTKEY_CHORDS,
         );
-        // Top repo slot is jcode (home filtered out), then home gets cmd+'.
-        assert_eq!(plan[0].dir, "/u/jeremy/jcode");
+        // Top repo slot is wvc (home filtered out), then home gets cmd+'.
+        assert_eq!(plan[0].dir, "/u/jeremy/wvc");
         assert_eq!(plan[1].dir, "/u/jeremy");
         // No duplicate dir bound to two chords.
         let mut dirs: Vec<&str> = plan.iter().map(|p| p.dir.as_str()).collect();
@@ -744,7 +744,7 @@ mod tests {
         };
         write(
             "session_a.json",
-            r#"{"working_dir":"/Users/jeremy/jcode-github","id":"a"}"#,
+            r#"{"working_dir":"/Users/jeremy/wvc-github","id":"a"}"#,
         );
         write(
             "session_b.json",
@@ -762,7 +762,7 @@ mod tests {
         let dirs: Vec<&str> = locs.iter().map(|l| l.working_dir.as_str()).collect();
         assert_eq!(
             dirs,
-            vec!["/Users/jeremy/jcode-github", "/Users/jeremy/scrollwm"]
+            vec!["/Users/jeremy/wvc-github", "/Users/jeremy/scrollwm"]
         );
         // mtime-derived timestamp is populated.
         assert!(locs.iter().all(|l| l.last_used.is_some()));
@@ -770,7 +770,7 @@ mod tests {
 
     #[test]
     fn collect_missing_dir_is_empty() {
-        let locs = collect_wvc_session_locations(Path::new("/nonexistent/jcode/sessions"));
+        let locs = collect_wvc_session_locations(Path::new("/nonexistent/wvc/sessions"));
         assert!(locs.is_empty());
     }
 }

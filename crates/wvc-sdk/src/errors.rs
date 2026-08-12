@@ -25,8 +25,8 @@ pub enum ErrorKind {
     Transport,
     /// Starting a runtime (daemon or bridge) failed.
     LaunchFailed,
-    /// The configured jcode executable could not be started.
-    JcodeNotFound,
+    /// The configured wvc executable could not be started.
+    WeavecoderNotFound,
     /// The private bridge exited before its socket became ready.
     StartupFailed,
     /// The private bridge did not become ready before its deadline.
@@ -53,7 +53,7 @@ impl ErrorKind {
             Self::UnexpectedReply => "unexpected_reply",
             Self::Transport => "transport",
             Self::LaunchFailed => "launch_failed",
-            Self::JcodeNotFound => "wvc_not_found",
+            Self::WeavecoderNotFound => "wvc_not_found",
             Self::StartupFailed => "startup_failed",
             Self::StartupTimeout => "startup_timeout",
             Self::InvalidInstanceHome => "invalid_instance_home",

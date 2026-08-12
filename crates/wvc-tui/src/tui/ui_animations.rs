@@ -157,7 +157,7 @@ pub(crate) fn render_idle_animation_into(buf: &mut Buffer, area: Rect, elapsed: 
 }
 
 // Pure math kernels (3D samplers, glyph chooser, HSV->RGB) live in the
-// dependency-free `jcode-tui-anim` crate, which is pinned to opt-level = 3 in
+// dependency-free `wvc-tui-anim` crate, which is pinned to opt-level = 3 in
 // all profiles so these trig-heavy loops stay optimized even in debug/selfdev
 // builds. They are imported under their original names so the call sites and
 // tests below are unchanged.

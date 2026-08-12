@@ -398,12 +398,12 @@ pub trait Provider: Send + Sync {
         String::new()
     }
 
-    /// Returns true if jcode should use its own compaction for this provider.
+    /// Returns true if wvc should use its own compaction for this provider.
     fn supports_compaction(&self) -> bool {
         false
     }
 
-    /// Returns true if jcode should proactively run its own summary-based compaction.
+    /// Returns true if wvc should proactively run its own summary-based compaction.
     fn uses_wvc_compaction(&self) -> bool {
         self.supports_compaction()
     }
@@ -510,7 +510,7 @@ pub enum CredentialMode {
 }
 
 impl CredentialMode {
-    /// Resolve the runtime-env pin (JCODE_*_AUTH / route aliases) for a
+    /// Resolve the runtime-env pin (WVC_*_AUTH / route aliases) for a
     /// dual-auth provider through the canonical auth_mode vocabulary.
     pub fn from_runtime_env(provider: DualAuthProvider) -> Self {
         match runtime_env_pinned_mode(provider) {
@@ -540,7 +540,7 @@ impl CredentialMode {
 /// Channel for sending provider-native tool results back to a provider bridge.
 pub type NativeToolResultSender = tokio::sync::mpsc::Sender<NativeToolResult>;
 
-/// Native tool result to send back to provider bridges that delegate tool execution to jcode.
+/// Native tool result to send back to provider bridges that delegate tool execution to wvc.
 #[derive(Debug, Clone, Serialize)]
 pub struct NativeToolResult {
     #[serde(rename = "type")]
@@ -584,8 +584,8 @@ impl NativeToolResult {
     }
 }
 
-/// Canonical User-Agent for generic outbound Jcode HTTP requests.
-pub const JCODE_USER_AGENT: &str = concat!("wvc/", env!("CARGO_PKG_VERSION"));
+/// Canonical User-Agent for generic outbound Weavecoder HTTP requests.
+pub const WVC_USER_AGENT: &str = concat!("wvc/", env!("CARGO_PKG_VERSION"));
 
 /// Read an HTTP error body without hiding failures behind an empty string.
 ///
@@ -609,7 +609,7 @@ pub fn shared_http_client() -> reqwest::Client {
     CLIENT
         .get_or_init(|| {
             reqwest::Client::builder()
-                .user_agent(JCODE_USER_AGENT)
+                .user_agent(WVC_USER_AGENT)
                 .connect_timeout(Duration::from_secs(15))
                 .tcp_keepalive(Some(Duration::from_secs(30)))
                 // Proactively detect half-dead pooled HTTP/2 connections before we
@@ -626,7 +626,7 @@ pub fn shared_http_client() -> reqwest::Client {
                 .unwrap_or_else(|err| {
                     eprintln!("wvc: failed to build shared provider HTTP client: {err}");
                     match reqwest::Client::builder()
-                        .user_agent(JCODE_USER_AGENT)
+                        .user_agent(WVC_USER_AGENT)
                         .build()
                     {
                         Ok(client) => client,
@@ -653,7 +653,7 @@ pub fn shared_http_client() -> reqwest::Client {
 /// costs ~10ms, which is fine on a retry path that already backs off >=1s.
 pub fn fresh_transport_client() -> reqwest::Client {
     reqwest::Client::builder()
-        .user_agent(JCODE_USER_AGENT)
+        .user_agent(WVC_USER_AGENT)
         .connect_timeout(Duration::from_secs(15))
         .tcp_keepalive(Some(Duration::from_secs(30)))
         .http2_keep_alive_interval(Some(Duration::from_secs(30)))
@@ -693,7 +693,7 @@ pub struct ModelRoute {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(tag = "kind", rename_all = "kebab-case")]
 pub enum RuntimeKey {
-    JcodeSubscription,
+    WeavecoderSubscription,
     ClaudeOAuth,
     AnthropicApiKey,
     OpenAIOAuth,
@@ -717,7 +717,7 @@ pub enum RuntimeKey {
 impl RuntimeKey {
     pub fn from_api_method(api_method: &ModelRouteApiMethod, _provider_label: &str) -> Self {
         match api_method {
-            ModelRouteApiMethod::JcodeSubscription => Self::JcodeSubscription,
+            ModelRouteApiMethod::WeavecoderSubscription => Self::WeavecoderSubscription,
             ModelRouteApiMethod::ClaudeOAuth => Self::ClaudeOAuth,
             ModelRouteApiMethod::AnthropicApiKey => Self::AnthropicApiKey,
             ModelRouteApiMethod::OpenAIOAuth => Self::OpenAIOAuth,
@@ -739,7 +739,7 @@ impl RuntimeKey {
 
     pub fn stable_id(&self) -> String {
         match self {
-            Self::JcodeSubscription => "wvc-subscription".to_string(),
+            Self::WeavecoderSubscription => "wvc-subscription".to_string(),
             Self::ClaudeOAuth => "claude-oauth".to_string(),
             Self::AnthropicApiKey => "anthropic-api-key".to_string(),
             Self::OpenAIOAuth => "openai-oauth".to_string(),
@@ -801,7 +801,7 @@ impl RouteSelection {
     pub fn routed_model_spec(&self) -> String {
         let model = self.model.trim();
         match &self.runtime_key {
-            RuntimeKey::JcodeSubscription => model.to_string(),
+            RuntimeKey::WeavecoderSubscription => model.to_string(),
             RuntimeKey::ClaudeOAuth => format!("claude-oauth:{model}"),
             RuntimeKey::AnthropicApiKey => format!("claude-api:{model}"),
             RuntimeKey::OpenAIOAuth => format!("openai-oauth:{model}"),
@@ -855,7 +855,7 @@ fn openrouter_catalog_model_id(model: &str) -> String {
 /// module boundaries instead of scattering string comparisons everywhere.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ModelRouteApiMethod {
-    JcodeSubscription,
+    WeavecoderSubscription,
     ClaudeOAuth,
     AnthropicApiKey,
     OpenAIOAuth,
@@ -894,7 +894,7 @@ impl ModelRouteApiMethod {
             return Self::from_auth_route(route);
         }
         match lower.as_str() {
-            "wvc-subscription" => Self::JcodeSubscription,
+            "wvc-subscription" => Self::WeavecoderSubscription,
             "openrouter" => Self::OpenRouter,
             "openai-compatible" => Self::OpenAiCompatible { profile_id: None },
             "copilot" => Self::Copilot,
@@ -961,7 +961,7 @@ impl ModelRouteApiMethod {
 
     pub fn display_label(&self) -> String {
         match self {
-            Self::JcodeSubscription => "subscription".to_string(),
+            Self::WeavecoderSubscription => "subscription".to_string(),
             Self::ClaudeOAuth | Self::OpenAIOAuth | Self::CodeAssistOAuth => "oauth".to_string(),
             Self::AnthropicApiKey | Self::OpenAIApiKey | Self::OpenAiCompatible { .. } => {
                 "api key".to_string()
@@ -1366,8 +1366,8 @@ mod tests {
     }
 
     #[test]
-    fn canonical_user_agent_identifies_jcode() {
-        assert!(JCODE_USER_AGENT.starts_with("wvc/"));
+    fn canonical_user_agent_identifies_wvc() {
+        assert!(WVC_USER_AGENT.starts_with("wvc/"));
     }
 
     #[test]

@@ -357,7 +357,7 @@ pub fn render_svg(r: &ProductivityReport) -> String {
     svg.text(
         W - pad,
         H - 30.0,
-        "generated with jcode  ·  /productivity",
+        "generated with wvc  ·  /productivity",
         16.0,
         ACCENT,
         600,

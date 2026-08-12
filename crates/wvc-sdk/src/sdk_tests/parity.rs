@@ -12,15 +12,15 @@
 //!
 //! What is deliberately *not* checked: error handling, streaming style, and
 //! launch strategy. `Result` versus `throw`, channels versus `EventEmitter`,
-//! and "attach to the user's jcode" versus "provision a private instance" are
+//! and "attach to the user's wvc" versus "provision a private instance" are
 //! places where forcing symmetry would produce an un-idiomatic SDK in one
 //! language to flatter the other.
 
 /// One capability, named in both SDKs' conventions.
 struct Capability {
-    /// Rust method on `JcodeClient`.
+    /// Rust method on `WeavecoderClient`.
     rust: &'static str,
-    /// TypeScript method on `JcodeClient`.
+    /// TypeScript method on `WeavecoderClient`.
     ts: &'static str,
 }
 
@@ -125,7 +125,7 @@ fn neither_sdk_has_an_untriaged_public_capability() {
         .collect();
     assert!(
         untriaged.is_empty(),
-        "these public JcodeClient methods are in the Rust SDK but not in the \
+        "these public WeavecoderClient methods are in the Rust SDK but not in the \
          shared capability list: {untriaged:?}. Add each to CAPABILITIES with \
          its TypeScript counterpart, or to RUST_ONLY with a comment saying why \
          it is Rust-specific."
@@ -142,7 +142,7 @@ fn neither_sdk_has_an_untriaged_public_capability() {
         .collect();
     assert!(
         untriaged.is_empty(),
-        "these public JcodeClient methods are in the TypeScript SDK but not in the \
+        "these public WeavecoderClient methods are in the TypeScript SDK but not in the \
          shared capability list: {untriaged:?}. Add each to CAPABILITIES and the \
          Rust SDK, or to TS_ONLY with a reason when it is genuinely language-specific."
     );
@@ -197,12 +197,12 @@ fn ts_client_source() -> Option<String> {
     std::fs::read_to_string(path).ok()
 }
 
-/// Public method names in `impl JcodeClient`.
+/// Public method names in `impl WeavecoderClient`.
 fn rust_public_methods() -> Vec<String> {
     let source = rust_client_source();
     let mut methods = std::collections::BTreeSet::new();
     let mut remaining = source.as_str();
-    while let Some(start) = remaining.find("impl JcodeClient {") {
+    while let Some(start) = remaining.find("impl WeavecoderClient {") {
         let body = &remaining[start..];
         let end = body.find("\n}").unwrap_or(body.len());
         methods.extend(body[..end].lines().filter_map(|line| {
@@ -218,14 +218,14 @@ fn rust_public_methods() -> Vec<String> {
     methods.into_iter().collect()
 }
 
-/// Public method names in the TypeScript `JcodeClient` class.
+/// Public method names in the TypeScript `WeavecoderClient` class.
 ///
 /// Methods are two-space-indented in this file. Private helpers are explicitly
 /// excluded and overloads are deduplicated. Keeping this small parser here makes
 /// the guard run under ordinary `cargo test`, without requiring Node or a TS AST.
 fn ts_public_methods() -> Option<Vec<String>> {
     let source = ts_client_source()?;
-    let start = source.find("export class JcodeClient")?;
+    let start = source.find("export class WeavecoderClient")?;
     let mut methods = std::collections::BTreeSet::new();
     for line in source[start..].lines() {
         let Some(mut declaration) = line.strip_prefix("  ") else {

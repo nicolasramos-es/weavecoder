@@ -1,7 +1,7 @@
 //! Incremental hashed-token index used by `session_search` to pre-filter
 //! candidate files before any expensive parsing.
 //!
-//! One index is kept per session store (jcode, codex, claude, ...). Each entry
+//! One index is kept per session store (wvc, codex, claude, ...). Each entry
 //! records the file's identity (key, mtime, size) plus a Bloom filter over the
 //! FNV-1a hashes of its search tokens. On rebuild, entries whose identity is
 //! unchanged are reused as-is, so only new or modified files are re-read and

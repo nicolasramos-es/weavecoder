@@ -256,7 +256,7 @@ pub fn write_current_dev_binary_source_metadata(
 fn read_binary_version_report(binary: &Path) -> Result<BinaryVersionReport> {
     let output = Command::new(binary)
         .args(["version", "--json"])
-        .env("JCODE_NON_INTERACTIVE", "1")
+        .env("WVC_NON_INTERACTIVE", "1")
         .output()?;
 
     if !output.status.success() {
@@ -560,12 +560,12 @@ pub fn smoke_test_server_binary(binary: &Path) -> Result<()> {
         .arg("serve")
         .arg("--socket")
         .arg(&socket_path)
-        .env("JCODE_NON_INTERACTIVE", "1")
-        .env("JCODE_RUNTIME_DIR", &runtime_dir)
-        .env("JCODE_GATEWAY_ENABLED", "0")
-        .env("JCODE_TEMP_SERVER", "1")
-        .env("JCODE_SERVER_OWNER_PID", std::process::id().to_string())
-        .env("JCODE_TEMP_SERVER_IDLE_SECS", "300")
+        .env("WVC_NON_INTERACTIVE", "1")
+        .env("WVC_RUNTIME_DIR", &runtime_dir)
+        .env("WVC_GATEWAY_ENABLED", "0")
+        .env("WVC_TEMP_SERVER", "1")
+        .env("WVC_SERVER_OWNER_PID", std::process::id().to_string())
+        .env("WVC_TEMP_SERVER_IDLE_SECS", "300")
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::from(stderr))

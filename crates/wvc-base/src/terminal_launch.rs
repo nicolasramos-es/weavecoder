@@ -8,7 +8,7 @@ pub use wvc_terminal_launch::{
 
 /// The configured external spawn hook, if any.
 ///
-/// Resolution order: `JCODE_SPAWN_HOOK` env (handled by config env overrides;
+/// Resolution order: `WVC_SPAWN_HOOK` env (handled by config env overrides;
 /// empty value disables) then `[terminal] spawn_hook` in config.toml.
 pub fn configured_spawn_hook() -> Option<String> {
     crate::config::config()
@@ -22,11 +22,11 @@ pub fn configured_spawn_hook() -> Option<String> {
 
 /// Spawn `command` in a new terminal window/pane.
 ///
-/// When a spawn hook is configured (`[terminal] spawn_hook` / `JCODE_SPAWN_HOOK`),
-/// the hook takes over the spawn: jcode runs `<hook> <program> <args...>` with
-/// `JCODE_SPAWN_*` metadata env vars so external programs (tmux, kitty remote,
+/// When a spawn hook is configured (`[terminal] spawn_hook` / `WVC_SPAWN_HOOK`),
+/// the hook takes over the spawn: wvc runs `<hook> <program> <args...>` with
+/// `WVC_SPAWN_*` metadata env vars so external programs (tmux, kitty remote,
 /// herd, window managers) control where and how the session appears. If the
-/// hook cannot be started, jcode falls back to its built-in terminal detection.
+/// hook cannot be started, wvc falls back to its built-in terminal detection.
 pub fn spawn_command_in_new_terminal(command: &TerminalCommand, cwd: &Path) -> Result<bool> {
     if try_spawn_via_configured_hook(command, cwd) {
         return Ok(true);
@@ -81,7 +81,7 @@ mod tests {
         std::fs::write(
             &hook_path,
             format!(
-                "#!/bin/sh\nprintf '%s|%s|%s|%s' \"$JCODE_SPAWN_KIND\" \"$JCODE_SPAWN_SESSION_ID\" \"$JCODE_SPAWN_SWARM_ID\" \"$*\" > {}\n",
+                "#!/bin/sh\nprintf '%s|%s|%s|%s' \"$WVC_SPAWN_KIND\" \"$WVC_SPAWN_SESSION_ID\" \"$WVC_SPAWN_SWARM_ID\" \"$*\" > {}\n",
                 sh_escape(&record.to_string_lossy())
             ),
         )
@@ -90,12 +90,12 @@ mod tests {
             .expect("chmod hook");
 
         let command = TerminalCommand::new(
-            "/usr/local/bin/jcode",
+            "/usr/local/bin/wvc",
             vec!["--resume".to_string(), "ses_hooked".to_string()],
         )
         .kind("swarm-agent")
         .session_id("ses_hooked")
-        .spawn_env("JCODE_SPAWN_SWARM_ID", "swarm-7");
+        .spawn_env("WVC_SPAWN_SWARM_ID", "swarm-7");
 
         spawn_via_hook(&hook_path.to_string_lossy(), &command, temp.path())
             .expect("hook should spawn");
@@ -112,8 +112,8 @@ mod tests {
             std::thread::sleep(std::time::Duration::from_millis(20));
         }
         assert_eq!(
-            recorded, "swarm-agent|ses_hooked|swarm-7|/usr/local/bin/jcode --resume ses_hooked",
-            "hook should receive metadata env and the jcode command as argv"
+            recorded, "swarm-agent|ses_hooked|swarm-7|/usr/local/bin/wvc --resume ses_hooked",
+            "hook should receive metadata env and the wvc command as argv"
         );
     }
 }

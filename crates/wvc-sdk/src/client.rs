@@ -1,6 +1,6 @@
 //! Connected harness client: handshake, reply correlation, event streaming.
 //!
-//! Mirrors the TypeScript SDK's `JcodeClient` capability for capability. The
+//! Mirrors the TypeScript SDK's `WeavecoderClient` capability for capability. The
 //! shapes differ where Rust and TS differ honestly (`Result` instead of
 //! throwing, channels instead of `EventEmitter`), but every method here has a
 //! counterpart there and vice versa; `parity.rs` enforces that.
@@ -76,8 +76,8 @@ impl UnixTransport {
                 ErrorKind::ConnectFailed,
                 match cause.kind() {
                     std::io::ErrorKind::NotFound => format!(
-                        "no harness API socket at {}: the jcode harness is not running. \
-                         Start it with `wvc serve` and `jcode-harness-api-bridge`, or \
+                        "no harness API socket at {}: the wvc harness is not running. \
+                         Start it with `wvc serve` and `wvc-harness-api-bridge`, or \
                          connect with ensure_runtime enabled.",
                         path.display()
                     ),
@@ -156,7 +156,7 @@ impl Drop for EventStream {
     }
 }
 
-/// Discovery and buffering controls for [`JcodeClient::global_events`].
+/// Discovery and buffering controls for [`WeavecoderClient::global_events`].
 #[derive(Debug, Clone, Copy)]
 pub struct GlobalEventsOptions {
     /// How often persisted sessions are rescanned. Zero performs one scan.
@@ -177,7 +177,7 @@ impl Default for GlobalEventsOptions {
 struct GlobalEventControl {
     stopped: AtomicBool,
     terminal_error: Mutex<Option<Error>>,
-    children: Mutex<HashMap<String, JcodeClient>>,
+    children: Mutex<HashMap<String, WeavecoderClient>>,
     tx: SyncSender<ApiEvent>,
     max_buffered_events: usize,
     wake_lock: Mutex<()>,
@@ -316,7 +316,7 @@ struct Inner {
 ///
 /// Replies are correlated by the `reply_to` id the server echoes; anything
 /// without one is a stream event and goes to every subscriber.
-pub struct JcodeClient {
+pub struct WeavecoderClient {
     inner: Arc<Inner>,
     instance: Option<Arc<LaunchedInstance>>,
     /// State directory of the private instance this client owns, if any.
@@ -327,7 +327,7 @@ pub struct JcodeClient {
     pub capabilities: Vec<String>,
 }
 
-impl Clone for JcodeClient {
+impl Clone for WeavecoderClient {
     fn clone(&self) -> Self {
         self.inner.client_handles.fetch_add(1, Ordering::Relaxed);
         Self {
@@ -340,7 +340,7 @@ impl Clone for JcodeClient {
     }
 }
 
-impl Drop for JcodeClient {
+impl Drop for WeavecoderClient {
     fn drop(&mut self) {
         if self.inner.client_handles.fetch_sub(1, Ordering::AcqRel) == 1 {
             if let Some(shutdown) = &self.inner.shutdown {
@@ -350,10 +350,10 @@ impl Drop for JcodeClient {
     }
 }
 
-impl JcodeClient {
-    /// Start and own a private jcode instance, then connect to it.
+impl WeavecoderClient {
+    /// Start and own a private wvc instance, then connect to it.
     ///
-    /// Its state and sockets are isolated from the user's interactive jcode.
+    /// Its state and sockets are isolated from the user's interactive wvc.
     /// The last clone of this client shuts the instance down through Drop.
     pub fn launch(options: LaunchOptions) -> Result<Self> {
         let instance = Arc::new(launch_instance(&options)?);
@@ -369,9 +369,9 @@ impl JcodeClient {
         Ok(client)
     }
 
-    /// Connect to the jcode running on this machine.
+    /// Connect to the wvc running on this machine.
     ///
-    /// Use this to automate the user's own jcode: a desktop app, an editor
+    /// Use this to automate the user's own wvc: a desktop app, an editor
     /// plugin, a status dashboard. It shares the user's live sessions.
     pub fn connect(options: ConnectOptions) -> Result<Self> {
         let path = options.socket_path.clone().unwrap_or_else(api_socket_path);
@@ -807,7 +807,7 @@ impl JcodeClient {
         }
     }
 
-    /// Persist an API key in jcode's owner-only provider store and hot-reload
+    /// Persist an API key in wvc's owner-only provider store and hot-reload
     /// provider credentials.
     pub fn set_api_key(&self, provider: &str, api_key: &str) -> Result<()> {
         match self
@@ -1074,7 +1074,7 @@ pub struct RunOptions {
     pub auto_approve: bool,
 }
 
-/// Runtime identity and protocol metadata returned by [`JcodeClient::get_runtime_info`].
+/// Runtime identity and protocol metadata returned by [`WeavecoderClient::get_runtime_info`].
 #[derive(Debug, Clone, PartialEq)]
 pub struct RuntimeInfo {
     pub server: String,
@@ -1088,7 +1088,7 @@ pub struct RuntimeInfo {
     pub routes: Vec<ModelRouteInfo>,
 }
 
-/// Content and truncation metadata returned by [`JcodeClient::read_file`].
+/// Content and truncation metadata returned by [`WeavecoderClient::read_file`].
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FileContent {
     pub path: String,
@@ -1097,7 +1097,7 @@ pub struct FileContent {
     pub truncated: bool,
 }
 
-/// Optional constraints for [`JcodeClient::search_text`].
+/// Optional constraints for [`WeavecoderClient::search_text`].
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct SearchTextOptions {
     /// Restrict the search to this relative path under the session root.
@@ -1106,7 +1106,7 @@ pub struct SearchTextOptions {
     pub limit: Option<u32>,
 }
 
-/// Safe filesystem metadata returned by [`JcodeClient::file_status`].
+/// Safe filesystem metadata returned by [`WeavecoderClient::file_status`].
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FileStatus {
     pub path: String,
@@ -1141,7 +1141,7 @@ pub struct Usage {
 }
 
 fn discover_global_sessions(
-    parent: JcodeClient,
+    parent: WeavecoderClient,
     control: Arc<GlobalEventControl>,
     interval: Duration,
 ) {
@@ -1188,7 +1188,7 @@ fn discover_global_sessions(
     }
 }
 
-fn start_global_child(parent: &JcodeClient, control: &Arc<GlobalEventControl>, session_id: String) {
+fn start_global_child(parent: &WeavecoderClient, control: &Arc<GlobalEventControl>, session_id: String) {
     if control
         .children
         .lock()
@@ -1198,7 +1198,7 @@ fn start_global_child(parent: &JcodeClient, control: &Arc<GlobalEventControl>, s
         return;
     }
 
-    let child = match JcodeClient::connect(ConnectOptions {
+    let child = match WeavecoderClient::connect(ConnectOptions {
         socket_path: Some(parent.inner.socket_path.clone()),
         client_name: format!("{}/global-events", parent.inner.client_name),
         request_timeout: parent.inner.request_timeout,

@@ -166,7 +166,7 @@ mod tests {
         assert!(!is_transient_transport_error("invalid x-api-key"));
     }
 
-    /// Real transport-error shapes harvested from ~/.jcode/logs.
+    /// Real transport-error shapes harvested from ~/.wvc/logs.
     #[test]
     fn real_world_transport_errors_are_transient() {
         let real_errors = [

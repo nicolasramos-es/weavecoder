@@ -1,4 +1,4 @@
-//! Runtime startup and private jcode instances.
+//! Runtime startup and private wvc instances.
 //!
 //! [`ensure_runtime`] attaches applications to the user's shared runtime.
 //! [`launch_instance`] instead creates an isolated runtime directory and state
@@ -49,7 +49,7 @@ const EXTERNAL_CREDENTIAL_FILES: &[&str] = &[
     ".local/share/opencode/auth.json",
 ];
 
-/// Options for starting a private jcode instance.
+/// Options for starting a private wvc instance.
 pub struct LaunchOptions {
     /// State directory for the instance. A temporary, drop-cleaned directory is
     /// used when omitted; an explicit directory is persistent.
@@ -58,7 +58,7 @@ pub struct LaunchOptions {
     pub working_dir: Option<PathBuf>,
     /// Share the user's provider login files. Enabled by default.
     pub inherit_logins: bool,
-    /// jcode executable. Defaults to `jcode` on `$PATH`.
+    /// wvc executable. Defaults to `wvc` on `$PATH`.
     pub binary: Option<PathBuf>,
     /// Extra environment variables for the private instance.
     pub env: HashMap<OsString, OsString>,
@@ -69,9 +69,9 @@ pub struct LaunchOptions {
     /// Maximum time spent removing a temporary home which is still being
     /// written by background work.
     pub cleanup_timeout: Duration,
-    /// Client identity used by [`crate::JcodeClient::launch`].
+    /// Client identity used by [`crate::WeavecoderClient::launch`].
     pub client_name: String,
-    /// Request timeout used by [`crate::JcodeClient::launch`].
+    /// Request timeout used by [`crate::WeavecoderClient::launch`].
     pub request_timeout: Option<Duration>,
     /// Socket override used only by [`ensure_runtime`]. Kept here for backwards
     /// compatibility with the original shared-runtime launcher.
@@ -193,10 +193,10 @@ pub fn launch_instance(options: &LaunchOptions) -> Result<LaunchedInstance> {
                 .as_deref()
                 .unwrap_or_else(|| Path::new(".")),
         )
-        .env("JCODE_HOME", &wvc_home)
-        .env("JCODE_RUNTIME_DIR", &runtime_dir)
-        .env("JCODE_API_SOCKET", &socket_path)
-        .env("JCODE_SOCKET", runtime_dir.join("wvc.sock"))
+        .env("WVC_HOME", &wvc_home)
+        .env("WVC_RUNTIME_DIR", &runtime_dir)
+        .env("WVC_API_SOCKET", &socket_path)
+        .env("WVC_SOCKET", runtime_dir.join("wvc.sock"))
         .envs(options.env.iter())
         .stdin(Stdio::null())
         .stdout(Stdio::null())
@@ -212,13 +212,13 @@ pub fn launch_instance(options: &LaunchOptions) -> Result<LaunchedInstance> {
             cleanup_on_error();
             let message = if cause.kind() == std::io::ErrorKind::NotFound {
                 format!(
-                    "could not run `{}`: jcode is not installed, or not on PATH. Install it from https://jcode.sh, or pass `binary` with its full path.",
+                    "could not run `{}`: wvc is not installed, or not on PATH. Install it from https://weavecoder.sh, or pass `binary` with its full path.",
                     binary.display()
                 )
             } else {
                 format!("could not run `{}`: {cause}", binary.display())
             };
-            return Err(Error::new(ErrorKind::JcodeNotFound, message));
+            return Err(Error::new(ErrorKind::WeavecoderNotFound, message));
         }
     };
     let stderr = std::sync::Arc::new(Mutex::new(String::new()));
@@ -299,11 +299,11 @@ pub fn launch_instance(options: &LaunchOptions) -> Result<LaunchedInstance> {
     ))
 }
 
-/// Resolve the user's normal jcode home before a private instance overrides it.
+/// Resolve the user's normal wvc home before a private instance overrides it.
 pub fn user_wvc_home() -> PathBuf {
-    std::env::var_os("JCODE_HOME")
+    std::env::var_os("WVC_HOME")
         .map(PathBuf::from)
-        .unwrap_or_else(|| home_dir().join(".jcode"))
+        .unwrap_or_else(|| home_dir().join(".wvc"))
 }
 
 /// Share rotating login records with an instance and copy mutable config.
@@ -323,7 +323,7 @@ pub fn inherit_credentials(from_home: &Path, to_home: &Path) -> Result<Vec<PathB
     if from_home.exists() && fs::canonicalize(from_home).ok() == fs::canonicalize(to_home).ok() {
         return Err(Error::new(
             ErrorKind::InvalidInstanceHome,
-            "instance home must be different from the user's jcode home",
+            "instance home must be different from the user's wvc home",
         ));
     }
 
@@ -465,11 +465,11 @@ pub fn ensure_runtime(options: &LaunchOptions, progress: &Progress<'_>) -> Resul
     }
     let legacy = wvc_harness_api::legacy_socket_path();
     if !socket_accepts(&legacy) {
-        progress("starting jcode runtime...");
+        progress("starting wvc runtime...");
         spawn_detached(&sibling_exe("wvc"), &["serve"]).map_err(|error| {
             Error::new(
                 ErrorKind::LaunchFailed,
-                format!("could not start the jcode runtime: {error}"),
+                format!("could not start the wvc runtime: {error}"),
             )
         })?;
         wait_for_socket(&legacy, "wvc runtime", options.start_timeout)?;
@@ -478,7 +478,7 @@ pub fn ensure_runtime(options: &LaunchOptions, progress: &Progress<'_>) -> Resul
     spawn_detached(&sibling_exe("wvc-harness-api-bridge"), &[]).map_err(|error| {
         Error::new(
             ErrorKind::LaunchFailed,
-            format!("could not start jcode-harness-api-bridge: {error}"),
+            format!("could not start wvc-harness-api-bridge: {error}"),
         )
     })?;
     wait_for_socket(&api, "harness API bridge", options.start_timeout)
@@ -609,11 +609,11 @@ fn home_dir() -> PathBuf {
         .unwrap_or_else(|| PathBuf::from("."))
 }
 
-/// Resolve the user's platform jcode config directory.
+/// Resolve the user's platform wvc config directory.
 pub fn user_app_config_dir() -> PathBuf {
     #[cfg(target_os = "macos")]
     {
-        return home_dir().join("Library/Application Support/jcode");
+        return home_dir().join("Library/Application Support/wvc");
     }
     #[cfg(target_os = "windows")]
     {

@@ -1,7 +1,7 @@
 //! Pixel-level visual invariants: render every state-space node offscreen and
 //! assert what only real output can prove (regions stay clear, text is legible,
 //! the caret and selection land where they should). These need a GPU, so they
-//! are `#[ignore]`d; run with `cargo test -p jcode-desktop2 -- --ignored`.
+//! are `#[ignore]`d; run with `cargo test -p wvc-desktop2 -- --ignored`.
 
 use crate::{Model, build_scene, layout::Frame, states, text::TextSystem};
 use vello::Scene;
@@ -720,12 +720,12 @@ fn an_unattached_state_still_reports_its_status() {
     );
 }
 
-/// Not an assertion: writes frames to `JCODE_DESKTOP2_DUMP` for eyeballing.
+/// Not an assertion: writes frames to `WVC_DESKTOP2_DUMP` for eyeballing.
 /// Ignored, so it only runs when a human asks for pictures.
 #[test]
 #[ignore = "writes files for review"]
 fn dump_frames_for_review() {
-    let Some(dir) = std::env::var_os("JCODE_DESKTOP2_DUMP") else {
+    let Some(dir) = std::env::var_os("WVC_DESKTOP2_DUMP") else {
         return;
     };
     let dir = std::path::PathBuf::from(dir);

@@ -87,8 +87,8 @@ impl MultiProvider {
         let cfg = crate::config::config();
         let provider_state = ProviderState::from_parts(cfg, &auth_status);
         let mut default_named_provider_profile: Option<String> = None;
-        if std::env::var_os("JCODE_PROVIDER_PROFILE_ACTIVE").is_none()
-            && std::env::var_os("JCODE_NAMED_PROVIDER_PROFILE").is_none()
+        if std::env::var_os("WVC_PROVIDER_PROFILE_ACTIVE").is_none()
+            && std::env::var_os("WVC_NAMED_PROVIDER_PROFILE").is_none()
             && let Some(pref) = provider_state.default_provider_key()
         {
             if let Some(profile) =
@@ -100,8 +100,8 @@ impl MultiProvider {
                     pref, cfg,
                 ) {
                     Ok(profile_name) => {
-                        crate::env::set_var("JCODE_PROVIDER_PROFILE_NAME", &profile_name);
-                        crate::env::set_var("JCODE_PROVIDER_PROFILE_ACTIVE", "1");
+                        crate::env::set_var("WVC_PROVIDER_PROFILE_NAME", &profile_name);
+                        crate::env::set_var("WVC_PROVIDER_PROFILE_ACTIVE", "1");
                         default_named_provider_profile = Some(profile_name);
                     }
                     Err(err) => crate::logging::warn(&format!(
@@ -125,18 +125,18 @@ impl MultiProvider {
         let has_bedrock_creds = bedrock::BedrockProvider::has_credentials();
         let has_openrouter_creds = openrouter::has_credentials();
 
-        let use_claude_cli = std::env::var("JCODE_USE_CLAUDE_CLI")
+        let use_claude_cli = std::env::var("WVC_USE_CLAUDE_CLI")
             .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
             .unwrap_or(false);
         if use_claude_cli {
             crate::logging::warn(
-                "JCODE_USE_CLAUDE_CLI is deprecated and will be removed. Direct Anthropic API transport is the default.",
+                "WVC_USE_CLAUDE_CLI is deprecated and will be removed. Direct Anthropic API transport is the default.",
             );
         }
 
         let claude = if has_claude_creds && use_claude_cli {
             crate::logging::info(
-                "Using deprecated Claude CLI provider (forced by JCODE_USE_CLAUDE_CLI=1)",
+                "Using deprecated Claude CLI provider (forced by WVC_USE_CLAUDE_CLI=1)",
             );
             external::instantiate_expected_external_provider(external::CLAUDE_CLI_RUNTIME)
         } else {
@@ -199,7 +199,7 @@ impl MultiProvider {
         };
 
         let openrouter = if has_openrouter_creds {
-            let named_profile = std::env::var("JCODE_NAMED_PROVIDER_PROFILE")
+            let named_profile = std::env::var("WVC_NAMED_PROVIDER_PROFILE")
                 .ok()
                 .or_else(|| default_named_provider_profile.clone());
             let spec = named_profile
@@ -225,7 +225,7 @@ impl MultiProvider {
         };
 
         let copilot_premium_zero = matches!(
-            std::env::var("JCODE_COPILOT_PREMIUM").ok().as_deref(),
+            std::env::var("WVC_COPILOT_PREMIUM").ok().as_deref(),
             Some("0")
         );
         let availability = ProviderAvailability {

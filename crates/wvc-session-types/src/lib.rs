@@ -3,13 +3,13 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use wvc_message_types::{ContentBlock, Message, Role, ToolCall};
 
-/// Identifies a session to resume, across the agent backends jcode can import
+/// Identifies a session to resume, across the agent backends wvc can import
 /// from. This is pure data (only ids/paths) with no UI dependency; it lives in
-/// `jcode-session-types` so the foundation/import layer can match on it without
-/// depending on any `jcode-tui-*` crate. The session-picker UI re-exports it.
+/// `wvc-session-types` so the foundation/import layer can match on it without
+/// depending on any `wvc-tui-*` crate. The session-picker UI re-exports it.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ResumeTarget {
-    JcodeSession {
+    WeavecoderSession {
         session_id: String,
     },
     ClaudeCodeSession {
@@ -36,7 +36,7 @@ pub enum ResumeTarget {
 impl ResumeTarget {
     pub fn stable_id(&self) -> &str {
         match self {
-            Self::JcodeSession { session_id } => session_id,
+            Self::WeavecoderSession { session_id } => session_id,
             Self::ClaudeCodeSession { session_id, .. } => session_id,
             Self::CodexSession { session_id, .. } => session_id,
             Self::PiSession { session_path } => session_path,
@@ -727,7 +727,7 @@ pub fn format_session_search_results(
     ));
 
     output.push_str(&format!(
-        "_Scanned: {} Jcode sessions ({} candidates), {} external sessions{}{}._\n\n",
+        "_Scanned: {} Weavecoder sessions ({} candidates), {} external sessions{}{}._\n\n",
         report.scanned_wvc_sessions,
         report.candidate_wvc_sessions,
         report.scanned_external_sessions,
@@ -1029,11 +1029,11 @@ mod session_search_tests {
             "/TMP/project"
         ));
         assert!(session_search_working_dir_matches(
-            "/workspace/jcode",
+            "/workspace/wvc",
             "wvc"
         ));
         assert!(!session_search_working_dir_matches(
-            "/workspace/jcode",
+            "/workspace/wvc",
             "/workspace/other"
         ));
     }

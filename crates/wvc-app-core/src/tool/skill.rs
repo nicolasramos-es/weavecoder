@@ -31,7 +31,7 @@ impl SkillTool {
 #[derive(Deserialize)]
 struct SkillInput {
     /// Action to perform: load (default), list, reload, reload_all, read.
-    /// `list` shows both loaded skills and the jcode-endorsed catalog.
+    /// `list` shows both loaded skills and the wvc-endorsed catalog.
     #[serde(default = "default_action")]
     action: String,
     /// Skill name (required for load, reload, read)
@@ -133,7 +133,7 @@ impl SkillTool {
                         install
                     ),
                     None => anyhow::anyhow!(
-                        "Skill '{}' is endorsed but not installed (source: {}). Install it into ~/.jcode/skills/{}/SKILL.md, then run skill_manage reload_all.",
+                        "Skill '{}' is endorsed but not installed (source: {}). Install it into ~/.wvc/skills/{}/SKILL.md, then run skill_manage reload_all.",
                         name,
                         endorsed.source,
                         name
@@ -170,8 +170,8 @@ impl SkillTool {
         let mut output = if skills.is_empty() {
             "No skills loaded.\n\n\
             Skills are loaded from:\n\
-            - ~/.jcode/skills/<skill-name>/SKILL.md (global)\n\
-            - ./.jcode/skills/<skill-name>/SKILL.md (project-local)\n\
+            - ~/.wvc/skills/<skill-name>/SKILL.md (global)\n\
+            - ./.wvc/skills/<skill-name>/SKILL.md (project-local)\n\
             - ./.claude/skills/<skill-name>/SKILL.md (compatibility)\n\n\
             Create a SKILL.md file with YAML frontmatter:\n\
             ---\n\
@@ -309,7 +309,7 @@ impl SkillTool {
     }
 }
 
-/// Append the curated jcode-endorsed skill catalog to `output`, grouped by
+/// Append the curated wvc-endorsed skill catalog to `output`, grouped by
 /// category and marked with installed/not-installed status. `installed` is the
 /// set of skill names currently loaded in the registry.
 fn append_endorsed_skills(output: &mut String, installed: &std::collections::HashSet<&str>) {
@@ -318,7 +318,7 @@ fn append_endorsed_skills(output: &mut String, installed: &std::collections::Has
         return;
     }
 
-    output.push_str("\nEndorsed skills (recommended by jcode)\n");
+    output.push_str("\nEndorsed skills (recommended by wvc)\n");
 
     // Group by category, preserving first-seen order.
     let mut category_order: Vec<&str> = Vec::new();
@@ -384,7 +384,7 @@ mod tests {
 
     fn create_test_tool_with_skill(name: &str) -> (SkillTool, tempfile::TempDir) {
         let temp_dir = tempfile::tempdir().unwrap();
-        let skill_dir = temp_dir.path().join(".jcode").join("skills").join(name);
+        let skill_dir = temp_dir.path().join(".wvc").join("skills").join(name);
         std::fs::create_dir_all(&skill_dir).unwrap();
         std::fs::write(
             skill_dir.join("SKILL.md"),

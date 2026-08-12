@@ -1033,7 +1033,7 @@ pub(super) async fn handle_notify_auth_changed(
             return;
         }
         let activation = crate::auth::lifecycle::activate_auth_change(&activation_request);
-        // Snapshot which providers jcode now believes are configured right after
+        // Snapshot which providers wvc now believes are configured right after
         // an auth change activates. This is the cornerstone for diagnosing
         // "logged in but model picker still empty / only OpenAI+Anthropic" and
         // "paste key silently returns to menu" reports (#312, #292, #304): if a
@@ -1374,8 +1374,8 @@ mod tests {
     impl IsolatedRuntimeDir {
         fn new() -> Self {
             let temp = tempfile::TempDir::new().expect("runtime dir");
-            let prev_runtime = std::env::var_os("JCODE_RUNTIME_DIR");
-            crate::env::set_var("JCODE_RUNTIME_DIR", temp.path());
+            let prev_runtime = std::env::var_os("WVC_RUNTIME_DIR");
+            crate::env::set_var("WVC_RUNTIME_DIR", temp.path());
             Self {
                 _prev_runtime: prev_runtime,
                 _temp: temp,
@@ -1386,9 +1386,9 @@ mod tests {
     impl Drop for IsolatedRuntimeDir {
         fn drop(&mut self) {
             if let Some(prev_runtime) = self._prev_runtime.take() {
-                crate::env::set_var("JCODE_RUNTIME_DIR", prev_runtime);
+                crate::env::set_var("WVC_RUNTIME_DIR", prev_runtime);
             } else {
-                crate::env::remove_var("JCODE_RUNTIME_DIR");
+                crate::env::remove_var("WVC_RUNTIME_DIR");
             }
         }
     }

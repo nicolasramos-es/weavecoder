@@ -2,7 +2,7 @@
 name = "wvc-provider-anthropic-runtime"
 version = "0.1.0"
 edition = "2024"
-description = "Direct Anthropic Messages API provider runtime (OAuth + API key, SSE streaming) for jcode, kept downstream of wvc-base so provider edits do not rebuild the app spine"
+description = "Direct Anthropic Messages API provider runtime (OAuth + API key, SSE streaming) for wvc, kept downstream of wvc-base so provider edits do not rebuild the app spine"
 
 [lib]
 name = "wvc_provider_anthropic_runtime"

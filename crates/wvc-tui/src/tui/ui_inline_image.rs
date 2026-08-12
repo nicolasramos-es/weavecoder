@@ -1264,7 +1264,7 @@ mod tests {
     #[test]
     fn generated_image_label_is_truncated_to_one_terminal_row() {
         let mut generated = item(1536, 864);
-        generated.label = "/home/jeremy/jcode/.jcode/generated-images/1783707839145-ig_0c5e377de871aba5016a51388779588196944d98eff2c7aa30.png".to_string();
+        generated.label = "/home/jeremy/wvc/.wvc/generated-images/1783707839145-ig_0c5e377de871aba5016a51388779588196944d98eff2c7aa30.png".to_string();
 
         let line = image_label_line(&generated, 52, true, ImageExpandLevel::Fit);
         let text = wvc_tui_render::line_plain_text(&line);

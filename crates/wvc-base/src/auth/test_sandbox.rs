@@ -29,7 +29,7 @@ impl AuthTestSandbox {
 
         std::fs::create_dir_all(temp.path().join("config").join("wvc"))?;
         std::fs::create_dir_all(temp.path().join("external"))?;
-        crate::env::set_var("JCODE_HOME", temp.path());
+        crate::env::set_var("WVC_HOME", temp.path());
         crate::provider_catalog::force_apply_openai_compatible_profile_env(None);
         reset_global_auth_state();
 
@@ -101,35 +101,35 @@ fn reset_global_auth_state() {
 
 fn tracked_env_vars() -> Vec<String> {
     let mut keys = [
-        "JCODE_HOME",
+        "WVC_HOME",
         "XDG_CONFIG_HOME",
-        "JCODE_OPENROUTER_API_BASE",
-        "JCODE_OPENROUTER_API_KEY_NAME",
-        "JCODE_OPENROUTER_ENV_FILE",
-        "JCODE_OPENROUTER_CACHE_NAMESPACE",
-        "JCODE_OPENROUTER_PROVIDER_FEATURES",
-        "JCODE_OPENROUTER_TRANSPORT_STATE",
-        "JCODE_OPENROUTER_ALLOW_NO_AUTH",
-        "JCODE_OPENROUTER_PROVIDER",
-        "JCODE_OPENROUTER_NO_FALLBACK",
-        "JCODE_OPENROUTER_MODEL",
-        "JCODE_OPENROUTER_MODEL_CATALOG",
-        "JCODE_OPENROUTER_STATIC_MODELS",
-        "JCODE_OPENROUTER_AUTH_HEADER",
-        "JCODE_OPENROUTER_AUTH_HEADER_NAME",
-        "JCODE_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
-        "JCODE_OPENAI_COMPAT_API_BASE",
-        "JCODE_OPENAI_COMPAT_API_KEY_NAME",
-        "JCODE_OPENAI_COMPAT_ENV_FILE",
-        "JCODE_OPENAI_COMPAT_SETUP_URL",
-        "JCODE_OPENAI_COMPAT_DEFAULT_MODEL",
-        "JCODE_OPENAI_COMPAT_LOCAL_ENABLED",
-        "JCODE_NAMED_PROVIDER_PROFILE",
-        "JCODE_PROVIDER_PROFILE_ACTIVE",
-        "JCODE_PROVIDER_PROFILE_NAME",
-        "JCODE_RUNTIME_PROVIDER",
-        "JCODE_ACTIVE_PROVIDER",
-        "JCODE_INITIAL_PROVIDER_EXPLICIT",
+        "WVC_OPENROUTER_API_BASE",
+        "WVC_OPENROUTER_API_KEY_NAME",
+        "WVC_OPENROUTER_ENV_FILE",
+        "WVC_OPENROUTER_CACHE_NAMESPACE",
+        "WVC_OPENROUTER_PROVIDER_FEATURES",
+        "WVC_OPENROUTER_TRANSPORT_STATE",
+        "WVC_OPENROUTER_ALLOW_NO_AUTH",
+        "WVC_OPENROUTER_PROVIDER",
+        "WVC_OPENROUTER_NO_FALLBACK",
+        "WVC_OPENROUTER_MODEL",
+        "WVC_OPENROUTER_MODEL_CATALOG",
+        "WVC_OPENROUTER_STATIC_MODELS",
+        "WVC_OPENROUTER_AUTH_HEADER",
+        "WVC_OPENROUTER_AUTH_HEADER_NAME",
+        "WVC_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
+        "WVC_OPENAI_COMPAT_API_BASE",
+        "WVC_OPENAI_COMPAT_API_KEY_NAME",
+        "WVC_OPENAI_COMPAT_ENV_FILE",
+        "WVC_OPENAI_COMPAT_SETUP_URL",
+        "WVC_OPENAI_COMPAT_DEFAULT_MODEL",
+        "WVC_OPENAI_COMPAT_LOCAL_ENABLED",
+        "WVC_NAMED_PROVIDER_PROFILE",
+        "WVC_PROVIDER_PROFILE_ACTIVE",
+        "WVC_PROVIDER_PROFILE_NAME",
+        "WVC_RUNTIME_PROVIDER",
+        "WVC_ACTIVE_PROVIDER",
+        "WVC_INITIAL_PROVIDER_EXPLICIT",
         "OPENAI_API_KEY",
         "OPENROUTER_API_KEY",
         "ANTHROPIC_API_KEY",
@@ -164,7 +164,7 @@ mod tests {
         let sandbox = AuthTestSandbox::new().expect("sandbox");
 
         assert_eq!(
-            std::env::var("JCODE_HOME").ok().as_deref(),
+            std::env::var("WVC_HOME").ok().as_deref(),
             Some(sandbox.root().to_str().unwrap())
         );
         assert_eq!(

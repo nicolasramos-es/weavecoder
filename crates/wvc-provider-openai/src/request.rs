@@ -30,7 +30,7 @@ pub fn openai_encrypted_content_is_sendable(encrypted_content: &str) -> bool {
 
 pub fn openai_encrypted_content_fallback_summary(encrypted_content_len: usize) -> String {
     format!(
-        "OpenAI native compaction state was discarded because its encrypted payload was {} chars, above Jcode's safe replay limit of {} chars (provider hard limit: {} chars). Earlier compacted details may be unavailable; use the recent visible messages and session search/tools if exact prior details are needed.",
+        "OpenAI native compaction state was discarded because its encrypted payload was {} chars, above Weavecoder's safe replay limit of {} chars (provider hard limit: {} chars). Earlier compacted details may be unavailable; use the recent visible messages and session search/tools if exact prior details are needed.",
         encrypted_content_len,
         OPENAI_ENCRYPTED_CONTENT_SAFE_MAX_CHARS,
         OPENAI_ENCRYPTED_CONTENT_PROVIDER_MAX_CHARS,
@@ -660,7 +660,7 @@ mod tests {
     /// Integration-level regression test for issue #687: the payload actually
     /// sent to OpenAI must not carry `uniqueItems`.
     ///
-    /// The schema-level tests in `jcode-provider-core` cover normalization, but
+    /// The schema-level tests in `wvc-provider-core` cover normalization, but
     /// the bug was that this whole request got rejected, so the guarantee is
     /// worth asserting on the real tool payload, including after the strict
     /// pass runs on top.

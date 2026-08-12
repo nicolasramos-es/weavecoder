@@ -74,7 +74,7 @@ pub fn setup() -> Result<ToolOutput> {
     ));
 
     // Trigger the Screen Recording prompt by attempting a capture (already done
-    // in screen_recording_ok). For Accessibility, prompt + pre-add jcode by
+    // in screen_recording_ok). For Accessibility, prompt + pre-add wvc by
     // opening the pane; the trust prompt itself is shown by the host process the
     // first time it calls an AX API.
     if !ax0 {
@@ -83,7 +83,7 @@ pub fn setup() -> Result<ToolOutput> {
             .arg("x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
             .status();
         log.push(
-            "Opened Privacy & Security > Accessibility. Add and enable your terminal/jcode there."
+            "Opened Privacy & Security > Accessibility. Add and enable your terminal/wvc there."
                 .into(),
         );
     }
@@ -92,7 +92,7 @@ pub fn setup() -> Result<ToolOutput> {
             .arg("x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")
             .status();
         log.push(
-            "Opened Privacy & Security > Screen Recording. Add and enable your terminal/jcode there."
+            "Opened Privacy & Security > Screen Recording. Add and enable your terminal/wvc there."
                 .into(),
         );
     }

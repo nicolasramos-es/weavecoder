@@ -5,7 +5,7 @@
 //! code path and get the platform's native mechanism.
 //!
 //! This lives in its own crate so the harness API bridge can use it without
-//! depending on `jcode-base`. The bridge is deliberately free of the
+//! depending on `wvc-base`. The bridge is deliberately free of the
 //! application foundation, and the alternative was duplicating 450 lines of
 //! named pipe handling into it.
 

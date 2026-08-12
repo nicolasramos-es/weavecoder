@@ -2,7 +2,7 @@
 //!
 //! These exercise the real server reload fan-out and streaming-interrupt paths
 //! against a `MockProvider` with multiple clients attached, without execing a
-//! new binary (the server runs with `JCODE_TEST_SESSION=1`, so
+//! new binary (the server runs with `WVC_TEST_SESSION=1`, so
 //! `await_reload_signal` performs all the in-process bookkeeping -- recovery
 //! intents, graceful shutdown, marker writes, and client fan-out -- but skips
 //! the final `exec`). This is the cheapest way to cover the multi-client +

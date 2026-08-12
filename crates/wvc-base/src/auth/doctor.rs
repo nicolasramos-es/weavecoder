@@ -3,17 +3,17 @@ use crate::provider_catalog::{LoginProviderAuthKind, LoginProviderDescriptor};
 
 pub const VALIDATION_STALE_AFTER_MS: i64 = 7 * 24 * 60 * 60 * 1000;
 
-/// True when `jcode provider-doctor` has a native-runtime driver for
+/// True when `wvc provider-doctor` has a native-runtime driver for
 /// `provider_id` (a provider whose live path is not OpenAI-compatible and so
 /// cannot be exercised by the generic OpenAI-compatible doctor). Today this is
 /// the Claude OAuth/subscription provider, the Antigravity (Google OAuth Cloud
 /// Code) provider, and the generic native-runtime providers (OpenAI, Gemini,
-/// Cursor, Copilot, Bedrock, jcode, Azure OpenAI).
+/// Cursor, Copilot, Bedrock, wvc, Azure OpenAI).
 ///
-/// The drivers themselves live downstream in the `jcode-provider-doctor`
+/// The drivers themselves live downstream in the `wvc-provider-doctor`
 /// crate (which re-exports this predicate); this roster lives here so
 /// `live_tests` can annotate the monitoring roster without depending on that
-/// crate. A sync test in `jcode-provider-doctor` asserts this list matches its
+/// crate. A sync test in `wvc-provider-doctor` asserts this list matches its
 /// `NativeProviderKind` specs.
 pub fn native_doctor_supports_provider(provider_id: &str) -> bool {
     matches!(
@@ -63,7 +63,7 @@ pub fn diagnostics(
 
     match assessment.state {
         AuthState::NotConfigured => diagnostics.push(format!(
-            "{} is not configured for jcode yet.",
+            "{} is not configured for wvc yet.",
             provider.display_name
         )),
         AuthState::Expired => diagnostics.push(format!(
@@ -116,7 +116,7 @@ pub fn recommended_actions(
     let mut actions = Vec::new();
     match assessment.state {
         AuthState::NotConfigured => actions.push(format!(
-            "Connect it: jcode login --provider {}",
+            "Connect it: wvc login --provider {}",
             provider.id
         )),
         AuthState::Expired
@@ -126,12 +126,12 @@ pub fn recommended_actions(
             ) =>
         {
             actions.push(format!(
-                "Re-run login; this provider cannot auto-refresh: jcode login --provider {}",
+                "Re-run login; this provider cannot auto-refresh: wvc login --provider {}",
                 provider.id
             ));
         }
         AuthState::Expired => actions.push(format!(
-            "Refresh or replace the current login: jcode login --provider {}",
+            "Refresh or replace the current login: wvc login --provider {}",
             provider.id
         )),
         AuthState::Available => {}
@@ -145,7 +145,7 @@ pub fn recommended_actions(
         let lower = error.to_ascii_lowercase();
         if lower.contains("invalid_grant") || lower.contains("refresh token") {
             actions.push(format!(
-                "Replace the stale OAuth account/token: jcode login --provider {}",
+                "Replace the stale OAuth account/token: wvc login --provider {}",
                 provider.id
             ));
         } else if lower.contains("rate_limit")
@@ -158,7 +158,7 @@ pub fn recommended_actions(
             );
         } else {
             actions.push(format!(
-                "Retry credential refresh by re-running validation: jcode auth doctor {} --validate",
+                "Retry credential refresh by re-running validation: wvc auth doctor {} --validate",
                 provider.id
             ));
         }
@@ -167,15 +167,15 @@ pub fn recommended_actions(
     if assessment.state != AuthState::NotConfigured {
         match assessment.last_validation.as_ref() {
             None => actions.push(format!(
-                "Run runtime verification: jcode auth-test --provider {}",
+                "Run runtime verification: wvc auth-test --provider {}",
                 provider.id
             )),
             Some(record) if !record.success => actions.push(format!(
-                "Inspect runtime readiness: jcode auth-test --provider {}",
+                "Inspect runtime readiness: wvc auth-test --provider {}",
                 provider.id
             )),
             Some(record) if validation_is_stale(record.checked_at_ms) => actions.push(format!(
-                "Refresh stale runtime verification: jcode auth-test --provider {}",
+                "Refresh stale runtime verification: wvc auth-test --provider {}",
                 provider.id
             )),
             Some(_) => {}
@@ -184,7 +184,7 @@ pub fn recommended_actions(
 
     if validation_result.is_some_and(|value| value != "validation passed") {
         actions.push(format!(
-            "Re-run detailed auth diagnostics: jcode auth-test --provider {}",
+            "Re-run detailed auth diagnostics: wvc auth-test --provider {}",
             provider.id
         ));
     }
@@ -194,12 +194,12 @@ pub fn recommended_actions(
         || matches!(provider.auth_kind, LoginProviderAuthKind::Hybrid)
     {
         actions.push(format!(
-            "For browser/callback issues, use the manual-safe flow: jcode login --provider {} --print-auth-url",
+            "For browser/callback issues, use the manual-safe flow: wvc login --provider {} --print-auth-url",
             provider.id
         ));
     }
 
-    actions.push("Review current state: jcode auth status --json".to_string());
+    actions.push("Review current state: wvc auth status --json".to_string());
     actions.dedup();
     actions
 }
@@ -216,8 +216,8 @@ mod tests {
             state: AuthState::Available,
             readiness: crate::auth::AuthReadinessLevel::RequestValid,
             method_detail: "OAuth".to_string(),
-            credential_source: AuthCredentialSource::JcodeManagedFile,
-            credential_source_detail: "~/.jcode/auth.json".to_string(),
+            credential_source: AuthCredentialSource::WeavecoderManagedFile,
+            credential_source_detail: "~/.wvc/auth.json".to_string(),
             expiry_confidence: AuthExpiryConfidence::Exact,
             refresh_support: AuthRefreshSupport::Automatic,
             validation_method: AuthValidationMethod::TimestampCheck,

@@ -4,10 +4,10 @@
 //! These providers each support *both* a subscription/OAuth login and a direct
 //! API key, so every request needs an explicit "which credential" decision.
 //!
-//! Historically jcode encoded that decision as free-form strings spread across
+//! Historically wvc encoded that decision as free-form strings spread across
 //! several overlapping vocabularies:
 //!
-//! | concept              | runtime env (`JCODE_RUNTIME_PROVIDER`) | route / stable-id    | CLI `--provider` | model prefix     |
+//! | concept              | runtime env (`WVC_RUNTIME_PROVIDER`) | route / stable-id    | CLI `--provider` | model prefix     |
 //! |----------------------|----------------------------------------|----------------------|------------------|------------------|
 //! | Claude, OAuth        | `claude`                               | `claude-oauth`       | `claude`         | `claude-oauth:`  |
 //! | Claude, API key      | `claude-api`                           | `anthropic-api-key`  | `anthropic-api`  | `claude-api:`    |
@@ -127,7 +127,7 @@ impl AuthRoute {
         Self::new(DualAuthProvider::OpenAI, mode)
     }
 
-    /// Parse a dual-auth token from *any* of jcode's overlapping vocabularies
+    /// Parse a dual-auth token from *any* of wvc's overlapping vocabularies
     /// (runtime env, route stable-id, CLI `--provider`, or bare model prefix).
     ///
     /// Returns `None` for tokens that do not pin a dual-auth credential route,
@@ -190,7 +190,7 @@ impl AuthRoute {
         }
     }
 
-    /// Canonical `JCODE_RUNTIME_PROVIDER` value that pins this route.
+    /// Canonical `WVC_RUNTIME_PROVIDER` value that pins this route.
     pub const fn runtime_provider_key(self) -> &'static str {
         match (self.provider, self.mode) {
             (DualAuthProvider::Anthropic, AuthMode::Oauth) => "claude",
@@ -263,18 +263,18 @@ pub fn pinned_mode_for(
     (route.provider == provider).then_some(route.mode)
 }
 
-/// Read `JCODE_RUNTIME_PROVIDER` and return the dual-auth route it pins, if any.
+/// Read `WVC_RUNTIME_PROVIDER` and return the dual-auth route it pins, if any.
 pub fn runtime_env_auth_route() -> Option<AuthRoute> {
-    let value = std::env::var("JCODE_RUNTIME_PROVIDER").ok()?;
+    let value = std::env::var("WVC_RUNTIME_PROVIDER").ok()?;
     AuthRoute::parse(&value)
 }
 
-/// Read `JCODE_RUNTIME_PROVIDER` and resolve the dual-auth mode it pins for a
+/// Read `WVC_RUNTIME_PROVIDER` and resolve the dual-auth mode it pins for a
 /// specific provider (or `None` for "auto").
 pub fn runtime_env_pinned_mode(provider: DualAuthProvider) -> Option<AuthMode> {
     pinned_mode_for(
         provider,
-        std::env::var("JCODE_RUNTIME_PROVIDER").ok().as_deref(),
+        std::env::var("WVC_RUNTIME_PROVIDER").ok().as_deref(),
     )
 }
 

@@ -77,7 +77,7 @@ mod tests {
     #[test]
     fn an_absent_path_is_not_a_socket() {
         assert!(!is_socket_path(std::path::Path::new(
-            "/nonexistent/jcode-transport-absent.sock"
+            "/nonexistent/wvc-transport-absent.sock"
         )));
     }
 
@@ -86,7 +86,7 @@ mod tests {
     #[test]
     fn removing_an_absent_socket_is_a_no_op() {
         remove_socket(std::path::Path::new(
-            "/nonexistent/jcode-transport-absent.sock",
+            "/nonexistent/wvc-transport-absent.sock",
         ));
     }
 }

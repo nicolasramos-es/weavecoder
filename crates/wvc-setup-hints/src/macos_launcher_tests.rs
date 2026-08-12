@@ -4,8 +4,8 @@ use super::*;
 fn macos_launcher_script_shows_alerts_and_uses_terminal_launcher() {
     let script = macos_launcher_script(
         MacTerminalKind::Ghostty,
-        "/tmp/jcode",
-        Path::new("/Users/test/Applications/Jcode.app"),
+        "/tmp/wvc",
+        Path::new("/Users/test/Applications/Weavecoder.app"),
     );
     assert!(script.contains("display alert \"Weavecoder launch failed\""));
     assert!(script.contains("wvc setup-launcher"));

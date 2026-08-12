@@ -6,7 +6,7 @@
 //!
 //! Layout, top to bottom, vertically centered in the chat area:
 //!   1. Grayed telemetry notice header.
-//!   2. "Welcome to jcode onboarding" title.
+//!   2. "Welcome to wvc onboarding" title.
 //!   3. The login / getting-started prompt with suggestions.
 
 use super::dim_color;
@@ -42,7 +42,7 @@ fn push_esc_skip_hint(lines: &mut Vec<Line<'static>>, align: Alignment) {
 /// clean full-cell semicircles. Kitty does; ghostty, Apple Terminal, and the
 /// VS Code terminal draw them as small floating glyphs that break the capsule
 /// illusion, so those fall back to half-block caps that render solidly
-/// everywhere. Override with `JCODE_ROUNDED_PILLS=on|off`.
+/// everywhere. Override with `WVC_ROUNDED_PILLS=on|off`.
 fn rounded_pill_caps_supported() -> bool {
     static SUPPORTED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
     *SUPPORTED.get_or_init(|| {
@@ -51,7 +51,7 @@ fn rounded_pill_caps_supported() -> bool {
         if cfg!(test) {
             return true;
         }
-        if let Ok(raw) = std::env::var("JCODE_ROUNDED_PILLS") {
+        if let Ok(raw) = std::env::var("WVC_ROUNDED_PILLS") {
             match raw.trim().to_ascii_lowercase().as_str() {
                 "1" | "true" | "yes" | "on" => return true,
                 "0" | "false" | "no" | "off" => return false,
@@ -184,7 +184,7 @@ fn telemetry_settings_lines(
         (
             Choice::Everything,
             "Send everything, including prompts",
-            "Helps jcode the most",
+            "Helps wvc the most",
         ),
         (
             Choice::NoContent,
@@ -206,7 +206,7 @@ fn telemetry_settings_lines(
     if env_forced_off {
         lines.push(
             Line::from(Span::styled(
-                "Your environment already disables telemetry (JCODE_NO_TELEMETRY).",
+                "Your environment already disables telemetry (WVC_NO_TELEMETRY).",
                 dim,
             ))
             .alignment(align),
@@ -357,7 +357,7 @@ fn telemetry_header_lines(width: u16) -> Vec<Line<'static>> {
     let lines = vec![
         "wvc collects anonymous usage statistics (version, OS, session",
         "activity, and crash reasons). No code, prompts, or personal data.",
-        "Change anytime: /telemetry (or export JCODE_NO_TELEMETRY=1)",
+        "Change anytime: /telemetry (or export WVC_NO_TELEMETRY=1)",
     ];
     lines
         .into_iter()
@@ -379,7 +379,7 @@ fn telemetry_header_lines(width: u16) -> Vec<Line<'static>> {
 /// Welcome title line, rendered above the phase body.
 fn welcome_title_line() -> Line<'static> {
     Line::from(Span::styled(
-        "Welcome to jcode onboarding",
+        "Welcome to wvc onboarding",
         Style::default()
             .fg(welcome_accent())
             .add_modifier(Modifier::BOLD),
@@ -471,7 +471,7 @@ fn welcome_body_lines(app: &dyn TuiState) -> Vec<Line<'static>> {
                         .alignment(align),
                     );
                     // If we detected a coding agent the user recently used, offer
-                    // to hand the fix to it (it can run jcode's auth-test and add
+                    // to hand the fix to it (it can run wvc's auth-test and add
                     // the key non-interactively).
                     if let Some(agent) = repair_agent_label {
                         lines.push(

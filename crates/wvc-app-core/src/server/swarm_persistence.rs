@@ -8,7 +8,7 @@ use std::time::{Duration, Instant};
 use tokio::sync::mpsc;
 use wvc_swarm_core::{SwarmLifecycleStatus, SwarmMemberRecord};
 
-/// Directory name under the durable state dir (`~/.jcode/state`).
+/// Directory name under the durable state dir (`~/.wvc/state`).
 const SWARM_STATE_DIR: &str = "swarm";
 /// Pre-0.36 location under the runtime dir (tmpfs on Linux, wiped on reboot).
 const LEGACY_SWARM_STATE_DIR: &str = "wvc-swarm-state";
@@ -59,7 +59,7 @@ fn swarm_file_lock(swarm_id: &str) -> Arc<StdMutex<()>> {
 
 fn dormant_plan_retention() -> Duration {
     Duration::from_secs(
-        std::env::var("JCODE_SWARM_DORMANT_PLAN_RETENTION_SECS")
+        std::env::var("WVC_SWARM_DORMANT_PLAN_RETENTION_SECS")
             .ok()
             .and_then(|value| value.trim().parse::<u64>().ok())
             .filter(|value| *value > 0)
@@ -153,14 +153,14 @@ fn state_dir() -> PathBuf {
 }
 
 /// Unit tests that exercise high-level swarm mutation helpers do not all set
-/// `JCODE_RUNTIME_DIR`. Never let those tests fall through to the real
-/// `~/.jcode/state/swarm`: that leaked synthetic `swarm-1` plans/members into
+/// `WVC_RUNTIME_DIR`. Never let those tests fall through to the real
+/// `~/.wvc/state/swarm`: that leaked synthetic `swarm-1` plans/members into
 /// live user state during ordinary `cargo test` runs. Tests that need an
-/// isolated explicit location still set `JCODE_RUNTIME_DIR` and use the normal
+/// isolated explicit location still set `WVC_RUNTIME_DIR` and use the normal
 /// resolver; otherwise use a process-local temp directory.
 #[cfg(test)]
 fn state_dir() -> PathBuf {
-    if std::env::var_os("JCODE_RUNTIME_DIR").is_some() {
+    if std::env::var_os("WVC_RUNTIME_DIR").is_some() {
         storage::durable_state_dir().join(SWARM_STATE_DIR)
     } else {
         std::env::temp_dir()

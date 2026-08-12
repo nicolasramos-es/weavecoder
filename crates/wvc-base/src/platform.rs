@@ -187,7 +187,7 @@ pub fn set_permissions_executable(path: &Path) -> std::io::Result<()> {
 
 /// Best-effort increase of the current process soft `RLIMIT_NOFILE` on Unix.
 ///
-/// This helps jcode survive short-lived reload/connect spikes even when it was
+/// This helps wvc survive short-lived reload/connect spikes even when it was
 /// launched from a shell with a conservative `ulimit -n` like 1024.
 pub fn raise_nofile_limit_best_effort(minimum_soft_limit: u64) {
     #[cfg(unix)]
@@ -396,7 +396,7 @@ pub fn atomic_symlink_swap(src: &Path, dst: &Path, temp: &Path) -> std::io::Resu
 /// Spawn a process detached from the current client session.
 ///
 /// This is used for launching new terminal windows (for `/resume`, `/split`,
-/// crash restore, etc.) so the new client survives if the invoking jcode
+/// crash restore, etc.) so the new client survives if the invoking wvc
 /// process exits or its terminal closes.
 pub fn spawn_detached(cmd: &mut std::process::Command) -> std::io::Result<std::process::Child> {
     #[cfg(unix)]

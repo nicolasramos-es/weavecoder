@@ -4,11 +4,11 @@ use wvc_provider_openrouter::stream::OpenRouterStream;
 fn local_endpoint_troubleshooting_hint(api_base: &str, model: &str) -> &'static str {
     let lower = api_base.to_ascii_lowercase();
     if lower.contains("localhost:11434") || lower.contains("127.0.0.1:11434") {
-        return "Ollama hint: make sure `ollama serve` is running, the model is installed with `ollama pull <model>`, and run jcode with an installed model, for example `jcode --provider ollama --model llama3.2 run 'hello'`. If replies ignore earlier turns, Ollama is truncating the prompt to its serving context: restart it with a larger window, e.g. `OLLAMA_CONTEXT_LENGTH=65536 ollama serve`.";
+        return "Ollama hint: make sure `ollama serve` is running, the model is installed with `ollama pull <model>`, and run wvc with an installed model, for example `wvc --provider ollama --model llama3.2 run 'hello'`. If replies ignore earlier turns, Ollama is truncating the prompt to its serving context: restart it with a larger window, e.g. `OLLAMA_CONTEXT_LENGTH=65536 ollama serve`.";
     }
 
     if lower.contains("localhost:1234") || lower.contains("127.0.0.1:1234") {
-        return "LM Studio hint: start the Local Server in LM Studio, load a chat model, and run jcode with the exact model id shown by LM Studio's /v1/models endpoint.";
+        return "LM Studio hint: start the Local Server in LM Studio, load a chat model, and run wvc with the exact model id shown by LM Studio's /v1/models endpoint.";
     }
 
     if lower.contains("localhost") || lower.contains("127.0.0.1") || lower.contains("[::1]") {
@@ -181,7 +181,7 @@ async fn stream_response(
 
     if send_openrouter_headers {
         req = req
-            .header("HTTP-Referer", "https://github.com/jcode")
+            .header("HTTP-Referer", "https://github.com/wvc")
             .header("X-Title", "wvc");
     }
 
@@ -238,7 +238,7 @@ async fn stream_response(
     // Idle timeout between streamed chunks. Configurable so slow reasoning
     // models (e.g. DeepSeek) that think silently for minutes before emitting
     // tokens don't trip a premature timeout (issue #196). Resolved from
-    // `[provider] stream_idle_timeout_secs` / `JCODE_STREAM_IDLE_TIMEOUT_SECS`,
+    // `[provider] stream_idle_timeout_secs` / `WVC_STREAM_IDLE_TIMEOUT_SECS`,
     // defaulting to 180s. Shared with the native provider paths (issue #434).
     let idle_timeout_secs = stream_idle_timeout.as_secs();
 

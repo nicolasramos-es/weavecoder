@@ -2,7 +2,7 @@
 //!
 //! The OpenAI provider *runtime* (`OpenAIProvider`: Codex OAuth + API key,
 //! Responses API over SSE and persistent WebSocket) now lives in the
-//! downstream `jcode-provider-openai-runtime` crate so provider edits do not
+//! downstream `wvc-provider-openai-runtime` crate so provider edits do not
 //! rebuild the base -> app-core -> tui spine. The binary's composition root
 //! registers it via [`crate::provider::external`].
 //!
@@ -20,7 +20,7 @@ const OPENAI_API_BASE: &str = "https://api.openai.com/v1";
 /// Defaults to `https://api.openai.com/v1`, but honors a user override so
 /// the native `openai-api` provider can target a local/proxied Responses
 /// API endpoint (issue #343). Checked in order:
-/// `JCODE_OPENAI_API_BASE`, `OPENAI_BASE_URL`, `OPENAI_API_BASE`.
+/// `WVC_OPENAI_API_BASE`, `OPENAI_BASE_URL`, `OPENAI_API_BASE`.
 ///
 /// The override must be an absolute `http(s)://` URL; anything else is
 /// logged and ignored so a malformed value never silently breaks requests.
@@ -28,7 +28,7 @@ const OPENAI_API_BASE: &str = "https://api.openai.com/v1";
 /// so a trailing `/responses` is trimmed to avoid `.../responses/responses`.
 pub fn resolve_api_base() -> String {
     const OVERRIDE_VARS: [&str; 3] = [
-        "JCODE_OPENAI_API_BASE",
+        "WVC_OPENAI_API_BASE",
         "OPENAI_BASE_URL",
         "OPENAI_API_BASE",
     ];

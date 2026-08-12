@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 const MACOS_APP_ICON_FILE_NAME: &str = "Weavecoder.icns";
 const MACOS_APP_ICON_BYTES: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/../../assets/app-icons/Jcode.icns"
+    "/../../assets/app-icons/Weavecoder.icns"
 ));
 
 pub(super) fn should_refresh_macos_app_launcher(state: &SetupHintsState) -> bool {
@@ -61,17 +61,17 @@ pub(super) fn install_macos_app_launcher() -> Result<(PathBuf, MacTerminalKind)>
 <plist version="1.0">
 <dict>
     <key>CFBundleName</key>
-    <string>Jcode</string>
+    <string>Weavecoder</string>
     <key>CFBundleDisplayName</key>
-    <string>Jcode</string>
+    <string>Weavecoder</string>
     <key>CFBundleIdentifier</key>
-    <string>com.jcode.launcher</string>
+    <string>com.wvc.launcher</string>
     <key>CFBundleVersion</key>
     <string>{version}</string>
     <key>CFBundleShortVersionString</key>
     <string>{version}</string>
     <key>CFBundleExecutable</key>
-    <string>jcode-launcher</string>
+    <string>wvc-launcher</string>
     <key>CFBundleIconFile</key>
     <string>{icon_file}</string>
     <key>CFBundlePackageType</key>
@@ -175,7 +175,7 @@ fn should_refresh_macos_app_launcher_paths(
 /// Check that `path` exists under its exact byte-for-byte file name.
 ///
 /// macOS system volumes are case-insensitive by default, so a plain
-/// `Path::exists()` on `jcode.app` also matches `Jcode.app`. The legacy-bundle
+/// `Path::exists()` on `wvc.app` also matches `Weavecoder.app`. The legacy-bundle
 /// check needs an exact-name match or the launcher would refresh itself on
 /// every launch once the new bundle exists.
 fn path_exists_with_exact_name(path: &Path) -> bool {
@@ -196,11 +196,11 @@ fn macos_launcher_script(terminal: MacTerminalKind, exe_path: &str, app_dir: &Pa
     let shell_command = paused_wvc_shell_command(exe_path);
     let launch_command = launch_command_for_macos_terminal(terminal, &shell_command);
     let missing_message = escape_applescript_text(&format!(
-        "Weavecoder could not launch because the executable was not found.\n\nExpected path:\n{}\n\nTry reinstalling jcode or rerun:\njcode setup-launcher",
+        "Weavecoder could not launch because the executable was not found.\n\nExpected path:\n{}\n\nTry reinstalling wvc or rerun:\nwvc setup-launcher",
         exe_path
     ));
     let terminal_failure_message = escape_applescript_text(&format!(
-        "Weavecoder could not open {}.\n\nTry rerunning:\njcode setup-launcher\n\nLauncher log:\n~/.jcode/launcher/macos-launcher.log",
+        "Weavecoder could not open {}.\n\nTry rerunning:\nwvc setup-launcher\n\nLauncher log:\n~/.wvc/launcher/macos-launcher.log",
         terminal.label()
     ));
 
@@ -209,7 +209,7 @@ fn macos_launcher_script(terminal: MacTerminalKind, exe_path: &str, app_dir: &Pa
 set -u
 
 PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
-LOG_DIR="$HOME/.jcode/launcher"
+LOG_DIR="$HOME/.wvc/launcher"
 LOG_FILE="$LOG_DIR/macos-launcher.log"
 mkdir -p "$LOG_DIR" >/dev/null 2>&1 || true
 

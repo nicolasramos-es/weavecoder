@@ -2,7 +2,7 @@
 """Check lightweight crate dependency boundaries.
 
 Type crates should remain data-contract crates. This guard intentionally starts
-small: it blocks direct dependencies from any `jcode-*-types` crate to root or
+small: it blocks direct dependencies from any `wvc-*-types` crate to root or
 runtime-heavy internal crates. It allows external dependencies for now, while
 making internal domain leaks visible and easy to extend.
 """
@@ -19,35 +19,35 @@ ROOT = Path(__file__).resolve().parents[1]
 # Internal crates that are allowed as dependencies of type crates.
 # Keep this list narrow. Add a crate only if it is itself a data-contract crate.
 ALLOWED_INTERNAL_TYPE_DEPS = {
-    "jcode-message-types",
+    "wvc-message-types",
 }
 
 # Internal crates that type crates must not depend on directly. Most are runtime,
-# provider, UI, storage, or root behavior crates. `jcode-core` is intentionally
+# provider, UI, storage, or root behavior crates. `wvc-core` is intentionally
 # blocked so it does not become the backdoor catch-all dependency for DTO crates.
 FORBIDDEN_INTERNAL_DEPS = {
-    "jcode",
-    "jcode-agent-runtime",
-    "jcode-azure-auth",
-    "jcode-core",
-    "jcode-desktop2",
-    "jcode-embedding",
-    "jcode-mobile-core",
-    "jcode-mobile-sim",
-    "jcode-notify-email",
-    "jcode-pdf",
-    "jcode-plan",
-    "jcode-provider-core",
-    "jcode-provider-gemini",
-    "jcode-provider-metadata",
-    "jcode-provider-openrouter",
-    "jcode-protocol",
-    "jcode-terminal-launch",
-    "jcode-tui-core",
-    "jcode-tui-markdown",
-    "jcode-tui-mermaid",
-    "jcode-tui-render",
-    "jcode-tui-workspace",
+    "wvc",
+    "wvc-agent-runtime",
+    "wvc-azure-auth",
+    "wvc-core",
+    "wvc-desktop2",
+    "wvc-embedding",
+    "wvc-mobile-core",
+    "wvc-mobile-sim",
+    "wvc-notify-email",
+    "wvc-pdf",
+    "wvc-plan",
+    "wvc-provider-core",
+    "wvc-provider-gemini",
+    "wvc-provider-metadata",
+    "wvc-provider-openrouter",
+    "wvc-protocol",
+    "wvc-terminal-launch",
+    "wvc-tui-core",
+    "wvc-tui-markdown",
+    "wvc-tui-mermaid",
+    "wvc-tui-render",
+    "wvc-tui-workspace",
 }
 
 
@@ -63,7 +63,7 @@ def cargo_metadata() -> dict:
 
 
 def is_type_crate(name: str) -> bool:
-    return name.startswith("jcode-") and name.endswith("-types")
+    return name.startswith("wvc-") and name.endswith("-types")
 
 
 def main() -> int:

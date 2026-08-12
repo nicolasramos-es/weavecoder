@@ -1356,7 +1356,7 @@ fn resolve_jade_sessions_helper(override_path: Option<&str>) -> Result<PathBuf> 
         return Ok(PathBuf::from(path));
     }
 
-    if let Some(path) = std::env::var_os("JCODE_JADE_SESSIONS_HELPER")
+    if let Some(path) = std::env::var_os("WVC_JADE_SESSIONS_HELPER")
         .filter(|path| !path.is_empty())
         .map(PathBuf::from)
     {
@@ -1379,7 +1379,7 @@ fn resolve_jade_sessions_helper(override_path: Option<&str>) -> Result<PathBuf> 
     }
 
     anyhow::bail!(
-        "Could not find Jade session helper. Set --helper PATH or JCODE_JADE_SESSIONS_HELPER. Expected a private helper like ~/jade/scripts/jade_sessions.py"
+        "Could not find Jade session helper. Set --helper PATH or WVC_JADE_SESSIONS_HELPER. Expected a private helper like ~/jade/scripts/jade_sessions.py"
     );
 }
 
@@ -1537,7 +1537,7 @@ async fn run_ambient_visible() -> Result<()> {
 
     let _ = crossterm::execute!(
         std::io::stdout(),
-        crossterm::terminal::SetTitle(terminal_title("🤖 jcode ambient cycle"))
+        crossterm::terminal::SetTitle(terminal_title("🤖 wvc ambient cycle"))
     );
 
     let result = app.run(terminal).await;
@@ -1843,11 +1843,11 @@ pub fn run_pair_command(list: bool, revoke: Option<String>) -> Result<()> {
     let gw_config = &crate::config::config().gateway;
 
     if !gw_config.enabled {
-        eprintln!("\x1b[33m⚠\x1b[0m  Gateway is disabled. Enable it in ~/.jcode/config.toml:\n");
+        eprintln!("\x1b[33m⚠\x1b[0m  Gateway is disabled. Enable it in ~/.wvc/config.toml:\n");
         eprintln!("    \x1b[2m[gateway]\x1b[0m");
         eprintln!("    \x1b[2menabled = true\x1b[0m");
         eprintln!("    \x1b[2mport = {}\x1b[0m\n", gw_config.port);
-        eprintln!("  Then restart the jcode server.\n");
+        eprintln!("  Then restart the wvc server.\n");
     }
 
     let code = registry.generate_pairing_code();
@@ -1858,7 +1858,7 @@ pub fn run_pair_command(list: bool, revoke: Option<String>) -> Result<()> {
     );
 
     eprintln!();
-    eprintln!("  \x1b[1mScan with the jcode iOS app:\x1b[0m\n");
+    eprintln!("  \x1b[1mScan with the wvc iOS app:\x1b[0m\n");
     match crate::login_qr::render_unicode_qr(&pair_uri) {
         Ok(qr) => {
             for line in qr.lines() {
@@ -1882,7 +1882,7 @@ pub fn run_pair_command(list: bool, revoke: Option<String>) -> Result<()> {
 
     if connect_host == gateway::UNKNOWN_CONNECT_HOST {
         eprintln!(
-            "\n  \x1b[33mTip:\x1b[0m set JCODE_GATEWAY_HOST to your reachable Tailscale hostname."
+            "\n  \x1b[33mTip:\x1b[0m set WVC_GATEWAY_HOST to your reachable Tailscale hostname."
         );
     }
 
@@ -1952,10 +1952,10 @@ pub async fn run_browser(action: &str) -> Result<()> {
                 println!("\nBuilt-in browser tool is ready.");
             } else if status.responding && !status.compatible {
                 println!(
-                    "\nThe browser bridge is connected, but the installed Firefox extension is out of date for this jcode build. Run `jcode browser setup` to repair or update it."
+                    "\nThe browser bridge is connected, but the installed Firefox extension is out of date for this wvc build. Run `wvc browser setup` to repair or update it."
                 );
             } else {
-                println!("\nRun `jcode browser setup` to install or repair it.");
+                println!("\nRun `wvc browser setup` to install or repair it.");
             }
         }
         other => {
@@ -2077,15 +2077,15 @@ pub async fn run_server_reload_command(force: bool, emit_json: bool) -> Result<(
     };
 
     // No server? Nothing to reload. This is a success so an installer can call
-    // `jcode server reload` unconditionally after swapping the binary.
+    // `wvc server reload` unconditionally after swapping the binary.
     if !crate::server::has_live_listener(&socket).await {
         // Reap a stale socket left by a crashed daemon so the next launch binds
         // cleanly instead of wedging in a connect-retry loop.
         let reaped = crate::server::reap_stale_socket_if_dead(&socket).await;
         let detail = if reaped {
-            "No running jcode server found; cleared a stale socket.".to_string()
+            "No running wvc server found; cleared a stale socket.".to_string()
         } else {
-            "No running jcode server found; nothing to reload.".to_string()
+            "No running wvc server found; nothing to reload.".to_string()
         };
         return emit(ServerReloadReport {
             socket: socket.display().to_string(),
@@ -2219,8 +2219,8 @@ pub async fn run_server_stop_command(force: bool, emit_json: bool) -> Result<()>
     use std::time::{Duration, Instant};
 
     if !force {
-        let msg = "`jcode server stop` terminates the daemon and drops any live headless/swarm sessions. \
-Prefer `jcode server reload` to pick up an upgrade gracefully. \
+        let msg = "`wvc server stop` terminates the daemon and drops any live headless/swarm sessions. \
+Prefer `wvc server reload` to pick up an upgrade gracefully. \
 Re-run with `--force` if you really want to stop the server.";
         if emit_json {
             println!(
@@ -2265,10 +2265,10 @@ Re-run with `--force` if you really want to stop the server.";
                 match crate::platform::signal_detached_process_group(pid, libc::SIGTERM) {
                     Ok(()) => {
                         signaled_pid = Some(pid);
-                        detail = format!("Sent SIGTERM to jcode server (pid {pid}).");
+                        detail = format!("Sent SIGTERM to wvc server (pid {pid}).");
                     }
                     Err(e) => {
-                        detail = format!("Failed to signal jcode server (pid {pid}): {e}");
+                        detail = format!("Failed to signal wvc server (pid {pid}): {e}");
                     }
                 }
             }
@@ -2277,15 +2277,15 @@ Re-run with `--force` if you really want to stop the server.";
                 match crate::platform::signal_detached_process_group(pid, 0) {
                     Ok(()) => {
                         signaled_pid = Some(pid);
-                        detail = format!("Terminated jcode server (pid {pid}).");
+                        detail = format!("Terminated wvc server (pid {pid}).");
                     }
                     Err(e) => {
-                        detail = format!("Failed to terminate jcode server (pid {pid}): {e}");
+                        detail = format!("Failed to terminate wvc server (pid {pid}): {e}");
                     }
                 }
             }
         } else {
-            detail = format!("Registered jcode server (pid {pid}) is not running.");
+            detail = format!("Registered wvc server (pid {pid}) is not running.");
         }
     } else if had_listener {
         // A listener answers but no registry entry maps to it. We deliberately
@@ -2294,7 +2294,7 @@ Re-run with `--force` if you really want to stop the server.";
         // registry entry.)
         detail = "Found a live server socket with no registry entry.".to_string();
     } else {
-        detail = "No running jcode server found.".to_string();
+        detail = "No running wvc server found.".to_string();
     }
 
     // Wait for the listener to disappear after signalling. Escalate to SIGKILL
@@ -2358,7 +2358,7 @@ Re-run with `--force` if you really want to stop the server.";
             );
         }
         if reaped {
-            println!("Cleared a stale jcode socket.");
+            println!("Cleared a stale wvc socket.");
         }
     }
 
@@ -2379,7 +2379,7 @@ pub async fn run_single_message_command(
         super::provider_init::init_provider_for_validation(choice, model).await?
     };
     let registry = crate::tool::Registry::new(provider.clone()).await;
-    // Load MCP servers from ~/.jcode/mcp.json so headless `wvc run` has the
+    // Load MCP servers from ~/.wvc/mcp.json so headless `wvc run` has the
     // same `mcp__*` tools as interactive/server sessions. This is non-blocking:
     // `register_mcp_tools` advertises cached tool schemas synchronously (so the
     // first locked tool snapshot already contains MCP tools, for zero
@@ -2421,7 +2421,7 @@ pub async fn run_single_message_command(
 }
 
 fn run_command_auto_poke_enabled() -> bool {
-    std::env::var("JCODE_RUN_AUTO_POKE")
+    std::env::var("WVC_RUN_AUTO_POKE")
         .ok()
         .map(|value| {
             let value = value.trim().to_ascii_lowercase();
@@ -2430,11 +2430,11 @@ fn run_command_auto_poke_enabled() -> bool {
         .unwrap_or_else(|| crate::config::config().features.auto_poke)
 }
 
-/// Whether headless `wvc run` should load MCP servers from `~/.jcode/mcp.json`.
-/// Enabled by default; set `JCODE_RUN_MCP=0` (or `false`/`off`/`no`) to skip MCP
+/// Whether headless `wvc run` should load MCP servers from `~/.wvc/mcp.json`.
+/// Enabled by default; set `WVC_RUN_MCP=0` (or `false`/`off`/`no`) to skip MCP
 /// registration for latency-sensitive scripting. (#390)
 fn run_command_mcp_enabled() -> bool {
-    std::env::var("JCODE_RUN_MCP")
+    std::env::var("WVC_RUN_MCP")
         .ok()
         .map(|value| {
             let value = value.trim().to_ascii_lowercase();
@@ -2444,10 +2444,10 @@ fn run_command_mcp_enabled() -> bool {
 }
 
 /// Max time `wvc run` waits for cold-cache MCP servers to register their
-/// tools before running the single turn. Override with `JCODE_RUN_MCP_WAIT_MS`
+/// tools before running the single turn. Override with `WVC_RUN_MCP_WAIT_MS`
 /// (0 disables the wait).
 fn run_command_mcp_cold_wait() -> std::time::Duration {
-    let ms = std::env::var("JCODE_RUN_MCP_WAIT_MS")
+    let ms = std::env::var("WVC_RUN_MCP_WAIT_MS")
         .ok()
         .and_then(|value| value.trim().parse::<u64>().ok())
         .unwrap_or(5000);
@@ -2514,7 +2514,7 @@ async fn wait_for_cold_cache_mcp_tools(registry: &crate::tool::Registry) {
 }
 
 fn run_command_auto_poke_max_turns() -> Option<usize> {
-    std::env::var("JCODE_RUN_AUTO_POKE_MAX_TURNS")
+    std::env::var("WVC_RUN_AUTO_POKE_MAX_TURNS")
         .ok()
         .and_then(|value| value.trim().parse::<usize>().ok())
         .filter(|value| *value > 0)
@@ -2701,7 +2701,7 @@ async fn run_single_message_command_plain_with_auto_poke(
                 gate_digest_delivered = true;
                 next_message = message;
                 eprintln!(
-                    "We asked the agent to double-check this turn's weak points. Set JCODE_RUN_AUTO_POKE=0 to disable."
+                    "We asked the agent to double-check this turn's weak points. Set WVC_RUN_AUTO_POKE=0 to disable."
                 );
                 continue;
             }
@@ -2721,7 +2721,7 @@ async fn run_single_message_command_plain_with_auto_poke(
                 confidence_spike_challenged |= confidence_spike_challenge;
                 next_message = message;
                 eprintln!(
-                    "Todos are done. Asking the agent for a final confidence check. Set JCODE_RUN_AUTO_POKE=0 to disable."
+                    "Todos are done. Asking the agent for a final confidence check. Set WVC_RUN_AUTO_POKE=0 to disable."
                 );
                 continue;
             }
@@ -2737,7 +2737,7 @@ async fn run_single_message_command_plain_with_auto_poke(
                 }
                 next_message = message;
                 eprintln!(
-                    "{} incomplete todo(s). We poked the agent for you. Set JCODE_RUN_AUTO_POKE=0 to disable.",
+                    "{} incomplete todo(s). We poked the agent for you. Set WVC_RUN_AUTO_POKE=0 to disable.",
                     count
                 );
             }
@@ -2783,7 +2783,7 @@ async fn run_single_message_command_capture_with_auto_poke(
                 gate_digest_delivered = true;
                 next_message = message;
                 eprintln!(
-                    "We asked the agent to double-check this turn's weak points. Set JCODE_RUN_AUTO_POKE=0 to disable."
+                    "We asked the agent to double-check this turn's weak points. Set WVC_RUN_AUTO_POKE=0 to disable."
                 );
                 continue;
             }
@@ -2919,7 +2919,7 @@ async fn run_single_message_command_ndjson(
                 gate_digest_delivered = true;
                 next_message = message;
                 eprintln!(
-                    "We asked the agent to double-check this turn's weak points. Set JCODE_RUN_AUTO_POKE=0 to disable."
+                    "We asked the agent to double-check this turn's weak points. Set WVC_RUN_AUTO_POKE=0 to disable."
                 );
                 continue;
             }

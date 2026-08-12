@@ -5,7 +5,7 @@ use wvc_session_types::SessionStatus;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum SessionSource {
-    Jcode,
+    Weavecoder,
     ClaudeCode,
     Codex,
     Pi,
@@ -16,7 +16,7 @@ pub enum SessionSource {
 impl SessionSource {
     pub fn badge(self) -> Option<&'static str> {
         match self {
-            Self::Jcode => None,
+            Self::Weavecoder => None,
             Self::ClaudeCode => Some("🧵 Claude Code"),
             Self::Codex => Some("🧠 Codex"),
             Self::Pi => Some("π Pi"),
@@ -26,7 +26,7 @@ impl SessionSource {
     }
 }
 
-// `ResumeTarget` is pure data and now lives in `jcode-session-types` so the
+// `ResumeTarget` is pure data and now lives in `wvc-session-types` so the
 // foundation/import layer can use it without depending on this UI crate. It is
 // re-exported here so existing `wvc_tui_session_picker::ResumeTarget` paths
 // keep working.
@@ -268,21 +268,21 @@ mod tests {
     #[test]
     fn source_predicates_cover_provider_and_model_fallbacks() {
         assert!(session_is_claude_code(
-            SessionSource::Jcode,
+            SessionSource::Weavecoder,
             "imported_cc_123"
         ));
         assert!(session_is_codex(
-            SessionSource::Jcode,
+            SessionSource::Weavecoder,
             Some("openai/codex-mini")
         ));
-        assert!(session_is_pi(SessionSource::Jcode, Some("pi-main"), None));
+        assert!(session_is_pi(SessionSource::Weavecoder, Some("pi-main"), None));
         assert!(session_is_pi(
-            SessionSource::Jcode,
+            SessionSource::Weavecoder,
             None,
             Some("vendor/pi-fast")
         ));
         assert!(session_is_open_code(
-            SessionSource::Jcode,
+            SessionSource::Weavecoder,
             Some("opencode-go")
         ));
     }

@@ -2,7 +2,7 @@ use super::*;
 use tempfile::TempDir;
 
 #[test]
-fn config_file_path_under_jcode() {
+fn config_file_path_under_wvc() {
     let path = config_file_path().unwrap();
     let path_str = path.to_string_lossy();
     assert!(path_str.contains("wvc"));
@@ -109,26 +109,26 @@ fn has_cursor_api_key_from_env() {
 #[test]
 fn cursor_auth_file_path_respects_wvc_home() {
     // Regression: on Linux the auth.json path previously used
-    // `dirs::config_dir()` directly, ignoring JCODE_HOME. That leaked the real
+    // `dirs::config_dir()` directly, ignoring WVC_HOME. That leaked the real
     // `~/.config/cursor/auth.json` into the onboarding sandbox, so a
     // fresh-install sandbox showed only Cursor as importable while every other
-    // provider correctly looked under `$JCODE_HOME/external/...`.
+    // provider correctly looked under `$WVC_HOME/external/...`.
     let _guard = crate::storage::lock_test_env();
-    let prev_home = std::env::var_os("JCODE_HOME");
+    let prev_home = std::env::var_os("WVC_HOME");
     let temp = TempDir::new().unwrap();
-    crate::env::set_var("JCODE_HOME", temp.path());
+    crate::env::set_var("WVC_HOME", temp.path());
 
     let path = cursor_auth_file_path().expect("cursor auth path");
     assert!(
         path.starts_with(temp.path().join("external")),
-        "cursor auth path should be under JCODE_HOME/external, got {}",
+        "cursor auth path should be under WVC_HOME/external, got {}",
         path.display()
     );
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -137,16 +137,16 @@ fn cursor_auth_file_path_respects_wvc_home() {
 fn cursor_auth_file_path_does_not_escape_wvc_home_on_windows() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::tempdir().unwrap();
-    let old_home = std::env::var_os("JCODE_HOME");
+    let old_home = std::env::var_os("WVC_HOME");
     let old_appdata = std::env::var_os("APPDATA");
-    crate::env::set_var("JCODE_HOME", temp.path());
+    crate::env::set_var("WVC_HOME", temp.path());
     crate::env::set_var("APPDATA", r"C:\real-user-profile");
 
     let path = cursor_auth_file_path().unwrap();
 
     match old_home {
-        Some(value) => crate::env::set_var("JCODE_HOME", value),
-        None => crate::env::remove_var("JCODE_HOME"),
+        Some(value) => crate::env::set_var("WVC_HOME", value),
+        None => crate::env::remove_var("WVC_HOME"),
     }
     match old_appdata {
         Some(value) => crate::env::set_var("APPDATA", value),
@@ -162,9 +162,9 @@ fn cursor_auth_file_path_does_not_escape_wvc_home_on_windows() {
 #[test]
 fn cursor_vscdb_paths_respect_wvc_home() {
     let _guard = crate::storage::lock_test_env();
-    let prev_home = std::env::var_os("JCODE_HOME");
+    let prev_home = std::env::var_os("WVC_HOME");
     let temp = TempDir::new().unwrap();
-    crate::env::set_var("JCODE_HOME", temp.path());
+    crate::env::set_var("WVC_HOME", temp.path());
 
     let paths = cursor_vscdb_paths();
     assert!(!paths.is_empty());
@@ -173,9 +173,9 @@ fn cursor_vscdb_paths_respect_wvc_home() {
     }
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -191,9 +191,9 @@ fn load_access_token_from_auth_file_does_not_change_external_permissions() {
     use std::os::unix::fs::PermissionsExt;
 
     let _guard = crate::storage::lock_test_env();
-    let prev_home = std::env::var_os("JCODE_HOME");
+    let prev_home = std::env::var_os("WVC_HOME");
     let temp = TempDir::new().unwrap();
-    crate::env::set_var("JCODE_HOME", temp.path());
+    crate::env::set_var("WVC_HOME", temp.path());
 
     let path = cursor_auth_file_path().expect("cursor auth path");
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
@@ -226,9 +226,9 @@ fn load_access_token_from_auth_file_does_not_change_external_permissions() {
     assert_eq!(file_mode, 0o644);
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 

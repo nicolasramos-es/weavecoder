@@ -1,4 +1,4 @@
-//! Productivity report generation for jcode.
+//! Productivity report generation for wvc.
 //!
 //! Scans local session transcripts (with an incremental cache), computes
 //! interesting + shareable usage statistics, and renders them as both Markdown
@@ -29,7 +29,7 @@ pub struct ProductivityOutput {
 }
 
 /// Scan transcripts, compute the report, render markdown + PNG, and persist the
-/// PNG to `~/.jcode/generated-images/productivity-<timestamp>.png`.
+/// PNG to `~/.wvc/generated-images/productivity-<timestamp>.png`.
 pub fn generate() -> Result<ProductivityOutput> {
     let report = compute_report()?;
     let markdown = markdown::render_markdown(&report);

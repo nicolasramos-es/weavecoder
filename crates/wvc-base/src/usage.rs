@@ -254,7 +254,7 @@ fn upsert_provider_usage(results: &mut Vec<ProviderUsage>, report: ProviderUsage
     sort_reports_most_recent_first(results);
 }
 
-/// Order reports so the most recently used login comes first. Sources jcode
+/// Order reports so the most recently used login comes first. Sources wvc
 /// has never used sort last, alphabetically for stability.
 fn sort_reports_most_recent_first(results: &mut [ProviderUsage]) {
     results.sort_by(|a, b| {
@@ -340,7 +340,7 @@ fn enqueue_provider_usage_tasks(tasks: &mut tokio::task::JoinSet<Option<Provider
 
 /// Source-key prefixes that already get a dedicated `/usage` report; the
 /// sweeper skips these so used-but-unreported logins (Cursor, Bedrock,
-/// Azure, jcode subscription, ...) still show recency + local spend without
+/// Azure, wvc subscription, ...) still show recency + local spend without
 /// double-listing covered providers.
 fn activity_source_has_dedicated_report(source_key: &str) -> bool {
     // Dual-auth and OAuth surfaces always reported above.

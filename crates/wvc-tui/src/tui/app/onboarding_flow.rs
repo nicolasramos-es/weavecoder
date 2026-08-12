@@ -634,7 +634,7 @@ fn external_transcripts_present(root: &std::path::Path, ext: &str) -> bool {
 }
 
 /// Resolve a path under the (sandbox-aware) external home so onboarding honors
-/// `JCODE_HOME`/external isolation, matching the import detectors.
+/// `WVC_HOME`/external isolation, matching the import detectors.
 fn external_home_path(rel: &str) -> PathBuf {
     crate::storage::user_home_path(rel)
         .ok()

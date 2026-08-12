@@ -389,7 +389,7 @@ fn ordinary_wrapped_commands_still_run_immediately() {
         "timeout 30 cargo build",
         "nice -n 10 make",
         "time ls -la",
-        "sudo systemctl status jcode",
+        "sudo systemctl status wvc",
         "xargs echo",
         "find . -name '*.rs' | xargs grep TODO",
         "sh -c 'echo hello'",

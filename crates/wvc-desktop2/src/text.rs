@@ -8,7 +8,7 @@ use vello::kurbo::Affine;
 use vello::peniko::{Brush, Color, Fill};
 
 /// Design-language font stack: JetBrains Mono everywhere (see
-/// ~/jcode-website/STYLE.md), monospace fallback.
+/// ~/wvc-website/STYLE.md), monospace fallback.
 const FONT_STACK: &str =
     "JetBrains Mono, JetBrainsMono Nerd Font, JetBrainsMono Nerd Font Mono, monospace";
 

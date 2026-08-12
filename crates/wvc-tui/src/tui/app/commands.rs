@@ -128,7 +128,7 @@ pub(super) use auto_poke_errors::is_non_retryable_auto_poke_error;
 /// [`is_non_retryable_auto_poke_error`] precisely so a transient disconnect is
 /// never treated as a permanent failure.
 pub(super) fn is_auto_poke_connectivity_error(error: &str) -> bool {
-    // Delegate to the shared connectivity classifier (jcode-app-core's
+    // Delegate to the shared connectivity classifier (wvc-app-core's
     // network_retry) so this list can never drift out of sync with the wait-
     // for-network path, then add wrappers specific to this call site.
     if crate::network_retry::classify_message(error).is_some() {
@@ -436,7 +436,7 @@ pub(super) fn poll_local_transfer_prepare(app: &mut App) -> bool {
                         .filter(|path| path.is_dir())
                         .or_else(|| std::env::current_dir().ok())
                         .unwrap_or_else(|| std::path::PathBuf::from("."));
-                    let socket = std::env::var("JCODE_SOCKET").ok();
+                    let socket = std::env::var("WVC_SOCKET").ok();
                     match super::spawn_in_new_terminal(
                         &exe,
                         &prepared.session_id,
@@ -452,14 +452,14 @@ pub(super) fn poll_local_transfer_prepare(app: &mut App) -> bool {
                         }
                         Ok(false) => {
                             app.push_display_message(DisplayMessage::system(format!(
-                                "↗ Transfer session {} created.\n\nNo terminal was opened automatically. Resume manually:\n\n  jcode --resume {}",
+                                "↗ Transfer session {} created.\n\nNo terminal was opened automatically. Resume manually:\n\n  wvc --resume {}",
                                 prepared.session_name, prepared.session_id
                             )));
                             app.set_status_notice("Transfer session created");
                         }
                         Err(error) => {
                             app.push_display_message(DisplayMessage::error(format!(
-                                "Transfer session {} was created but failed to open a window: {}\n\nResume manually: jcode --resume {}",
+                                "Transfer session {} was created but failed to open a window: {}\n\nResume manually: wvc --resume {}",
                                 prepared.session_name, error, prepared.session_id
                             )));
                             app.set_status_notice("Transfer open failed");
@@ -752,7 +752,7 @@ fn handle_subagent_model_command(app: &mut App, trimmed: &str) -> bool {
 
     if app.is_remote {
         app.push_display_message(DisplayMessage::error(
-            "/subagent-model requires a live jcode server connection in remote mode.".to_string(),
+            "/subagent-model requires a live wvc server connection in remote mode.".to_string(),
         ));
         return true;
     }
@@ -798,7 +798,7 @@ fn handle_subagent_command(app: &mut App, trimmed: &str) -> bool {
 
     if app.is_remote {
         app.push_display_message(DisplayMessage::error(
-            "/subagent requires a live jcode server connection in remote mode.".to_string(),
+            "/subagent requires a live wvc server connection in remote mode.".to_string(),
         ));
         return true;
     }
@@ -878,7 +878,7 @@ pub(super) fn handle_help_command(app: &mut App, trimmed: &str) -> bool {
 }
 
 /// `/keys` shows the keymap diagnostics: detected terminal, discovered terminal
-/// and macOS shortcuts, and any conflicts with jcode's own keybindings.
+/// and macOS shortcuts, and any conflicts with wvc's own keybindings.
 /// `/keys refresh` forces a fresh scan of the machine (otherwise a cached
 /// snapshot up to a day old is reused).
 pub(super) fn handle_keys_command(app: &mut App, trimmed: &str) -> bool {
@@ -1016,7 +1016,7 @@ pub(super) fn handle_log_command(app: &mut App, trimmed: &str) -> bool {
     let note_for_log = if note.is_empty() { "(none)" } else { note };
 
     crate::logging::info(&format!(
-        "JCODE_LOG_MARK id={} session={} provider={} model={} cwd={} note={}",
+        "WVC_LOG_MARK id={} session={} provider={} model={} cwd={} note={}",
         marker_id,
         app.session.id,
         app.provider_name(),
@@ -1026,7 +1026,7 @@ pub(super) fn handle_log_command(app: &mut App, trimmed: &str) -> bool {
     ));
 
     let mut message = format!(
-        "Log mark written: {}\n\nAgents can search ~/.jcode/logs/ for JCODE_LOG_MARK or this marker id.",
+        "Log mark written: {}\n\nAgents can search ~/.wvc/logs/ for WVC_LOG_MARK or this marker id.",
         marker_id
     );
     if !note.is_empty() {
@@ -1141,7 +1141,7 @@ fn begin_ssh_target_prompt(app: &mut App, name: &str) {
     app.push_display_message(DisplayMessage::system(format!(
         "SSH setup: {}
 
-Step 1/4: Tell Jcode where to connect.
+Step 1/4: Tell Weavecoder where to connect.
 
 Enter only the SSH target, meaning the part after ssh:
 
@@ -1150,9 +1150,9 @@ Enter only the SSH target, meaning the part after ssh:
 You can also enter an SSH config alias like school.
 
 Security model
-  - Jcode stores this host/user target so you can run /ssh {} later.
-  - Jcode does not ask for or store your SSH password.
-  - If a password is needed, it will be typed into your system ssh prompt, not into Jcode.
+  - Weavecoder stores this host/user target so you can run /ssh {} later.
+  - Weavecoder does not ask for or store your SSH password.
+  - If a password is needed, it will be typed into your system ssh prompt, not into Weavecoder.
 
 Type cancel to stop setup.",
         name, name
@@ -1172,7 +1172,7 @@ Start with:
 
   /ssh school
 
-Jcode will ask for the SSH target, then use your system SSH client for authentication. Jcode never stores SSH passwords."
+Weavecoder will ask for the SSH target, then use your system SSH client for authentication. Weavecoder never stores SSH passwords."
                     .to_string(),
             ));
         }
@@ -1195,7 +1195,7 @@ Jcode will ask for the SSH target, then use your system SSH client for authentic
                     .to_string(),
             );
             lines.push("".to_string());
-            lines.push("Security: Jcode stores targets only, never SSH passwords.".to_string());
+            lines.push("Security: Weavecoder stores targets only, never SSH passwords.".to_string());
             app.push_display_message(DisplayMessage::system(lines.join("\n")));
         }
         Err(error) => app.push_display_message(DisplayMessage::error(format!(
@@ -1218,14 +1218,14 @@ fn connect_ssh_remote(app: &mut App, profile: crate::ssh_remote::SshRemoteProfil
 
 Step 4/4: Connected.
 
-Jcode verified that {} is reachable through your system SSH client.
+Weavecoder verified that {} is reachable through your system SSH client.
 
 What this means:
   - Authentication is handled by OpenSSH / your SSH agent.
-  - Jcode did not see or store your password.
-  - The SSH connection setup is ready for remote Jcode tools.
+  - Weavecoder did not see or store your password.
+  - The SSH connection setup is ready for remote Weavecoder tools.
 
-Next implementation step: start the remote Jcode server over this verified SSH connection.",
+Next implementation step: start the remote Weavecoder server over this verified SSH connection.",
             profile.name, profile.ssh_target
         )));
         app.set_status_notice(format!("SSH {} connected 4/4", profile.name));
@@ -1239,17 +1239,17 @@ Next implementation step: start the remote Jcode server over this verified SSH c
 
 Step 2/4: Opening secure SSH login terminal.
 
-Jcode could not connect without an interactive login, so it opened a separate terminal running your system ssh command.
+Weavecoder could not connect without an interactive login, so it opened a separate terminal running your system ssh command.
 
 What to expect in that terminal
   1. OpenSSH may ask for your password or two-factor prompt.
-  2. You type credentials into OpenSSH, not into Jcode.
+  2. You type credentials into OpenSSH, not into Weavecoder.
   3. After login, SSH creates a temporary background control socket.
   4. The terminal verifies that socket before closing.
 
 Security model
-  - Jcode cannot read what you type in the SSH terminal.
-  - Jcode stores only the target {}.
+  - Weavecoder cannot read what you type in the SSH terminal.
+  - Weavecoder stores only the target {}.
   - Close or disconnect later with /ssh disconnect {}.",
                 profile.name, profile.ssh_target, profile.name
             )));
@@ -1260,15 +1260,15 @@ Security model
 
 Step 2/4: Manual login needed.
 
-Jcode could not open a terminal automatically. Run this command yourself:
+Weavecoder could not open a terminal automatically. Run this command yourself:
 
   ssh -f -M -S {} -N {}
 
-Type your password into that SSH prompt if asked. Jcode will not see or store it.",
+Type your password into that SSH prompt if asked. Weavecoder will not see or store it.",
             profile.name,
             crate::ssh_remote::control_socket_path(&profile.name)
                 .map(|p| p.display().to_string())
-                .unwrap_or_else(|_| "~/.jcode/ssh-control/remote.sock".to_string()),
+                .unwrap_or_else(|_| "~/.wvc/ssh-control/remote.sock".to_string()),
             profile.ssh_target
         ))),
         Err(error) => app.push_display_message(DisplayMessage::error(format!(
@@ -1461,7 +1461,7 @@ fn git_command_repo_dir(app: &App) -> Result<PathBuf, String> {
         }
 
         return Err(format!(
-            "Unable to run /git: session working directory {} is not accessible from this jcode client.",
+            "Unable to run /git: session working directory {} is not accessible from this wvc client.",
             path.display()
         ));
     }
@@ -2173,7 +2173,7 @@ pub(super) fn build_remote_release_prompt() -> String {
 pub(super) fn build_triage_prompt(focus: &str) -> String {
     let mut prompt = String::from(
         "Triage the open GitHub issues for the repository in the current working directory, then autonomously fix the ones that are safe to fix. \
-        Hard rules: every public comment, issue reply, or PR description you post MUST end with a clear agent attribution line like '--- *— Jcode agent (automated triage), on behalf of @<repo-owner>*' so it can never be mistaken for the human. \
+        Hard rules: every public comment, issue reply, or PR description you post MUST end with a clear agent attribution line like '--- *— Weavecoder agent (automated triage), on behalf of @<repo-owner>*' so it can never be mistaken for the human. \
         Never close an issue as wontfix/invalid without user confirmation (closing as completed is fine only after a verified fix). Be brief, friendly, and factual toward reporters. Prefer a branch + PR unless the repo's established norm is committing directly to the default branch. \
         Workflow: (1) Collect: verify gh auth status, identify the repo with gh repo view, list open issues newest-first (gh issue list --state open --limit 50 --json number,title,labels,createdAt,author,comments,body), focus on untriaged ones (no labels or no maintainer/agent comment), and read each candidate fully with gh issue view <n> --comments. \
         (2) Classify each into exactly one bucket and track them in a todo list: auto-fix (clear, reproducible, low-risk, verifiable), needs-info (comment asking for the specific missing details), needs-human (design decisions, breaking changes, security-sensitive, large refactors), duplicate (link the original, do not close without confirmation unless unambiguous), or question/support (answer directly if verifiable against the code or docs). Apply existing labels only (check gh label list first, never invent labels). \
@@ -2325,7 +2325,7 @@ fn handle_selfdev_command(app: &mut App, trimmed: &str) -> bool {
 
     if rest == "help" {
         app.push_display_message(DisplayMessage::system(
-            "/selfdev\nSpawn a new self-dev jcode session in a separate terminal.\n\n/selfdev <prompt>\nSpawn a new self-dev session and auto-deliver the prompt to it.\n\n/selfdev status\nShow current self-dev/build status."
+            "/selfdev\nSpawn a new self-dev wvc session in a separate terminal.\n\n/selfdev <prompt>\nSpawn a new self-dev session and auto-deliver the prompt to it.\n\n/selfdev status\nShow current self-dev/build status."
                 .to_string(),
         ));
         return true;
@@ -2562,7 +2562,7 @@ fn build_test_verification_prompt(claim: &str) -> String {
         claim.trim()
     };
     format!(
-        "Run Jcode's /test verification orchestrator for: {target}\n\n\
+        "Run Weavecoder's /test verification orchestrator for: {target}\n\n\
 Goal: become as sure as reasonably possible before the user checks manually. Do not stop at compile success. Build and execute a verification plan, update todos as needed, and finish with an evidence-backed proof packet.\n\n\
 Required verification layers to consider and run when applicable:\n\
 1. Reproduction-first: if this is a bug, create or identify the exact failing repro and prove it now passes.\n\
@@ -2707,7 +2707,7 @@ pub(super) fn handle_dictation_command(app: &mut App, trimmed: &str) -> bool {
 
     if trimmed.starts_with("/dictate ") || trimmed.starts_with("/dictation ") {
         app.push_display_message(DisplayMessage::error(
-            "Usage: /dictate\nConfigure [dictation] in ~/.jcode/config.toml to customize command, mode, hotkey, and timeout."
+            "Usage: /dictate\nConfigure [dictation] in ~/.wvc/config.toml to customize command, mode, hotkey, and timeout."
                 .to_string(),
         ));
         return true;
@@ -2911,7 +2911,7 @@ fn ensure_swarm_prompt_edit_path(
         Some(path) => PathBuf::from(path),
         None => std::env::current_dir()?,
     };
-    let project_path = project_dir.join(".jcode").join("swarm-prompt.md");
+    let project_path = project_dir.join(".wvc").join("swarm-prompt.md");
     if file_has_nonblank_content(&project_path) {
         return Ok(project_path);
     }
@@ -2943,7 +2943,7 @@ pub(super) fn handle_swarm_prompt_command(app: &mut App, trimmed: &str) -> bool 
         Ok(path) => path,
         Err(error) => {
             app.push_display_message(DisplayMessage::error(format!(
-                "Failed to locate the Jcode config directory: {}",
+                "Failed to locate the Weavecoder config directory: {}",
                 error
             )));
             return true;
@@ -2978,7 +2978,7 @@ pub(super) fn handle_swarm_prompt_command(app: &mut App, trimmed: &str) -> bool 
     {
         Ok(_) => {
             app.push_display_message(DisplayMessage::system(format!(
-                "Opening the active swarm routing prompt in {}:\n{}\n\nChanges apply after restarting or reloading Jcode because running agent tool registries cache the prompt.",
+                "Opening the active swarm routing prompt in {}:\n{}\n\nChanges apply after restarting or reloading Weavecoder because running agent tool registries cache the prompt.",
                 editor,
                 path.display()
             )));
@@ -3348,7 +3348,7 @@ pub(super) fn handle_config_command(app: &mut App, trimmed: &str) -> bool {
             app.push_display_message(DisplayMessage {
                 role: "system".to_string(),
                 content: format!(
-                    "Opening config in editor...\n{} {}\n\n*Restart jcode after editing for changes to take effect.*",
+                    "Opening config in editor...\n{} {}\n\n*Restart wvc after editing for changes to take effect.*",
                     editor,
                     path.display()
                 ),

@@ -255,7 +255,7 @@ impl App {
         };
         if let Some(action) = action {
             let keep = self.apply(action, None);
-            if std::env::var_os("JCODE_DESKTOP2_LOG_INPUT").is_some() {
+            if std::env::var_os("WVC_DESKTOP2_LOG_INPUT").is_some() {
                 eprintln!(
                     "[input] overview {action:?} -> focus {:?}",
                     self.model.overview.focus()

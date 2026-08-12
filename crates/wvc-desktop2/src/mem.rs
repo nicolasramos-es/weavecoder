@@ -1,6 +1,6 @@
 //! Live memory readout for the top chrome row.
 //!
-//! Shows how much RAM this window (the client) and the jcode daemon (the
+//! Shows how much RAM this window (the client) and the wvc daemon (the
 //! server hosting the session) are resident with, so a leak in either is
 //! visible at a glance instead of needing `ps`. All decisions are pure
 //! functions of plain inputs ([`vm_rss_bytes`], [`is_daemon_cmdline`],
@@ -63,8 +63,8 @@ pub fn vm_rss_bytes(status: &str) -> Option<u64> {
     Some(kb * 1024)
 }
 
-/// Whether a `/proc/<pid>/cmdline` argv is the jcode daemon. The daemon is
-/// `jcode serve ...` wherever its binary lives (selfdev target, shared-server
+/// Whether a `/proc/<pid>/cmdline` argv is the wvc daemon. The daemon is
+/// `wvc serve ...` wherever its binary lives (selfdev target, shared-server
 /// channel, `$PATH`), so only the executable's name and the subcommand are
 /// matched.
 pub fn is_daemon_cmdline(args: &[&str]) -> bool {
@@ -144,7 +144,7 @@ mod tests {
     #[test]
     fn vm_rss_is_parsed_from_a_status_body() {
         let status =
-            "Name:\tjcode-desktop2\nVmPeak:\t 1319964 kB\nVmRSS:\t  101828 kB\nThreads:\t18\n";
+            "Name:\twvc-desktop2\nVmPeak:\t 1319964 kB\nVmRSS:\t  101828 kB\nThreads:\t18\n";
         assert_eq!(vm_rss_bytes(status), Some(101_828 * 1024));
     }
 
@@ -156,18 +156,18 @@ mod tests {
     #[test]
     fn the_daemon_is_matched_by_name_and_subcommand_only() {
         assert!(is_daemon_cmdline(&[
-            "/home/j/.jcode/builds/shared-server/jcode",
+            "/home/j/.wvc/builds/shared-server/wvc",
             "serve",
             "--socket",
-            "/run/user/1000/jcode.sock",
+            "/run/user/1000/wvc.sock",
         ]));
         assert!(is_daemon_cmdline(&["wvc", "serve"]));
-        // The desktop client, the bridge, and an interactive `jcode` must not
+        // The desktop client, the bridge, and an interactive `wvc` must not
         // count as the server.
-        assert!(!is_daemon_cmdline(&["/x/jcode-desktop2"]));
-        assert!(!is_daemon_cmdline(&["/x/jcode-harness-api-bridge"]));
-        assert!(!is_daemon_cmdline(&["/x/jcode"]));
-        assert!(!is_daemon_cmdline(&["/x/jcode", "self-dev"]));
+        assert!(!is_daemon_cmdline(&["/x/wvc-desktop2"]));
+        assert!(!is_daemon_cmdline(&["/x/wvc-harness-api-bridge"]));
+        assert!(!is_daemon_cmdline(&["/x/wvc"]));
+        assert!(!is_daemon_cmdline(&["/x/wvc", "self-dev"]));
         assert!(!is_daemon_cmdline(&[]));
     }
 

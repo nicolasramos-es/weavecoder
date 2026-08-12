@@ -246,21 +246,21 @@ impl SelfDevTool {
         working_dir: Option<&std::path::Path>,
     ) -> Result<ToolOutput> {
         let repo_dir = resolve_selfdev_reload_repo_dir(working_dir)
-            .ok_or_else(|| anyhow::anyhow!("Could not find jcode repository directory"))?;
+            .ok_or_else(|| anyhow::anyhow!("Could not find wvc repository directory"))?;
 
         let target_binary = build::find_dev_binary(&repo_dir)
             .unwrap_or_else(|| build::release_binary_path(&repo_dir));
         // In a test session the rest of this method fakes the build source,
         // hash and published state, so the real on-disk binary check is both
         // inconsistent and environment-dependent (CI builds a release binary;
-        // a local debug/selfdev checkout may not have target/release/jcode).
+        // a local debug/selfdev checkout may not have target/release/wvc).
         // Skipping it lets the reload-signal/ack contract be exercised
         // deterministically regardless of which profile was built locally.
         if !SelfDevTool::is_test_session() && !target_binary.exists() {
             return Ok(ToolOutput::new(
                 format!(
                     "No binary found at {}.\n\
-                     Run 'jcode self-dev --build' first, or build with 'scripts/dev_cargo.sh build --profile selfdev -p jcode --bin jcode' and then try reload again.",
+                     Run 'wvc self-dev --build' first, or build with 'scripts/dev_cargo.sh build --profile selfdev -p wvc --bin wvc' and then try reload again.",
                     target_binary.display()
                 )
                 .to_string(),

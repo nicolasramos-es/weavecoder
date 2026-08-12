@@ -3,7 +3,7 @@ name = "wvc-terminal-image"
 version = "0.1.0"
 edition = "2024"
 publish = false
-description = "Terminal image display (Kitty/iTerm2/Sixel) and image metadata formatting helpers for jcode"
+description = "Terminal image display (Kitty/iTerm2/Sixel) and image metadata formatting helpers for wvc"
 
 [lib]
 name = "wvc_terminal_image"

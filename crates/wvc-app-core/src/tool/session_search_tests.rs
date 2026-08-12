@@ -9,16 +9,16 @@ use std::time::Instant;
 fn with_temp_home<T>(f: impl FnOnce(&Path) -> T) -> T {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().expect("create temp dir");
-    let previous_home = std::env::var("JCODE_HOME").ok();
-    crate::env::set_var("JCODE_HOME", temp.path());
+    let previous_home = std::env::var("WVC_HOME").ok();
+    crate::env::set_var("WVC_HOME", temp.path());
     std::fs::create_dir_all(temp.path().join("sessions")).expect("create sessions dir");
 
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(temp.path())));
 
     if let Some(previous_home) = previous_home {
-        crate::env::set_var("JCODE_HOME", previous_home);
+        crate::env::set_var("WVC_HOME", previous_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 
     result.unwrap_or_else(|payload| std::panic::resume_unwind(payload))
@@ -183,14 +183,14 @@ fn timestamped_session_collection_respects_recent_limit_without_mtime_stat() {
 }
 
 #[test]
-#[ignore = "local performance benchmark over the real ~/.jcode session corpus"]
+#[ignore = "local performance benchmark over the real ~/.wvc session corpus"]
 fn bench_real_session_search_corpus() {
-    if std::env::var("JCODE_SESSION_SEARCH_BENCH_REAL")
+    if std::env::var("WVC_SESSION_SEARCH_BENCH_REAL")
         .ok()
         .as_deref()
         != Some("1")
     {
-        eprintln!("set JCODE_SESSION_SEARCH_BENCH_REAL=1 to run against the real session corpus");
+        eprintln!("set WVC_SESSION_SEARCH_BENCH_REAL=1 to run against the real session corpus");
         return;
     }
 
@@ -231,7 +231,7 @@ fn bench_real_session_search_corpus() {
         )
         .expect("search succeeds");
         eprintln!(
-            "BENCH_EXTERNAL query={query} elapsed_ms={} scanned_jcode={} scanned_external={} sources={:?} results={} truncated={}",
+            "BENCH_EXTERNAL query={query} elapsed_ms={} scanned_wvc={} scanned_external={} sources={:?} results={} truncated={}",
             start.elapsed().as_millis(),
             report.scanned_wvc_sessions,
             report.scanned_external_sessions,
@@ -576,7 +576,7 @@ fn external_codex_sessions_are_searchable_without_wvc_session_dir() {
             .collect::<Vec<_>>()
             .join("\n");
         std::fs::write(codex_dir.join("codex-test.jsonl"), body).expect("write codex jsonl");
-        std::fs::remove_dir_all(home.join("sessions")).expect("remove jcode sessions dir");
+        std::fs::remove_dir_all(home.join("sessions")).expect("remove wvc sessions dir");
 
         let mut options = SearchOptions::for_test("current-session");
         options.source_filter = Some("codex".to_string());
@@ -637,7 +637,7 @@ fn external_cursor_sessions_are_searchable_without_wvc_session_dir() {
             .join("\n");
         std::fs::write(cursor_dir.join(format!("{session_id}.jsonl")), body)
             .expect("write cursor jsonl");
-        std::fs::remove_dir_all(home.join("sessions")).expect("remove jcode sessions dir");
+        std::fs::remove_dir_all(home.join("sessions")).expect("remove wvc sessions dir");
 
         let mut options = SearchOptions::for_test("current-session");
         options.source_filter = Some("cursor".to_string());

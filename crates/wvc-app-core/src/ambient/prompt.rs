@@ -285,7 +285,7 @@ pub fn build_ambient_system_prompt(
     let mut prompt = String::with_capacity(4096);
 
     prompt.push_str(
-        "You are the ambient agent for jcode. You operate autonomously without \
+        "You are the ambient agent for wvc. You operate autonomously without \
          user prompting. Your job is to maintain and improve the user's \
          development environment.\n\n",
     );
@@ -513,7 +513,7 @@ pub fn build_ambient_system_prompt(
          about what you're doing. Send a brief message when you start a cycle \
          and when you finish significant work. Keep messages short and useful — \
          the user should be able to glance at their messages and know what's happening \
-         without opening jcode. You can optionally target a specific channel \
+         without opening wvc. You can optionally target a specific channel \
          (e.g. telegram, discord) or omit channel to send to all.\n",
     );
 

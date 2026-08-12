@@ -105,9 +105,9 @@ impl NotificationDispatcher {
     /// Send a permission request notification (high priority).
     pub fn dispatch_permission_request(&self, action: &str, description: &str, request_id: &str) {
         let title = format!("wvc: permission needed ({})", action);
-        let safe_body = "An ambient action needs your approval. Open jcode to review.".to_string();
+        let safe_body = "An ambient action needs your approval. Open wvc to review.".to_string();
         let detailed_body = format!(
-            "Action: {}\n{}\n\nRequest ID: {}\nReview in jcode to approve or deny.",
+            "Action: {}\n{}\n\nRequest ID: {}\nReview in wvc to approve or deny.",
             action, description, request_id
         );
 
@@ -329,7 +329,7 @@ pub fn send_desktop_notification_rich(
     {
         let _ = (subtitle, sound);
         let _ = std::process::Command::new("notify-send")
-            .arg("--app-name=jcode")
+            .arg("--app-name=wvc")
             .arg(title)
             .arg(body)
             .stdin(std::process::Stdio::null())
@@ -357,7 +357,7 @@ fn send_desktop(title: &str, body: &str, urgency: &str) {
     #[cfg(not(target_os = "macos"))]
     {
         let result = std::process::Command::new("notify-send")
-            .arg("--app-name=jcode")
+            .arg("--app-name=wvc")
             .arg(format!("--urgency={}", urgency))
             .arg("--icon=dialog-information")
             .arg(title)
@@ -501,7 +501,7 @@ fn format_cycle_body_safe(transcript: &AmbientTranscript) -> String {
         ));
     }
 
-    lines.push("Check jcode for full details.".to_string());
+    lines.push("Check wvc for full details.".to_string());
     lines.join("\n")
 }
 
@@ -532,7 +532,7 @@ fn format_cycle_body_detailed(transcript: &AmbientTranscript) -> String {
     if transcript.pending_permissions > 0 {
         lines.push(String::new());
         lines.push(format!(
-            "**⚠ {} permission request(s) pending** — review in jcode",
+            "**⚠ {} permission request(s) pending** — review in wvc",
             transcript.pending_permissions
         ));
     }
@@ -574,7 +574,7 @@ mod tests {
         let body = format_cycle_body_safe(&transcript);
         assert!(body.contains("Memories modified: 3"));
         assert!(body.contains("Compactions: 1"));
-        assert!(body.contains("Check jcode for full details"));
+        assert!(body.contains("Check wvc for full details"));
         // Safe body must NOT include model-generated summary
         assert!(!body.contains("Cleaned up"));
         assert!(!body.contains("permission"));
@@ -627,7 +627,7 @@ mod tests {
 
         let safe = format_cycle_body_safe(&transcript);
         assert!(safe.contains("2 permission request(s) pending"));
-        assert!(safe.contains("Check jcode for full details"));
+        assert!(safe.contains("Check wvc for full details"));
 
         let detailed = format_cycle_body_detailed(&transcript);
         assert!(detailed.contains("2 permission request(s) pending"));

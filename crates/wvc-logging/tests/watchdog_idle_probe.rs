@@ -14,8 +14,8 @@ fn idle_process_is_not_reported_as_stalled() {
     std::fs::create_dir_all(&dir).unwrap();
     unsafe {
         std::env::set_var("HOME", &dir);
-        std::env::set_var("JCODE_WATCHDOG_STALL_SECS", "3");
-        std::env::set_var("JCODE_WATCHDOG_HEARTBEAT_SECS", "0");
+        std::env::set_var("WVC_WATCHDOG_STALL_SECS", "3");
+        std::env::set_var("WVC_WATCHDOG_HEARTBEAT_SECS", "0");
     }
 
     wvc_logging::init();

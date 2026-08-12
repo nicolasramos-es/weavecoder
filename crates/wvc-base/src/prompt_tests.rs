@@ -48,7 +48,7 @@ fn test_skill_prompt_integration() {
     let prompt = build_system_prompt(Some(skill_prompt), &[]);
 
     // The prompt should contain our default system prompt
-    assert!(prompt.contains("Your name is Jcode."));
+    assert!(prompt.contains("Your name is Weavecoder."));
 
     // The prompt should contain the skill prompt
     assert!(prompt.contains(skill_prompt));
@@ -66,9 +66,9 @@ fn test_skill_prompt_integration() {
 #[test]
 fn test_load_agents_md_files_uses_sandboxed_global_files() {
     let _guard = crate::storage::lock_test_env();
-    let prev_home = std::env::var_os("JCODE_HOME");
+    let prev_home = std::env::var_os("WVC_HOME");
     let temp = tempfile::TempDir::new().unwrap();
-    crate::env::set_var("JCODE_HOME", temp.path());
+    crate::env::set_var("WVC_HOME", temp.path());
     std::fs::create_dir_all(temp.path().join("external")).unwrap();
 
     std::fs::write(
@@ -87,9 +87,9 @@ fn test_load_agents_md_files_uses_sandboxed_global_files() {
     assert!(content.contains("sandboxed global agents instructions"));
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -124,9 +124,9 @@ fn sponsored_discovery_is_not_injected_into_the_system_prompt() {
 #[test]
 fn test_prompt_overlay_files_are_loaded_from_project_and_global_wvc_dirs() {
     let _guard = crate::storage::lock_test_env();
-    let prev_home = std::env::var_os("JCODE_HOME");
+    let prev_home = std::env::var_os("WVC_HOME");
     let temp = tempfile::TempDir::new().unwrap();
-    crate::env::set_var("JCODE_HOME", temp.path());
+    crate::env::set_var("WVC_HOME", temp.path());
     std::fs::create_dir_all(temp.path()).unwrap();
     std::fs::write(
         temp.path().join("prompt-overlay.md"),
@@ -135,9 +135,9 @@ fn test_prompt_overlay_files_are_loaded_from_project_and_global_wvc_dirs() {
     .unwrap();
 
     let project_dir = tempfile::TempDir::new().unwrap();
-    std::fs::create_dir_all(project_dir.path().join(".jcode")).unwrap();
+    std::fs::create_dir_all(project_dir.path().join(".wvc")).unwrap();
     std::fs::write(
-        project_dir.path().join(".jcode/prompt-overlay.md"),
+        project_dir.path().join(".wvc/prompt-overlay.md"),
         "project prompt overlay instructions",
     )
     .unwrap();
@@ -161,18 +161,18 @@ fn test_prompt_overlay_files_are_loaded_from_project_and_global_wvc_dirs() {
     assert!(info.prompt_overlay_chars > 0);
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
 #[test]
 fn test_preferred_tools_files_are_loaded_from_project_and_global_wvc_dirs() {
     let _guard = crate::storage::lock_test_env();
-    let prev_home = std::env::var_os("JCODE_HOME");
+    let prev_home = std::env::var_os("WVC_HOME");
     let temp = tempfile::TempDir::new().unwrap();
-    crate::env::set_var("JCODE_HOME", temp.path());
+    crate::env::set_var("WVC_HOME", temp.path());
     std::fs::create_dir_all(temp.path()).unwrap();
     std::fs::write(
         temp.path().join("preferred-tools.md"),
@@ -181,9 +181,9 @@ fn test_preferred_tools_files_are_loaded_from_project_and_global_wvc_dirs() {
     .unwrap();
 
     let project_dir = tempfile::TempDir::new().unwrap();
-    std::fs::create_dir_all(project_dir.path().join(".jcode")).unwrap();
+    std::fs::create_dir_all(project_dir.path().join(".wvc")).unwrap();
     std::fs::write(
-        project_dir.path().join(".jcode/preferred-tools.md"),
+        project_dir.path().join(".wvc/preferred-tools.md"),
         "project preferred tools instructions",
     )
     .unwrap();
@@ -193,7 +193,7 @@ fn test_preferred_tools_files_are_loaded_from_project_and_global_wvc_dirs() {
     assert!(direct.0.is_some(), "expected preferred tools content");
     let direct_content = direct.0.unwrap();
     assert!(
-        direct_content.contains("Project Preferred Tools (.jcode/preferred-tools.md)"),
+        direct_content.contains("Project Preferred Tools (.wvc/preferred-tools.md)"),
         "expected project preferred tools section heading"
     );
     assert!(
@@ -201,7 +201,7 @@ fn test_preferred_tools_files_are_loaded_from_project_and_global_wvc_dirs() {
         "expected project preferred tools content"
     );
     assert!(
-        direct_content.contains("Global Preferred Tools (~/.jcode/preferred-tools.md)"),
+        direct_content.contains("Global Preferred Tools (~/.wvc/preferred-tools.md)"),
         "expected global preferred tools section heading"
     );
     assert!(
@@ -229,18 +229,18 @@ fn test_preferred_tools_files_are_loaded_from_project_and_global_wvc_dirs() {
     assert!(split_info.preferred_tools_chars > 0);
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
 #[test]
 fn test_swarm_prompt_prefers_project_then_global_then_default() {
     let _guard = crate::storage::lock_test_env();
-    let prev_home = std::env::var_os("JCODE_HOME");
+    let prev_home = std::env::var_os("WVC_HOME");
     let temp = tempfile::TempDir::new().unwrap();
-    crate::env::set_var("JCODE_HOME", temp.path());
+    crate::env::set_var("WVC_HOME", temp.path());
     std::fs::create_dir_all(temp.path()).unwrap();
 
     let project_dir = tempfile::TempDir::new().unwrap();
@@ -255,9 +255,9 @@ fn test_swarm_prompt_prefers_project_then_global_then_default() {
     assert_eq!(prompt, "global swarm routing");
 
     // Project override wins over global.
-    std::fs::create_dir_all(project_dir.path().join(".jcode")).unwrap();
+    std::fs::create_dir_all(project_dir.path().join(".wvc")).unwrap();
     std::fs::write(
-        project_dir.path().join(".jcode/swarm-prompt.md"),
+        project_dir.path().join(".wvc/swarm-prompt.md"),
         "project swarm routing",
     )
     .unwrap();
@@ -265,14 +265,14 @@ fn test_swarm_prompt_prefers_project_then_global_then_default() {
     assert_eq!(prompt, "project swarm routing");
 
     // A blank project file falls through to global instead of going empty.
-    std::fs::write(project_dir.path().join(".jcode/swarm-prompt.md"), "   \n").unwrap();
+    std::fs::write(project_dir.path().join(".wvc/swarm-prompt.md"), "   \n").unwrap();
     let prompt = load_swarm_prompt(Some(project_dir.path()));
     assert_eq!(prompt, "global swarm routing");
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -290,35 +290,35 @@ fn test_non_selfdev_prompt_leaves_selfdev_guidance_to_the_tool_schema() {
     let prompt = build_system_prompt(None, &[]);
     assert!(!prompt.contains("Self-Development Access"));
     assert!(!prompt.contains("You have access to the `selfdev` tool in all sessions"));
-    assert!(!prompt.contains("You are working on the jcode codebase itself."));
+    assert!(!prompt.contains("You are working on the wvc codebase itself."));
 }
 
 #[test]
 fn test_selfdev_prompt_uses_full_selfdev_instructions() {
     let prompt = build_system_prompt_with_selfdev(None, &[], true);
-    assert!(prompt.contains("You are working on the jcode codebase itself."));
-    assert!(prompt.contains("launched from the TUI/root jcode context"));
+    assert!(prompt.contains("You are working on the wvc codebase itself."));
+    assert!(prompt.contains("launched from the TUI/root wvc context"));
     assert!(prompt.contains("selfdev build target=tui"));
     assert!(!prompt.contains("Self-Development Access"));
 }
 
 #[test]
 fn test_selfdev_prompt_uses_desktop_focus_for_desktop_working_dir() {
-    let desktop_dir = std::path::Path::new("/tmp/jcode/crates/jcode-desktop2/src");
+    let desktop_dir = std::path::Path::new("/tmp/wvc/crates/wvc-desktop2/src");
     let (prompt, _info) = build_system_prompt_full(None, &[], true, None, Some(desktop_dir));
-    assert!(prompt.contains("launched from the jcode-desktop2"));
+    assert!(prompt.contains("launched from the wvc-desktop2"));
     assert!(prompt.contains("selfdev build target=desktop2"));
-    assert!(!prompt.contains("launched from the TUI/root jcode context"));
+    assert!(!prompt.contains("launched from the TUI/root wvc context"));
 }
 
 #[test]
 fn test_split_selfdev_prompt_defaults_to_tui_focus_for_repo_root() {
-    let repo_dir = std::path::Path::new("/tmp/jcode");
+    let repo_dir = std::path::Path::new("/tmp/wvc");
     let (split, _info) = build_system_prompt_split(None, &[], true, None, Some(repo_dir));
     assert!(
         split
             .static_part
-            .contains("launched from the TUI/root jcode context")
+            .contains("launched from the TUI/root wvc context")
     );
     assert!(split.static_part.contains("selfdev build target=tui"));
 }
@@ -330,7 +330,7 @@ fn test_selfdev_prompt_prefers_publish_flow_for_active_builds() {
     assert!(prompt.contains("cancel-build"));
     assert!(prompt.contains("selfdev reload"));
     assert!(prompt.contains("fallback when `selfdev build` is not appropriate"));
-    assert!(prompt.contains("scripts/dev_cargo.sh build --profile selfdev -p jcode --bin jcode"));
+    assert!(prompt.contains("scripts/dev_cargo.sh build --profile selfdev -p wvc --bin wvc"));
     assert!(prompt.contains("remote build host is configured"));
     assert!(prompt.contains("Do not wait for user input"));
 }
@@ -421,9 +421,9 @@ fn classify_effort_distinguishes_reasoning_from_swarm_modes() {
 
 #[test]
 fn test_selfdev_prompt_uses_desktop2_focus_for_desktop2_working_dir() {
-    let desktop2_dir = std::path::Path::new("/tmp/jcode/crates/jcode-desktop2/src");
+    let desktop2_dir = std::path::Path::new("/tmp/wvc/crates/wvc-desktop2/src");
     let (prompt, _info) = build_system_prompt_full(None, &[], true, None, Some(desktop2_dir));
-    assert!(prompt.contains("launched from the jcode-desktop2"));
+    assert!(prompt.contains("launched from the wvc-desktop2"));
     assert!(prompt.contains("selfdev build target=desktop2"));
-    assert!(!prompt.contains("launched from the TUI/root jcode context"));
+    assert!(!prompt.contains("launched from the TUI/root wvc context"));
 }

@@ -1,10 +1,10 @@
 //! Gemini pure protocol types and helpers (compatibility shim).
 //!
 //! The Gemini provider *runtime* (`GeminiProvider`) now lives in the
-//! downstream `jcode-provider-gemini-runtime` crate so provider edits do not
+//! downstream `wvc-provider-gemini-runtime` crate so provider edits do not
 //! rebuild the base -> app-core -> tui spine. The binary's composition root
 //! registers it via [`crate::provider::external`]. This module keeps the pure
-//! request/response types and helpers (from `jcode-provider-gemini`)
+//! request/response types and helpers (from `wvc-provider-gemini`)
 //! importable at their historical `crate::provider::gemini::*` paths.
 
 pub use wvc_provider_gemini::{

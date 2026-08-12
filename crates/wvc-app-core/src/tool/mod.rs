@@ -394,7 +394,7 @@ impl Registry {
     /// names (`grep`, `bash`). This mapping ensures both forms resolve
     /// correctly.
     ///
-    /// The canonical mapping lives in `jcode-tool-types::resolve_tool_name` so
+    /// The canonical mapping lives in `wvc-tool-types::resolve_tool_name` so
     /// lower-level crates (e.g. config) can normalize tool names without
     /// depending on the tool subsystem; this method delegates to it.
     pub(crate) fn resolve_tool_name(name: &str) -> &str {
@@ -878,7 +878,7 @@ impl Registry {
     }
 
     /// Like [`Self::register_mcp_tools`], but resolves project-local MCP config
-    /// (`.mcp.json`, `.jcode/mcp.json`, `.claude/mcp.json`) against
+    /// (`.mcp.json`, `.wvc/mcp.json`, `.claude/mcp.json`) against
     /// `working_dir` instead of the server process cwd. Remote/client sessions
     /// must pass their session working directory here (issue #420).
     pub async fn register_mcp_tools_for_dir(

@@ -93,9 +93,9 @@ pub use active_pids::{
 /// - macOS: `$TMPDIR` (per-user, e.g. `/var/folders/xx/.../T/`)
 /// - Fallback: `std::env::temp_dir()`
 ///
-/// Can be overridden with `$JCODE_RUNTIME_DIR`.
+/// Can be overridden with `$WVC_RUNTIME_DIR`.
 pub fn runtime_dir() -> PathBuf {
-    if let Ok(dir) = std::env::var("JCODE_RUNTIME_DIR") {
+    if let Ok(dir) = std::env::var("WVC_RUNTIME_DIR") {
         return PathBuf::from(dir);
     }
     if let Ok(dir) = std::env::var("XDG_RUNTIME_DIR") {
@@ -148,12 +148,12 @@ fn ensure_private_runtime_dir(path: &Path) {
 }
 
 pub fn wvc_dir() -> Result<PathBuf> {
-    if let Ok(path) = std::env::var("JCODE_HOME") {
+    if let Ok(path) = std::env::var("WVC_HOME") {
         return Ok(PathBuf::from(path));
     }
 
     let home = dirs::home_dir().ok_or_else(|| anyhow::anyhow!("No home directory"))?;
-    Ok(home.join(".jcode"))
+    Ok(home.join(".wvc"))
 }
 
 pub fn logs_dir() -> Result<PathBuf> {
@@ -166,12 +166,12 @@ pub fn logs_dir() -> Result<PathBuf> {
 /// `/run/user/<uid>` on Linux) that is wiped on reboot, so it must only hold
 /// sockets and truly ephemeral state. State that has to outlive a reboot,
 /// such as swarm plans and member records, belongs here instead: it resolves
-/// to `~/.jcode/state` (respecting `JCODE_HOME`).
+/// to `~/.wvc/state` (respecting `WVC_HOME`).
 ///
-/// When `JCODE_RUNTIME_DIR` is set (tests and sandboxed temp servers), it
-/// takes precedence so isolated runs never touch the real jcode home.
+/// When `WVC_RUNTIME_DIR` is set (tests and sandboxed temp servers), it
+/// takes precedence so isolated runs never touch the real wvc home.
 pub fn durable_state_dir() -> PathBuf {
-    if let Ok(dir) = std::env::var("JCODE_RUNTIME_DIR") {
+    if let Ok(dir) = std::env::var("WVC_RUNTIME_DIR") {
         return PathBuf::from(dir).join("durable-state");
     }
     match wvc_dir() {
@@ -180,14 +180,14 @@ pub fn durable_state_dir() -> PathBuf {
     }
 }
 
-/// Resolve jcode's app-owned config directory.
+/// Resolve wvc's app-owned config directory.
 ///
-/// Default location is the platform config dir + `jcode` (for example
-/// `~/.config/jcode` on Linux). When `JCODE_HOME` is set, sandbox this under
-/// `$JCODE_HOME/config/jcode` so self-dev/tests do not leak into the user's
+/// Default location is the platform config dir + `wvc` (for example
+/// `~/.config/wvc` on Linux). When `WVC_HOME` is set, sandbox this under
+/// `$WVC_HOME/config/wvc` so self-dev/tests do not leak into the user's
 /// real config directory.
 pub fn app_config_dir() -> Result<PathBuf> {
-    if let Ok(path) = std::env::var("JCODE_HOME") {
+    if let Ok(path) = std::env::var("WVC_HOME") {
         return Ok(PathBuf::from(path).join("config").join("wvc"));
     }
 
@@ -197,7 +197,7 @@ pub fn app_config_dir() -> Result<PathBuf> {
 }
 
 /// Resolve a path under the user's home directory, but sandbox it under
-/// `$JCODE_HOME/external/` when `JCODE_HOME` is set.
+/// `$WVC_HOME/external/` when `WVC_HOME` is set.
 ///
 /// This keeps external provider auth files isolated during tests and sandboxed
 /// runs without changing default on-disk locations for normal users.
@@ -210,7 +210,7 @@ pub fn user_home_path(relative: impl AsRef<Path>) -> Result<PathBuf> {
         );
     }
 
-    if let Ok(path) = std::env::var("JCODE_HOME") {
+    if let Ok(path) = std::env::var("WVC_HOME") {
         return Ok(PathBuf::from(path).join("external").join(relative));
     }
 
@@ -284,7 +284,7 @@ fn harden_secret_file_permissions_windows(path: &Path) {
     // Windows ACL replacement is substantially more expensive than chmod and
     // security products can amplify it into seconds. Credential readers call
     // this helper frequently, including on the startup and TUI render paths.
-    // Read-time hardening is opportunistic, while Jcode's own secret writes
+    // Read-time hardening is opportunistic, while Weavecoder's own secret writes
     // harden synchronously below. Defer the opportunistic repair so first-frame
     // latency does not inherit multi-second SetNamedSecurityInfoW calls. The
     // worker coalesces repeated probes and retries paths after a short TTL.
@@ -399,7 +399,7 @@ fn run_windows_hardening_worker() {
 
 /// Validate an external auth file managed by another tool before reading it.
 ///
-/// jcode intentionally avoids mutating these files. We also reject obvious risky
+/// wvc intentionally avoids mutating these files. We also reject obvious risky
 /// cases like symlinks so a remembered trust decision stays bound to a real file
 /// path rather than an arbitrary redirect.
 pub fn validate_external_auth_file(path: &Path) -> Result<PathBuf> {
@@ -692,7 +692,7 @@ mod windows_hardening_tests {
     fn first_path_starts_one_worker_and_repeated_paths_are_coalesced() {
         let mut state = SecretHardenState::default();
         let now = Instant::now();
-        let directory = Path::new(r"C:\Users\test\.jcode");
+        let directory = Path::new(r"C:\Users\test\.wvc");
         let file = directory.join("auth.json");
 
         assert!(state.enqueue(directory, true, now));
@@ -707,7 +707,7 @@ mod windows_hardening_tests {
     fn recently_attempted_paths_are_not_requeued() {
         let mut state = SecretHardenState::default();
         let attempted_at = Instant::now();
-        let file = PathBuf::from(r"C:\Users\test\.jcode\auth.json");
+        let file = PathBuf::from(r"C:\Users\test\.wvc\auth.json");
         state
             .files
             .insert(file.clone(), SecretHardenAttempt::Succeeded(attempted_at));
@@ -721,7 +721,7 @@ mod windows_hardening_tests {
     fn failed_paths_retry_after_shorter_backoff() {
         let mut state = SecretHardenState::default();
         let attempted_at = Instant::now();
-        let file = PathBuf::from(r"C:\Users\test\.jcode\auth.json");
+        let file = PathBuf::from(r"C:\Users\test\.wvc\auth.json");
         state
             .files
             .insert(file.clone(), SecretHardenAttempt::Failed(attempted_at));
@@ -735,7 +735,7 @@ mod windows_hardening_tests {
     fn in_flight_paths_are_not_requeued() {
         let mut state = SecretHardenState::default();
         let now = Instant::now();
-        let file = PathBuf::from(r"C:\Users\test\.jcode\auth.json");
+        let file = PathBuf::from(r"C:\Users\test\.wvc\auth.json");
         state
             .files
             .insert(file.clone(), SecretHardenAttempt::InFlight);

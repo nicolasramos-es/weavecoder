@@ -29,32 +29,32 @@ fn lock_env() -> MutexGuard<'static, ()> {
 
 fn tracked_env_vars() -> Vec<String> {
     let mut keys: HashSet<String> = [
-        "JCODE_HOME",
+        "WVC_HOME",
         "XDG_CONFIG_HOME",
-        "JCODE_OPENROUTER_API_BASE",
-        "JCODE_OPENROUTER_API_KEY_NAME",
-        "JCODE_OPENROUTER_ENV_FILE",
-        "JCODE_OPENROUTER_CACHE_NAMESPACE",
-        "JCODE_OPENROUTER_PROVIDER_FEATURES",
-        "JCODE_OPENROUTER_ALLOW_NO_AUTH",
-        "JCODE_OPENROUTER_PROVIDER",
-        "JCODE_OPENROUTER_NO_FALLBACK",
-        "JCODE_OPENROUTER_MODEL",
-        "JCODE_OPENROUTER_MODEL_CATALOG",
-        "JCODE_OPENROUTER_STATIC_MODELS",
-        "JCODE_OPENROUTER_AUTH_HEADER",
-        "JCODE_OPENROUTER_AUTH_HEADER_NAME",
-        "JCODE_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
-        "JCODE_OPENROUTER_THINKING",
-        "JCODE_OPENAI_COMPAT_API_BASE",
-        "JCODE_OPENAI_COMPAT_API_KEY_NAME",
-        "JCODE_OPENAI_COMPAT_ENV_FILE",
-        "JCODE_OPENAI_COMPAT_SETUP_URL",
-        "JCODE_OPENAI_COMPAT_DEFAULT_MODEL",
-        "JCODE_OPENAI_COMPAT_LOCAL_ENABLED",
-        "JCODE_NAMED_PROVIDER_PROFILE",
-        "JCODE_PROVIDER_PROFILE_ACTIVE",
-        "JCODE_PROVIDER_PROFILE_NAME",
+        "WVC_OPENROUTER_API_BASE",
+        "WVC_OPENROUTER_API_KEY_NAME",
+        "WVC_OPENROUTER_ENV_FILE",
+        "WVC_OPENROUTER_CACHE_NAMESPACE",
+        "WVC_OPENROUTER_PROVIDER_FEATURES",
+        "WVC_OPENROUTER_ALLOW_NO_AUTH",
+        "WVC_OPENROUTER_PROVIDER",
+        "WVC_OPENROUTER_NO_FALLBACK",
+        "WVC_OPENROUTER_MODEL",
+        "WVC_OPENROUTER_MODEL_CATALOG",
+        "WVC_OPENROUTER_STATIC_MODELS",
+        "WVC_OPENROUTER_AUTH_HEADER",
+        "WVC_OPENROUTER_AUTH_HEADER_NAME",
+        "WVC_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
+        "WVC_OPENROUTER_THINKING",
+        "WVC_OPENAI_COMPAT_API_BASE",
+        "WVC_OPENAI_COMPAT_API_KEY_NAME",
+        "WVC_OPENAI_COMPAT_ENV_FILE",
+        "WVC_OPENAI_COMPAT_SETUP_URL",
+        "WVC_OPENAI_COMPAT_DEFAULT_MODEL",
+        "WVC_OPENAI_COMPAT_LOCAL_ENABLED",
+        "WVC_NAMED_PROVIDER_PROFILE",
+        "WVC_PROVIDER_PROFILE_ACTIVE",
+        "WVC_PROVIDER_PROFILE_NAME",
         "ANTHROPIC_API_KEY",
         "OPENAI_API_KEY",
         "OPENROUTER_API_KEY",
@@ -103,7 +103,7 @@ impl TestEnv {
 
         let config_root = temp.path().join("config").join("wvc");
         std::fs::create_dir_all(&config_root)?;
-        weavecoder::env::set_var("JCODE_HOME", temp.path());
+        weavecoder::env::set_var("WVC_HOME", temp.path());
         weavecoder::config::invalidate_config_cache();
         apply_openai_compatible_profile_env(None);
         AuthStatus::invalidate_cache();
@@ -176,25 +176,25 @@ impl OpenAiCompatibleBaseState {
 
 fn clear_openai_compatible_runtime_env() {
     for key in [
-        "JCODE_OPENAI_COMPAT_API_BASE",
-        "JCODE_OPENAI_COMPAT_API_KEY_NAME",
-        "JCODE_OPENAI_COMPAT_ENV_FILE",
-        "JCODE_OPENAI_COMPAT_SETUP_URL",
-        "JCODE_OPENAI_COMPAT_DEFAULT_MODEL",
-        "JCODE_OPENAI_COMPAT_LOCAL_ENABLED",
+        "WVC_OPENAI_COMPAT_API_BASE",
+        "WVC_OPENAI_COMPAT_API_KEY_NAME",
+        "WVC_OPENAI_COMPAT_ENV_FILE",
+        "WVC_OPENAI_COMPAT_SETUP_URL",
+        "WVC_OPENAI_COMPAT_DEFAULT_MODEL",
+        "WVC_OPENAI_COMPAT_LOCAL_ENABLED",
         "OPENAI_COMPAT_API_KEY",
-        "JCODE_OPENROUTER_API_BASE",
-        "JCODE_OPENROUTER_API_KEY_NAME",
-        "JCODE_OPENROUTER_ENV_FILE",
-        "JCODE_OPENROUTER_CACHE_NAMESPACE",
-        "JCODE_OPENROUTER_PROVIDER_FEATURES",
-        "JCODE_OPENROUTER_ALLOW_NO_AUTH",
-        "JCODE_OPENROUTER_MODEL_CATALOG",
-        "JCODE_OPENROUTER_MODEL",
-        "JCODE_OPENROUTER_STATIC_MODELS",
-        "JCODE_PROVIDER_PROFILE_ACTIVE",
-        "JCODE_PROVIDER_PROFILE_NAME",
-        "JCODE_NAMED_PROVIDER_PROFILE",
+        "WVC_OPENROUTER_API_BASE",
+        "WVC_OPENROUTER_API_KEY_NAME",
+        "WVC_OPENROUTER_ENV_FILE",
+        "WVC_OPENROUTER_CACHE_NAMESPACE",
+        "WVC_OPENROUTER_PROVIDER_FEATURES",
+        "WVC_OPENROUTER_ALLOW_NO_AUTH",
+        "WVC_OPENROUTER_MODEL_CATALOG",
+        "WVC_OPENROUTER_MODEL",
+        "WVC_OPENROUTER_STATIC_MODELS",
+        "WVC_PROVIDER_PROFILE_ACTIVE",
+        "WVC_PROVIDER_PROFILE_NAME",
+        "WVC_NAMED_PROVIDER_PROFILE",
     ] {
         weavecoder::env::remove_var(key);
     }
@@ -318,31 +318,31 @@ fn apply_competing_compatible_state(
 fn assert_runtime_profile_env(profile: OpenAiCompatibleProfile, context: &str) {
     let resolved = resolve_openai_compatible_profile(profile);
     assert_eq!(
-        std::env::var("JCODE_OPENROUTER_API_BASE").ok().as_deref(),
+        std::env::var("WVC_OPENROUTER_API_BASE").ok().as_deref(),
         Some(resolved.api_base.as_str()),
         "runtime api base mismatch for {context}"
     );
     assert_eq!(
-        std::env::var("JCODE_OPENROUTER_API_KEY_NAME")
+        std::env::var("WVC_OPENROUTER_API_KEY_NAME")
             .ok()
             .as_deref(),
         Some(resolved.api_key_env.as_str()),
         "runtime api key env mismatch for {context}"
     );
     assert_eq!(
-        std::env::var("JCODE_OPENROUTER_ENV_FILE").ok().as_deref(),
+        std::env::var("WVC_OPENROUTER_ENV_FILE").ok().as_deref(),
         Some(resolved.env_file.as_str()),
         "runtime env file mismatch for {context}"
     );
     assert_eq!(
-        std::env::var("JCODE_OPENROUTER_CACHE_NAMESPACE")
+        std::env::var("WVC_OPENROUTER_CACHE_NAMESPACE")
             .ok()
             .as_deref(),
         Some(resolved.id.as_str()),
         "runtime cache namespace mismatch for {context}"
     );
     assert_eq!(
-        std::env::var("JCODE_OPENROUTER_ALLOW_NO_AUTH")
+        std::env::var("WVC_OPENROUTER_ALLOW_NO_AUTH")
             .ok()
             .as_deref(),
         (!resolved.requires_api_key).then_some("1"),
@@ -352,16 +352,16 @@ fn assert_runtime_profile_env(profile: OpenAiCompatibleProfile, context: &str) {
 
 fn assert_no_compatible_runtime_profile_env(context: &str) {
     for key in [
-        "JCODE_OPENROUTER_API_BASE",
-        "JCODE_OPENROUTER_API_KEY_NAME",
-        "JCODE_OPENROUTER_ENV_FILE",
-        "JCODE_OPENROUTER_CACHE_NAMESPACE",
-        "JCODE_OPENROUTER_PROVIDER_FEATURES",
-        "JCODE_OPENROUTER_ALLOW_NO_AUTH",
-        "JCODE_OPENROUTER_STATIC_MODELS",
-        "JCODE_PROVIDER_PROFILE_ACTIVE",
-        "JCODE_PROVIDER_PROFILE_NAME",
-        "JCODE_NAMED_PROVIDER_PROFILE",
+        "WVC_OPENROUTER_API_BASE",
+        "WVC_OPENROUTER_API_KEY_NAME",
+        "WVC_OPENROUTER_ENV_FILE",
+        "WVC_OPENROUTER_CACHE_NAMESPACE",
+        "WVC_OPENROUTER_PROVIDER_FEATURES",
+        "WVC_OPENROUTER_ALLOW_NO_AUTH",
+        "WVC_OPENROUTER_STATIC_MODELS",
+        "WVC_PROVIDER_PROFILE_ACTIVE",
+        "WVC_PROVIDER_PROFILE_NAME",
+        "WVC_NAMED_PROVIDER_PROFILE",
     ] {
         assert!(
             std::env::var_os(key).is_none(),
@@ -373,8 +373,8 @@ fn assert_no_compatible_runtime_profile_env(context: &str) {
 
 fn assert_no_active_compatible_profile_lock(context: &str) {
     for key in [
-        "JCODE_PROVIDER_PROFILE_ACTIVE",
-        "JCODE_PROVIDER_PROFILE_NAME",
+        "WVC_PROVIDER_PROFILE_ACTIVE",
+        "WVC_PROVIDER_PROFILE_NAME",
     ] {
         assert!(
             std::env::var_os(key).is_none(),
@@ -635,7 +635,7 @@ fn provider_matrix_openai_compatible_auth_state_space_material_states_preserve_l
                         OpenAiCompatibleBaseState::SavedRemote
                         | OpenAiCompatibleBaseState::SavedLocal => {
                             save_env_value_to_env_file(
-                                "JCODE_OPENAI_COMPAT_API_BASE",
+                                "WVC_OPENAI_COMPAT_API_BASE",
                                 env_file,
                                 Some(base_state.expected_api_base()),
                             )?;
@@ -652,7 +652,7 @@ fn provider_matrix_openai_compatible_auth_state_space_material_states_preserve_l
 
                     if has_default_model {
                         save_env_value_to_env_file(
-                            "JCODE_OPENAI_COMPAT_DEFAULT_MODEL",
+                            "WVC_OPENAI_COMPAT_DEFAULT_MODEL",
                             env_file,
                             Some(&model),
                         )?;
@@ -699,24 +699,24 @@ fn provider_matrix_openai_compatible_auth_state_space_material_states_preserve_l
                     apply_openai_compatible_profile_env(Some(OPENAI_COMPAT_PROFILE));
                     AuthStatus::invalidate_cache();
                     assert_eq!(
-                        std::env::var("JCODE_OPENROUTER_API_BASE").ok().as_deref(),
+                        std::env::var("WVC_OPENROUTER_API_BASE").ok().as_deref(),
                         Some(resolved.api_base.as_str()),
                         "runtime api base mismatch for {state_label}"
                     );
                     assert_eq!(
-                        std::env::var("JCODE_OPENROUTER_API_KEY_NAME")
+                        std::env::var("WVC_OPENROUTER_API_KEY_NAME")
                             .ok()
                             .as_deref(),
                         Some(resolved.api_key_env.as_str()),
                         "runtime api key env mismatch for {state_label}"
                     );
                     assert_eq!(
-                        std::env::var("JCODE_OPENROUTER_ENV_FILE").ok().as_deref(),
+                        std::env::var("WVC_OPENROUTER_ENV_FILE").ok().as_deref(),
                         Some(resolved.env_file.as_str()),
                         "runtime env file mismatch for {state_label}"
                     );
                     assert_eq!(
-                        std::env::var("JCODE_OPENROUTER_ALLOW_NO_AUTH")
+                        std::env::var("WVC_OPENROUTER_ALLOW_NO_AUTH")
                             .ok()
                             .as_deref(),
                         (base_state == OpenAiCompatibleBaseState::SavedLocal).then_some("1"),
@@ -782,27 +782,27 @@ fn provider_matrix_env_credentials_activate_openrouter_runtime() -> Result<()> {
         AuthStatus::invalidate_cache();
 
         assert_eq!(
-            std::env::var("JCODE_OPENROUTER_API_BASE").ok().as_deref(),
+            std::env::var("WVC_OPENROUTER_API_BASE").ok().as_deref(),
             Some(resolved.api_base.as_str())
         );
         assert_eq!(
-            std::env::var("JCODE_OPENROUTER_API_KEY_NAME")
+            std::env::var("WVC_OPENROUTER_API_KEY_NAME")
                 .ok()
                 .as_deref(),
             Some(resolved.api_key_env.as_str())
         );
         assert_eq!(
-            std::env::var("JCODE_OPENROUTER_ENV_FILE").ok().as_deref(),
+            std::env::var("WVC_OPENROUTER_ENV_FILE").ok().as_deref(),
             Some(resolved.env_file.as_str())
         );
         assert_eq!(
-            std::env::var("JCODE_OPENROUTER_CACHE_NAMESPACE")
+            std::env::var("WVC_OPENROUTER_CACHE_NAMESPACE")
                 .ok()
                 .as_deref(),
             Some(resolved.id.as_str())
         );
         assert_eq!(
-            std::env::var("JCODE_OPENROUTER_PROVIDER_FEATURES")
+            std::env::var("WVC_OPENROUTER_PROVIDER_FEATURES")
                 .ok()
                 .as_deref(),
             Some("0")
@@ -856,12 +856,12 @@ fn provider_matrix_custom_compat_overrides_flow_into_runtime() -> Result<()> {
     env.clear_profile_keys();
 
     weavecoder::env::set_var(
-        "JCODE_OPENAI_COMPAT_API_BASE",
+        "WVC_OPENAI_COMPAT_API_BASE",
         "https://api.groq.com/openai/v1/",
     );
-    weavecoder::env::set_var("JCODE_OPENAI_COMPAT_API_KEY_NAME", "GROQ_API_KEY");
-    weavecoder::env::set_var("JCODE_OPENAI_COMPAT_ENV_FILE", "groq.env");
-    weavecoder::env::set_var("JCODE_OPENAI_COMPAT_DEFAULT_MODEL", "openai/gpt-oss-120b");
+    weavecoder::env::set_var("WVC_OPENAI_COMPAT_API_KEY_NAME", "GROQ_API_KEY");
+    weavecoder::env::set_var("WVC_OPENAI_COMPAT_ENV_FILE", "groq.env");
+    weavecoder::env::set_var("WVC_OPENAI_COMPAT_DEFAULT_MODEL", "openai/gpt-oss-120b");
 
     apply_openai_compatible_profile_env(Some(OPENAI_COMPAT_PROFILE));
     let resolved = resolve_openai_compatible_profile(OPENAI_COMPAT_PROFILE);
@@ -876,17 +876,17 @@ fn provider_matrix_custom_compat_overrides_flow_into_runtime() -> Result<()> {
     assert_eq!(resolved.api_key_env, "GROQ_API_KEY");
     assert_eq!(resolved.env_file, "groq.env");
     assert_eq!(
-        std::env::var("JCODE_OPENROUTER_API_BASE").ok().as_deref(),
+        std::env::var("WVC_OPENROUTER_API_BASE").ok().as_deref(),
         Some("https://api.groq.com/openai/v1")
     );
     assert_eq!(
-        std::env::var("JCODE_OPENROUTER_API_KEY_NAME")
+        std::env::var("WVC_OPENROUTER_API_KEY_NAME")
             .ok()
             .as_deref(),
         Some("GROQ_API_KEY")
     );
     assert_eq!(
-        std::env::var("JCODE_OPENROUTER_ENV_FILE").ok().as_deref(),
+        std::env::var("WVC_OPENROUTER_ENV_FILE").ok().as_deref(),
         Some("groq.env")
     );
     assert!(weavecoder::provider::openrouter::has_credentials());
@@ -902,7 +902,7 @@ fn provider_matrix_custom_local_compat_without_api_key_activates_openrouter_runt
     let env = TestEnv::new()?;
     env.clear_profile_keys();
 
-    weavecoder::env::set_var("JCODE_OPENAI_COMPAT_API_BASE", "http://localhost:11434/v1");
+    weavecoder::env::set_var("WVC_OPENAI_COMPAT_API_BASE", "http://localhost:11434/v1");
 
     apply_openai_compatible_profile_env(Some(OPENAI_COMPAT_PROFILE));
     let resolved = resolve_openai_compatible_profile(OPENAI_COMPAT_PROFILE);
@@ -911,7 +911,7 @@ fn provider_matrix_custom_local_compat_without_api_key_activates_openrouter_runt
     assert_eq!(resolved.api_base, "http://localhost:11434/v1");
     assert!(!resolved.requires_api_key);
     assert_eq!(
-        std::env::var("JCODE_OPENROUTER_ALLOW_NO_AUTH")
+        std::env::var("WVC_OPENROUTER_ALLOW_NO_AUTH")
             .ok()
             .as_deref(),
         Some("1")

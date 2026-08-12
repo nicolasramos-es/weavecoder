@@ -38,7 +38,7 @@ pub fn generate_from_seed(seed: (u8, u8, u8), background: (u8, u8, u8)) -> Palet
     let chroma = seed_lab.chroma().clamp(0.06, 0.14);
     // A near-neutral seed (black, white, gray) carries no meaningful hue: its
     // `a`/`b` are numerical noise, and using it would place every role at an
-    // arbitrary angle. Fall back to jcode's own blue so a gray seed yields a
+    // arbitrary angle. Fall back to wvc's own blue so a gray seed yields a
     // deliberate palette rather than a random one.
     const NEUTRAL_SEED_CHROMA: f32 = 0.02;
     let hue = if seed_lab.chroma() < NEUTRAL_SEED_CHROMA {
@@ -476,7 +476,7 @@ mod generation {
     #[test]
     fn generated_palettes_score_well_from_any_seed() {
         let seeds = [
-            (138, 180, 248), // jcode blue
+            (138, 180, 248), // wvc blue
             (255, 0, 0),     // pure red
             (0, 255, 0),     // pure green
             (10, 10, 10),    // near black

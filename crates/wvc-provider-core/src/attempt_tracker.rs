@@ -10,7 +10,7 @@
 //! retryable failure the loop can then emit [`StreamEvent::RetryRollback`] so
 //! consumers discard the partial output before the replay streams in.
 //!
-//! This is safe for jcode's HTTP providers because tools are only executed by
+//! This is safe for wvc's HTTP providers because tools are only executed by
 //! the agent loop *after* the stream completes; a partially streamed attempt
 //! has no side effects. The Claude CLI path is the exception (the CLI executes
 //! tools live mid-stream) and keeps its no-retry-after-output guard instead.

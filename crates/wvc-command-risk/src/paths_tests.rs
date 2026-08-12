@@ -63,7 +63,7 @@ fn root_and_system_paths_are_catastrophic() {
 #[test]
 fn credential_stores_inside_home_are_catastrophic() {
     let ctx = ctx();
-    for sub in [".ssh", ".gnupg", ".aws", ".config", ".jcode"] {
+    for sub in [".ssh", ".gnupg", ".aws", ".config", ".wvc"] {
         let expanded = expand(&format!("~/{sub}"), &ctx);
         assert!(is_catastrophic_target(&expanded, &ctx), "~/{sub}");
     }
@@ -204,7 +204,7 @@ fn ordinary_config_files_remain_editable() {
     let ctx = ctx();
     for path in [
         "/home/u/.config/app/settings.toml",
-        "/home/u/.jcode/sessions/old.json",
+        "/home/u/.wvc/sessions/old.json",
         "/home/u/Documents/notes/draft.md",
     ] {
         assert!(
@@ -213,7 +213,7 @@ fn ordinary_config_files_remain_editable() {
         );
     }
     // ...while the roots themselves stay protected.
-    for path in ["/home/u/.config", "/home/u/.jcode", "/home/u/Documents"] {
+    for path in ["/home/u/.config", "/home/u/.wvc", "/home/u/Documents"] {
         assert!(is_catastrophic_target(Path::new(path), &ctx), "{path}");
     }
 }

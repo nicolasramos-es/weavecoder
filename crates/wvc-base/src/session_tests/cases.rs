@@ -32,9 +32,9 @@ fn test_session_exists_roundtrip() -> Result<()> {
 #[test]
 fn derive_session_provider_key_prefers_runtime_identity_over_transport() {
     let _lock = lock_env();
-    let _runtime = EnvVarGuard::set("JCODE_RUNTIME_PROVIDER", "azure-openai");
-    let _namespace = EnvVarGuard::set("JCODE_OPENROUTER_CACHE_NAMESPACE", "azure-cache");
-    let _active = EnvVarGuard::set("JCODE_ACTIVE_PROVIDER", "openrouter");
+    let _runtime = EnvVarGuard::set("WVC_RUNTIME_PROVIDER", "azure-openai");
+    let _namespace = EnvVarGuard::set("WVC_OPENROUTER_CACHE_NAMESPACE", "azure-cache");
+    let _active = EnvVarGuard::set("WVC_ACTIVE_PROVIDER", "openrouter");
 
     assert_eq!(
         derive_session_provider_key("openrouter").as_deref(),
@@ -45,9 +45,9 @@ fn derive_session_provider_key_prefers_runtime_identity_over_transport() {
 #[test]
 fn derive_session_provider_key_falls_back_to_openrouter_namespace() {
     let _lock = lock_env();
-    let _runtime = EnvVarGuard::remove("JCODE_RUNTIME_PROVIDER");
-    let _namespace = EnvVarGuard::set("JCODE_OPENROUTER_CACHE_NAMESPACE", "azure-openai");
-    let _active = EnvVarGuard::set("JCODE_ACTIVE_PROVIDER", "openrouter");
+    let _runtime = EnvVarGuard::remove("WVC_RUNTIME_PROVIDER");
+    let _namespace = EnvVarGuard::set("WVC_OPENROUTER_CACHE_NAMESPACE", "azure-openai");
+    let _active = EnvVarGuard::set("WVC_ACTIVE_PROVIDER", "openrouter");
 
     assert_eq!(
         derive_session_provider_key("openrouter").as_deref(),
@@ -58,9 +58,9 @@ fn derive_session_provider_key_falls_back_to_openrouter_namespace() {
 #[test]
 fn derive_session_provider_key_keeps_openai_compatible_profile_namespace() {
     let _lock = lock_env();
-    let _runtime = EnvVarGuard::set("JCODE_RUNTIME_PROVIDER", "openai-compatible");
-    let _namespace = EnvVarGuard::set("JCODE_OPENROUTER_CACHE_NAMESPACE", "zai");
-    let _active = EnvVarGuard::set("JCODE_ACTIVE_PROVIDER", "openrouter");
+    let _runtime = EnvVarGuard::set("WVC_RUNTIME_PROVIDER", "openai-compatible");
+    let _namespace = EnvVarGuard::set("WVC_OPENROUTER_CACHE_NAMESPACE", "zai");
+    let _active = EnvVarGuard::set("WVC_ACTIVE_PROVIDER", "openrouter");
 
     assert_eq!(
         derive_session_provider_key("openrouter").as_deref(),
@@ -458,7 +458,7 @@ fn load_startup_stub_preserves_metadata_but_skips_heavy_vectors() -> Result<()> 
         .prefix("wvc-startup-stub-test-")
         .tempdir()
         .map_err(|e| anyhow!(e))?;
-    let _home = EnvVarGuard::set("JCODE_HOME", temp_home.path().as_os_str());
+    let _home = EnvVarGuard::set("WVC_HOME", temp_home.path().as_os_str());
 
     let session_id = "session_startup_stub_roundtrip";
     let mut session = Session::create_with_id(
@@ -535,7 +535,7 @@ fn load_for_remote_startup_preserves_messages_and_replay_but_skips_heavy_vectors
         .prefix("wvc-remote-startup-test-")
         .tempdir()
         .map_err(|e| anyhow!(e))?;
-    let _home = EnvVarGuard::set("JCODE_HOME", temp_home.path().as_os_str());
+    let _home = EnvVarGuard::set("WVC_HOME", temp_home.path().as_os_str());
 
     let session_id = "session_remote_startup_roundtrip";
     let mut session = Session::create_with_id(
@@ -601,7 +601,7 @@ fn load_for_remote_startup_preserves_messages_and_replay_but_skips_heavy_vectors
 #[test]
 fn test_create_marks_debug_when_test_session_env_enabled() {
     let _env_lock = lock_env();
-    let _test_flag = EnvVarGuard::set("JCODE_TEST_SESSION", "1");
+    let _test_flag = EnvVarGuard::set("WVC_TEST_SESSION", "1");
 
     let s1 = Session::create(None, None);
     assert!(s1.is_debug);
@@ -613,7 +613,7 @@ fn test_create_marks_debug_when_test_session_env_enabled() {
 #[test]
 fn test_create_not_debug_when_test_session_env_disabled() {
     let _env_lock = lock_env();
-    let _test_flag = EnvVarGuard::set("JCODE_TEST_SESSION", "0");
+    let _test_flag = EnvVarGuard::set("WVC_TEST_SESSION", "0");
 
     let s = Session::create(None, None);
     assert!(!s.is_debug);
@@ -626,8 +626,8 @@ fn test_recover_crashed_sessions_preserves_debug_flag() -> Result<()> {
         .prefix("wvc-recover-debug-test-")
         .tempdir()
         .map_err(|e| anyhow!(e))?;
-    let _home = EnvVarGuard::set("JCODE_HOME", temp_home.path().as_os_str());
-    let _test_flag = EnvVarGuard::set("JCODE_TEST_SESSION", "0");
+    let _home = EnvVarGuard::set("WVC_HOME", temp_home.path().as_os_str());
+    let _test_flag = EnvVarGuard::set("WVC_TEST_SESSION", "0");
 
     let mut crashed = Session::create_with_id(
         "session_recover_debug_source".to_string(),
@@ -660,8 +660,8 @@ fn test_recover_crashed_sessions_by_ids_restores_only_selected_group() -> Result
         .prefix("wvc-recover-selected-crash-test-")
         .tempdir()
         .map_err(|e| anyhow!(e))?;
-    let _home = EnvVarGuard::set("JCODE_HOME", temp_home.path().as_os_str());
-    let _test_flag = EnvVarGuard::set("JCODE_TEST_SESSION", "0");
+    let _home = EnvVarGuard::set("WVC_HOME", temp_home.path().as_os_str());
+    let _test_flag = EnvVarGuard::set("WVC_TEST_SESSION", "0");
 
     let now = Utc::now();
     for (id, active_at) in [
@@ -704,7 +704,7 @@ fn test_save_persists_full_session_content() -> Result<()> {
         .prefix("wvc-session-save-test-")
         .tempdir()
         .map_err(|e| anyhow!(e))?;
-    let _home = EnvVarGuard::set("JCODE_HOME", temp_home.path().as_os_str());
+    let _home = EnvVarGuard::set("WVC_HOME", temp_home.path().as_os_str());
 
     let mut session = Session::create_with_id(
         "session_save_persist_test".to_string(),
@@ -759,7 +759,7 @@ fn test_save_persists_compaction_state() -> Result<()> {
         .prefix("wvc-session-compaction-save-test-")
         .tempdir()
         .map_err(|e| anyhow!(e))?;
-    let _home = EnvVarGuard::set("JCODE_HOME", temp_home.path().as_os_str());
+    let _home = EnvVarGuard::set("WVC_HOME", temp_home.path().as_os_str());
 
     let mut session = Session::create_with_id(
         "session_compaction_persist_test".to_string(),
@@ -788,7 +788,7 @@ fn test_save_persists_provider_key() -> Result<()> {
         .prefix("wvc-session-provider-key-save-test-")
         .tempdir()
         .map_err(|e| anyhow!(e))?;
-    let _home = EnvVarGuard::set("JCODE_HOME", temp_home.path().as_os_str());
+    let _home = EnvVarGuard::set("WVC_HOME", temp_home.path().as_os_str());
 
     let mut session = Session::create_with_id(
         "session_provider_key_persist_test".to_string(),
@@ -813,7 +813,7 @@ fn test_save_persists_reasoning_effort() -> Result<()> {
         .prefix("wvc-session-reasoning-effort-save-test-")
         .tempdir()
         .map_err(|e| anyhow!(e))?;
-    let _home = EnvVarGuard::set("JCODE_HOME", temp_home.path().as_os_str());
+    let _home = EnvVarGuard::set("WVC_HOME", temp_home.path().as_os_str());
 
     let mut session = Session::create_with_id(
         "session_reasoning_effort_persist_test".to_string(),
@@ -838,7 +838,7 @@ fn test_save_appends_journal_and_load_replays_it() -> Result<()> {
         .prefix("wvc-session-journal-test-")
         .tempdir()
         .map_err(|e| anyhow!(e))?;
-    let _home = EnvVarGuard::set("JCODE_HOME", temp_home.path().as_os_str());
+    let _home = EnvVarGuard::set("WVC_HOME", temp_home.path().as_os_str());
 
     let mut session = Session::create_with_id(
         "session_journal_append_test".to_string(),
@@ -885,7 +885,7 @@ fn test_save_checkpoints_after_full_mutation_and_clears_journal() -> Result<()> 
         .prefix("wvc-session-checkpoint-test-")
         .tempdir()
         .map_err(|e| anyhow!(e))?;
-    let _home = EnvVarGuard::set("JCODE_HOME", temp_home.path().as_os_str());
+    let _home = EnvVarGuard::set("WVC_HOME", temp_home.path().as_os_str());
 
     let mut session = Session::create_with_id(
         "session_journal_checkpoint_test".to_string(),
@@ -933,7 +933,7 @@ fn test_journal_replay_skips_corrupt_line_and_keeps_tail() -> Result<()> {
         .prefix("wvc-session-journal-corrupt-test-")
         .tempdir()
         .map_err(|e| anyhow!(e))?;
-    let _home = EnvVarGuard::set("JCODE_HOME", temp_home.path().as_os_str());
+    let _home = EnvVarGuard::set("WVC_HOME", temp_home.path().as_os_str());
 
     let session_id = "session_journal_corrupt_tail_test";
     let mut session = Session::create_with_id(
@@ -996,7 +996,7 @@ fn test_journal_replay_salvages_glued_entries_on_torn_line() -> Result<()> {
         .prefix("wvc-session-journal-glued-test-")
         .tempdir()
         .map_err(|e| anyhow!(e))?;
-    let _home = EnvVarGuard::set("JCODE_HOME", temp_home.path().as_os_str());
+    let _home = EnvVarGuard::set("WVC_HOME", temp_home.path().as_os_str());
 
     let session_id = "session_journal_glued_test";
     let mut session = Session::create_with_id(
@@ -1053,7 +1053,7 @@ fn test_corrupt_journal_heals_via_checkpoint_on_next_save() -> Result<()> {
         .prefix("wvc-session-journal-heal-test-")
         .tempdir()
         .map_err(|e| anyhow!(e))?;
-    let _home = EnvVarGuard::set("JCODE_HOME", temp_home.path().as_os_str());
+    let _home = EnvVarGuard::set("WVC_HOME", temp_home.path().as_os_str());
 
     let session_id = "session_journal_heal_test";
     let mut session = Session::create_with_id(
@@ -1377,7 +1377,7 @@ fn test_render_messages_renders_reasoning_before_answer_in_stored_order() {
     use wvc_render_core::REASONING_SENTINEL;
 
     let _env_lock = lock_env();
-    let _mode = EnvVarGuard::set("JCODE_REASONING_DISPLAY", "full");
+    let _mode = EnvVarGuard::set("WVC_REASONING_DISPLAY", "full");
     crate::config::invalidate_config_cache();
 
     let mut session = Session::create_with_id(
@@ -1420,7 +1420,7 @@ fn test_render_messages_renders_persisted_reasoning() {
     use wvc_render_core::REASONING_SENTINEL;
 
     let _env_lock = lock_env();
-    let _mode = EnvVarGuard::set("JCODE_REASONING_DISPLAY", "full");
+    let _mode = EnvVarGuard::set("WVC_REASONING_DISPLAY", "full");
     crate::config::invalidate_config_cache();
 
     let mut session = Session::create_with_id(
@@ -1469,7 +1469,7 @@ fn test_render_messages_renders_legacy_reasoning_variant() {
     use wvc_render_core::REASONING_SENTINEL;
 
     let _env_lock = lock_env();
-    let _mode = EnvVarGuard::set("JCODE_REASONING_DISPLAY", "full");
+    let _mode = EnvVarGuard::set("WVC_REASONING_DISPLAY", "full");
     crate::config::invalidate_config_cache();
 
     let mut session = Session::create_with_id(
@@ -1501,7 +1501,7 @@ fn test_render_messages_hides_persisted_reasoning_in_current_mode() {
     use wvc_render_core::REASONING_SENTINEL;
 
     let _env_lock = lock_env();
-    let _mode = EnvVarGuard::set("JCODE_REASONING_DISPLAY", "current");
+    let _mode = EnvVarGuard::set("WVC_REASONING_DISPLAY", "current");
     crate::config::invalidate_config_cache();
 
     let mut session = Session::create_with_id(
@@ -1548,7 +1548,7 @@ fn test_render_messages_hides_persisted_reasoning_in_off_mode() {
     use wvc_render_core::REASONING_SENTINEL;
 
     let _env_lock = lock_env();
-    let _mode = EnvVarGuard::set("JCODE_REASONING_DISPLAY", "off");
+    let _mode = EnvVarGuard::set("WVC_REASONING_DISPLAY", "off");
     crate::config::invalidate_config_cache();
 
     let mut session = Session::create_with_id(
@@ -2014,7 +2014,7 @@ fn reasoning_trace_survives_session_save_and_load() -> Result<()> {
         .prefix("wvc-reasoning-persist-test-")
         .tempdir()
         .map_err(|e| anyhow!(e))?;
-    let _home = EnvVarGuard::set("JCODE_HOME", temp_home.path().as_os_str());
+    let _home = EnvVarGuard::set("WVC_HOME", temp_home.path().as_os_str());
 
     let session_id = "session_reasoning_trace_roundtrip";
     let mut session = Session::create_with_id(session_id.to_string(), None, None);
@@ -2241,7 +2241,7 @@ fn fork_notice_is_model_visible_but_hidden_from_transcript() {
 fn streaming_guard_creates_visible_macos_sleep_assertion() {
     let _lock = lock_env();
     let temp = tempfile::tempdir().expect("tempdir");
-    let _home = EnvVarGuard::set("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set("WVC_HOME", temp.path());
 
     let reason = "Weavecoder streaming model response";
     {

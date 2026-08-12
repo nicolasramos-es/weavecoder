@@ -514,7 +514,7 @@ fn write_test_config(contents: &str) {
 
 fn failover_error_message(prompt: &crate::provider::ProviderFailoverPrompt) -> String {
     format!(
-        "[jcode-provider-failover]{}\nignored",
+        "[wvc-provider-failover]{}\nignored",
         serde_json::to_string(prompt).expect("serialize failover prompt")
     )
 }

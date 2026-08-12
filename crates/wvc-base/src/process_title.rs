@@ -69,7 +69,7 @@ pub fn terminal_display_title_for_id(session_id: &str) -> Option<String> {
 }
 
 /// Build the deliberately minimal terminal window title. The emoji already
-/// identifies the session/connection, so do not repeat `jcode` or the memorable
+/// identifies the session/connection, so do not repeat `wvc` or the memorable
 /// animal name in window chrome.
 pub fn terminal_window_title(
     icon: &str,
@@ -175,7 +175,7 @@ mod tests {
         );
         assert_eq!(
             terminal_window_title("🐙", None, Some("wvc Octopus"), false),
-            "🐙 jcode Octopus"
+            "🐙 wvc Octopus"
         );
         assert_eq!(
             terminal_window_title("🐙", Some("resume window title"), Some("wvc Octopus"), true),
@@ -186,9 +186,9 @@ mod tests {
     #[test]
     fn terminal_session_label_for_id_reads_custom_title_from_session() {
         let _guard = lock_test_env();
-        let previous_home = std::env::var_os("JCODE_HOME");
+        let previous_home = std::env::var_os("WVC_HOME");
         let temp = tempfile::tempdir().expect("temp dir");
-        crate::env::set_var("JCODE_HOME", temp.path());
+        crate::env::set_var("WVC_HOME", temp.path());
 
         let mut session = crate::session::Session::create_with_id(
             "session_fox_123".to_string(),
@@ -204,18 +204,18 @@ mod tests {
         );
 
         if let Some(previous_home) = previous_home {
-            crate::env::set_var("JCODE_HOME", previous_home);
+            crate::env::set_var("WVC_HOME", previous_home);
         } else {
-            crate::env::remove_var("JCODE_HOME");
+            crate::env::remove_var("WVC_HOME");
         }
     }
 
     #[test]
     fn terminal_session_label_for_id_prefers_todo_title_over_generated_title() {
         let _guard = lock_test_env();
-        let previous_home = std::env::var_os("JCODE_HOME");
+        let previous_home = std::env::var_os("WVC_HOME");
         let temp = tempfile::tempdir().expect("temp dir");
-        crate::env::set_var("JCODE_HOME", temp.path());
+        crate::env::set_var("WVC_HOME", temp.path());
 
         let session_id = "session_fox_456";
         let mut session = crate::session::Session::create_with_id(
@@ -247,9 +247,9 @@ mod tests {
         );
 
         if let Some(previous_home) = previous_home {
-            crate::env::set_var("JCODE_HOME", previous_home);
+            crate::env::set_var("WVC_HOME", previous_home);
         } else {
-            crate::env::remove_var("JCODE_HOME");
+            crate::env::remove_var("WVC_HOME");
         }
     }
 }

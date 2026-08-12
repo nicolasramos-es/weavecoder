@@ -1,8 +1,8 @@
-//! Stable, versioned client API for the jcode harness (agent runtime).
+//! Stable, versioned client API for the wvc harness (agent runtime).
 //!
 //! This crate defines the *public* boundary between the harness and any UI
 //! (TUI, desktop, web, scripts). It is deliberately smaller than the internal
-//! `jcode-protocol`: only curated, stable surface lives here.
+//! `wvc-protocol`: only curated, stable surface lives here.
 //!
 //! Design rules (see docs/HARNESS_API_AND_DESKTOP_REWRITE.md):
 //! - Every frame is one JSON object on one line (NDJSON).

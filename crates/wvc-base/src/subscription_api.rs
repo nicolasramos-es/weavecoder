@@ -1,9 +1,9 @@
-//! Typed client for the Jcode account and subscription API.
+//! Typed client for the Weavecoder account and subscription API.
 //!
 //! All bearer credentials are sent in authorization headers or JSON response
 //! bodies. They are never placed in URLs, redirects, or diagnostic messages.
 
-use crate::subscription_catalog::{self, JcodeTier};
+use crate::subscription_catalog::{self, WeavecoderTier};
 use anyhow::{Context, Result};
 use reqwest::{StatusCode, header::RETRY_AFTER};
 use serde::{Deserialize, Serialize};
@@ -41,8 +41,8 @@ pub struct SubscriptionMe {
 }
 
 impl SubscriptionMe {
-    pub fn parsed_tier(&self) -> Option<JcodeTier> {
-        JcodeTier::parse(&self.tier)
+    pub fn parsed_tier(&self) -> Option<WeavecoderTier> {
+        WeavecoderTier::parse(&self.tier)
     }
 
     pub fn has_active_paid_plan(&self) -> bool {
@@ -116,11 +116,11 @@ impl fmt::Display for AccountApiError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Offline(reason) => write!(f, "temporarily offline: {reason}"),
-            Self::Unauthorized => write!(f, "the Jcode account key is revoked or expired"),
-            Self::Forbidden => write!(f, "the Jcode account request was denied"),
+            Self::Unauthorized => write!(f, "the Weavecoder account key is revoked or expired"),
+            Self::Forbidden => write!(f, "the Weavecoder account request was denied"),
             Self::LegacyBackend => write!(
                 f,
-                "the configured Jcode API uses the legacy email-based login contract; update the backend or use the current https://api.jcode.sh/v1 endpoint"
+                "the configured Weavecoder API uses the legacy email-based login contract; update the backend or use the current https://api.weavecoder.sh/v1 endpoint"
             ),
             Self::Http { status, code } => match code {
                 Some(code) => write!(f, "Weavecoder account API returned HTTP {status} ({code})"),
@@ -193,7 +193,7 @@ struct ApprovedAccountKeyWire {
 
 pub fn configured_api_base() -> String {
     subscription_catalog::configured_api_base()
-        .unwrap_or_else(|| subscription_catalog::DEFAULT_JCODE_API_BASE.to_string())
+        .unwrap_or_else(|| subscription_catalog::DEFAULT_WVC_API_BASE.to_string())
         .trim_end_matches('/')
         .to_string()
 }
@@ -227,7 +227,7 @@ fn error_code(body: &str) -> Option<String> {
 pub async fn request_device_authorization(
     client: &reqwest::Client,
     api_base: &str,
-    requested_tier: Option<JcodeTier>,
+    requested_tier: Option<WeavecoderTier>,
 ) -> std::result::Result<DeviceAuthorization, AccountApiError> {
     let url = endpoint_url(api_base, "auth/device");
     let mut payload = serde_json::json!({ "client_name": "wvc-cli" });
@@ -378,7 +378,7 @@ pub async fn fetch_subscription_me_with(
 /// Fetch account status using the configured local credential.
 pub async fn fetch_subscription_me() -> Result<SubscriptionMe> {
     let api_key = subscription_catalog::configured_api_key()
-        .context("no Jcode account credential configured (run `jcode account login`)")?;
+        .context("no Weavecoder account credential configured (run `wvc account login`)")?;
     fetch_subscription_me_with(
         &crate::provider::shared_http_client(),
         &configured_api_base(),
@@ -542,12 +542,12 @@ mod tests {
             "account_id": "acct_123", "email": "dev@example.com",
             "tier": "flagship", "status": "active",
             "usage": {"used_usd": 12.5, "budget_usd": 3000.0},
-            "manage_url": "https://jcode.sh/account"
+            "manage_url": "https://weavecoder.sh/account"
         }"#;
         let me: SubscriptionMe = serde_json::from_str(json).expect("parse");
-        assert_eq!(me.parsed_tier(), Some(JcodeTier::Flagship));
+        assert_eq!(me.parsed_tier(), Some(WeavecoderTier::Flagship));
         assert!(me.has_active_paid_plan());
-        assert_eq!(me.manage_url.as_deref(), Some("https://jcode.sh/account"));
+        assert_eq!(me.manage_url.as_deref(), Some("https://weavecoder.sh/account"));
     }
 
     #[test]
@@ -571,9 +571,9 @@ mod tests {
         let base = spawn_server(vec![(
             200,
             vec![],
-            r#"{"device_code":"secret","flow_id":"public-flow","verification_uri":"https://jcode.sh/account","verification_uri_complete":"https://jcode.sh/account?flow=public-flow","verify_url":"https://jcode.sh/account?flow=public-flow","expires_in":600,"interval":3}"#.to_string(),
+            r#"{"device_code":"secret","flow_id":"public-flow","verification_uri":"https://weavecoder.sh/account","verification_uri_complete":"https://weavecoder.sh/account?flow=public-flow","verify_url":"https://weavecoder.sh/account?flow=public-flow","expires_in":600,"interval":3}"#.to_string(),
         )]);
-        let result = request_device_authorization(&client(), &base, Some(JcodeTier::Pro))
+        let result = request_device_authorization(&client(), &base, Some(WeavecoderTier::Pro))
             .await
             .expect("device auth");
         assert_eq!(result.device_code, "secret");
@@ -588,7 +588,7 @@ mod tests {
             vec![],
             r#"{"device_code":"do-not-echo","verify_url":"https://old.example/login"}"#.to_string(),
         )]);
-        let error = request_device_authorization(&client(), &base, Some(JcodeTier::Pro))
+        let error = request_device_authorization(&client(), &base, Some(WeavecoderTier::Pro))
             .await
             .expect_err("legacy response rejected");
         assert_eq!(error, AccountApiError::LegacyBackend);

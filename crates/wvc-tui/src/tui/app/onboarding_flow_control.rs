@@ -127,7 +127,7 @@ impl App {
             return;
         }
         // Self-dev / canary sessions are explicitly not first-run users: they are
-        // spawned by developers (e.g. the niri `jcode self-dev` hotkey) and that
+        // spawned by developers (e.g. the niri `wvc self-dev` hotkey) and that
         // launch path never increments `launch_count`, so the new-user heuristic
         // would otherwise re-onboard on every spawn. Skip onboarding for them.
         if self.is_selfdev_canary_session() {
@@ -154,7 +154,7 @@ impl App {
     /// Whether this install looks like a brand-new user.
     ///
     /// Primary signal is `launch_count` in `setup_hints.json`, but that file
-    /// only counts interactive `jcode` launches (TTY-gated) and can be reset
+    /// only counts interactive `wvc` launches (TTY-gated) and can be reset
     /// or lag far behind reality. So before concluding "new user" we also look
     /// for independent evidence of an established install: a meaningful number
     /// of persisted native sessions. A user with a long session history must
@@ -204,8 +204,8 @@ impl App {
 
     /// Whether this is a self-dev / canary session.
     ///
-    /// These are launched by developers working on jcode itself (for example the
-    /// niri `jcode self-dev` hotkey). That launch path bypasses
+    /// These are launched by developers working on wvc itself (for example the
+    /// niri `wvc self-dev` hotkey). That launch path bypasses
     /// `maybe_show_setup_hints`, so `launch_count` never advances and the
     /// new-user heuristic above would otherwise treat every spawn as a first run.
     /// Such sessions should never auto-start the guided onboarding flow.
@@ -261,7 +261,7 @@ impl App {
         // (`onboarding_welcome_kind`) so it survives in remote mode.
         if had_imports {
             self.set_status_notice(
-                "Welcome to jcode: review detected logins (arrows/hl to move, Enter to choose)",
+                "Welcome to wvc: review detected logins (arrows/hl to move, Enter to choose)",
             );
         } else {
             self.set_status_notice(
@@ -814,7 +814,7 @@ impl App {
         // until the async LoginCompleted event advances or fails the flow.
         self.onboarding_import_in_progress = Some(Instant::now());
         // Remember the first approved login's provider so a later failure can
-        // target the agent repair brief at the right `jcode auth-test --provider`.
+        // target the agent repair brief at the right `wvc auth-test --provider`.
         self.onboarding_import_failed_provider = approved
             .first()
             .and_then(|&i| candidates.get(i))
@@ -905,7 +905,7 @@ impl App {
         let accent = crate::tui::color_support::rgb(186, 139, 255);
         vec![
             Line::from(vec![Span::styled(
-                "Welcome to jcode 🎉",
+                "Welcome to wvc 🎉",
                 Style::default().fg(accent).add_modifier(Modifier::BOLD),
             )]),
             Line::from(vec![Span::styled(
@@ -920,7 +920,7 @@ impl App {
     ///
     /// Resolving the newest known Git repository requires a full session-list
     /// scan, which is a cold multi-hundred-millisecond disk walk on machines
-    /// with a large `~/.jcode/sessions` directory. Doing it inline on Enter made
+    /// with a large `~/.wvc/sessions` directory. Doing it inline on Enter made
     /// the "Find bugs in what I've been working on" action feel laggy, so run it
     /// off-thread as soon as the choice is displayed and have the key handler
     /// consume the cached answer.
@@ -1020,7 +1020,7 @@ impl App {
         let Some(repository) = self.onboarding_recent_project_path() else {
             self.onboarding_show_suggestions();
             self.set_status_notice(
-                "No recent Git repository found. Start jcode inside a project to review it.",
+                "No recent Git repository found. Start wvc inside a project to review it.",
             );
             return false;
         };
@@ -1338,7 +1338,7 @@ impl App {
 
     /// Suggest a concrete `/login <provider>` command the user can actually
     /// complete, instead of the generic `/login`. Preference order:
-    /// 1. A jcode login that exists but expired (they clearly use it).
+    /// 1. A wvc login that exists but expired (they clearly use it).
     /// 2. Credentials detected from another CLI (Codex -> openai, Claude Code
     ///    -> claude, Cursor -> cursor), since that login will succeed instantly.
     ///
@@ -1397,7 +1397,7 @@ impl App {
         let providers: [(&str, &str, AuthState); 8] = [
             ("Anthropic (Claude)", "anthropic", status.anthropic.state),
             ("OpenAI", "openai", status.openai),
-            ("Weavecoder subscription", "wvc", status.jcode),
+            ("Weavecoder subscription", "wvc", status.wvc),
             ("Gemini", "gemini", status.gemini),
             ("GitHub Copilot", "copilot", status.copilot),
             ("Cursor", "cursor", status.cursor),
@@ -1623,8 +1623,8 @@ impl App {
     /// Prepare the agent-assisted repair brief for the import-failure recovery
     /// screen (triggered by `H`). We detect the coding agent the user used most
     /// recently, build a plain-text brief listing the exact non-interactive
-    /// commands the agent can run (`jcode auth-test --json`, `jcode login
-    /// --api-key-stdin`, `jcode provider add`), copy it to the clipboard, and
+    /// commands the agent can run (`wvc auth-test --json`, `wvc login
+    /// --api-key-stdin`, `wvc provider add`), copy it to the clipboard, and
     /// surface it as a system message so the user can paste it into that agent.
     fn onboarding_prepare_agent_repair_brief(&mut self) {
         use crate::tui::app::onboarding_repair;

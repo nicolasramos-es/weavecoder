@@ -27,7 +27,7 @@ use super::{ResumeTarget, SessionSource};
 const TRANSCRIPT_SEARCH_CHUNK_BYTES: usize = 64 * 1024;
 
 fn session_scan_limit() -> usize {
-    std::env::var("JCODE_SESSION_PICKER_MAX_SESSIONS")
+    std::env::var("WVC_SESSION_PICKER_MAX_SESSIONS")
         .ok()
         .and_then(|raw| raw.trim().parse::<usize>().ok())
         .map(|n| n.clamp(MIN_SESSION_SCAN_LIMIT, MAX_SESSION_SCAN_LIMIT))
@@ -43,8 +43,8 @@ fn session_candidate_window(scan_limit: usize) -> usize {
 /// Whether the picker lists transcripts discovered from other agent CLIs.
 ///
 /// On by default (they can be resumed or imported), but it clutters the picker
-/// for users who only ever want jcode's own sessions, so `[display]
-/// external_sessions = false` (or `JCODE_EXTERNAL_SESSIONS=0`) opts out
+/// for users who only ever want wvc's own sessions, so `[display]
+/// external_sessions = false` (or `WVC_EXTERNAL_SESSIONS=0`) opts out
 /// (issue #674). Checked before spawning the scan threads so opting out also
 /// skips the filesystem work.
 fn include_external_sessions() -> bool {
@@ -52,7 +52,7 @@ fn include_external_sessions() -> bool {
 }
 
 fn include_old_saved_sessions_on_initial_load() -> bool {
-    std::env::var("JCODE_SESSION_PICKER_INCLUDE_OLD_SAVED")
+    std::env::var("WVC_SESSION_PICKER_INCLUDE_OLD_SAVED")
         .ok()
         .is_some_and(|raw| matches!(raw.trim(), "1" | "true" | "TRUE" | "yes" | "YES"))
 }
@@ -405,7 +405,7 @@ fn session_transcript_contains_query(session: &SessionInfo, query_lower: &str) -
 #[cfg(test)]
 fn transcript_paths_for_session(session: &SessionInfo) -> Vec<PathBuf> {
     match &session.resume_target {
-        ResumeTarget::JcodeSession { session_id } => {
+        ResumeTarget::WeavecoderSession { session_id } => {
             let Ok(sessions_dir) = storage::wvc_dir().map(|dir| dir.join("sessions")) else {
                 return Vec::new();
             };
@@ -611,7 +611,7 @@ fn classify_session_source(
         return SessionSource::Cursor;
     }
 
-    SessionSource::Jcode
+    SessionSource::Weavecoder
 }
 
 fn collect_files_recursive(root: &Path, extension: &str) -> Vec<PathBuf> {
@@ -1616,7 +1616,7 @@ pub(super) fn crashed_sessions_from_all_sessions(
     })
 }
 
-/// Parse a single jcode session snapshot (+ journal) into a [`SessionInfo`],
+/// Parse a single wvc session snapshot (+ journal) into a [`SessionInfo`],
 /// returning `None` for empty/imported sessions or read/parse errors. Pulled out
 /// of `load_sessions` so the summary pass can run across a scoped thread pool.
 fn parse_wvc_session_info(
@@ -1706,7 +1706,7 @@ fn parse_wvc_session_info(
         server_name: None,
         server_icon: None,
         source,
-        resume_target: ResumeTarget::JcodeSession {
+        resume_target: ResumeTarget::WeavecoderSession {
             session_id: stem.to_string(),
         },
         external_path: None,
@@ -1757,7 +1757,7 @@ pub fn load_sessions() -> Result<Vec<SessionInfo>> {
     let (mut sessions, external_sessions) = std::thread::scope(|scope| {
         // One handle for all five external scans (they fan out internally), so
         // the opt-out is a single branch and external work still overlaps the
-        // jcode session parsing below.
+        // wvc session parsing below.
         let external_handle =
             scope.spawn(move || load_external_sessions(want_external, scan_limit));
 
@@ -1775,7 +1775,7 @@ pub fn load_sessions() -> Result<Vec<SessionInfo>> {
         // burst of self-dev or swarm workers consume the entire recency budget and
         // crowd out ordinary sessions. Keep a separate bounded debug budget so the
         // test-session toggle still has useful recent entries without making the
-        // default list appear to jump from a handful of Jcode rows straight to old
+        // default list appear to jump from a handful of Weavecoder rows straight to old
         // external transcripts.
         let mut visible_session_count = 0usize;
         let mut debug_session_count = 0usize;

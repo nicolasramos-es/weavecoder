@@ -2,13 +2,13 @@
 //!
 //! Resolves the theme mode once per process, before the TUI enters raw mode:
 //!
-//! 1. `JCODE_THEME=dark|light` env override (also accepts `auto`).
+//! 1. `WVC_THEME=dark|light` env override (also accepts `auto`).
 //! 2. `display.theme` config: "dark", "light", or "auto"/empty.
 //! 3. Auto: query the terminal's background color (OSC 11 via
 //!    `terminal-colorsaurus`) and classify by perceived lightness. Terminals
 //!    known not to support OSC queries are rejected before the bounded query so
 //!    they do not add hundreds of milliseconds to startup.
-//! 4. Fallback: dark (jcode's native palette).
+//! 4. Fallback: dark (wvc's native palette).
 //!
 //! The result is stored in `wvc_tui_style::theme_mode` where the renderer
 //! adapts colors for light backgrounds at frame time.
@@ -126,7 +126,7 @@ fn resolve_theme_mode_without_terminal_query() -> ThemeMode {
 }
 
 fn resolve_configured_theme(query_terminal: bool) -> ThemeMode {
-    let configured = std::env::var("JCODE_THEME")
+    let configured = std::env::var("WVC_THEME")
         .ok()
         .filter(|v| !v.trim().is_empty())
         .unwrap_or_else(|| crate::config::config().display.theme.clone());

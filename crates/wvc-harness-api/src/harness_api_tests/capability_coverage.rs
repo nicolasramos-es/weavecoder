@@ -81,7 +81,7 @@ const LEDGER: &[(&str, Disposition)] = &[
 /// Requests the reference clients (TUI, desktop2) send to the daemon.
 fn reference_client_requests() -> BTreeSet<String> {
     let mut found = BTreeSet::new();
-    for dir in ["../jcode-tui/src", "../jcode-desktop2/src"] {
+    for dir in ["../wvc-tui/src", "../wvc-desktop2/src"] {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(dir);
         collect_requests(&root, &mut found);
     }
@@ -178,7 +178,7 @@ fn every_reference_client_capability_is_triaged() {
 
 /// Print the current gap list. Not a failure: gaps are a roadmap, not a bug.
 ///
-/// Run with `cargo test -p jcode-harness-api -- --nocapture capability_report`.
+/// Run with `cargo test -p wvc-harness-api -- --nocapture capability_report`.
 #[test]
 fn capability_report() {
     let covered = LEDGER.iter().filter(|(_, d)| *d == Covered).count();
@@ -201,11 +201,11 @@ fn capability_report() {
     println!();
 }
 
-/// The SDK mirrors jcode's external credential locations by hand, so a new one
+/// The SDK mirrors wvc's external credential locations by hand, so a new one
 /// added in Rust must also be inherited by launched instances.
 ///
-/// `JCODE_HOME` redirects every `user_home_path` lookup into
-/// `$JCODE_HOME/external/`, which is what makes an instance private. The cost
+/// `WVC_HOME` redirects every `user_home_path` lookup into
+/// `$WVC_HOME/external/`, which is what makes an instance private. The cost
 /// is that an instance only sees another CLI's credentials if the SDK links
 /// that directory in. Miss one and inheritance silently half-works: the
 /// instance starts fine and fails on the first turn with an auth error, which
@@ -250,10 +250,10 @@ fn sdk_covers(sdk: &str, path: &str) -> bool {
     false
 }
 
-/// Home-relative paths jcode reads other tools' credentials from.
+/// Home-relative paths wvc reads other tools' credentials from.
 ///
 /// Read out of the source so the list cannot drift: `user_home_path` is the
-/// single funnel for "a file in the user's home that JCODE_HOME sandboxes".
+/// single funnel for "a file in the user's home that WVC_HOME sandboxes".
 fn external_credential_paths() -> Vec<String> {
     const CREDENTIAL_HINTS: [&str; 5] = ["auth", "credential", "oauth", "hosts.json", "apps.json"];
     let mut found = Vec::new();
@@ -314,7 +314,7 @@ fn the_ledger_only_names_real_daemon_requests() {
     assert!(
         unknown.is_empty(),
         "the capability ledger names requests that do not exist in \
-         jcode-protocol's Request enum: {unknown:?}. These are usually local \
+         wvc-protocol's Request enum: {unknown:?}. These are usually local \
          enums whose names end in \"Request\"; a phantom entry claims a \
          decision was made about a capability that was never real."
     );
@@ -323,7 +323,7 @@ fn the_ledger_only_names_real_daemon_requests() {
 /// Variant names of the daemon's wire `Request` enum.
 fn protocol_request_variants() -> Option<BTreeSet<String>> {
     let path =
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../jcode-protocol/src/wire.rs");
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../wvc-protocol/src/wire.rs");
     let source = std::fs::read_to_string(path).ok()?;
     let start = source.find("pub enum Request {")?;
     let body = &source[start..];

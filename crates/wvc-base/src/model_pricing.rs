@@ -1,14 +1,14 @@
 //! Live model pricing catalog backed by <https://models.dev>.
 //!
-//! jcode's static pricing tables (`wvc_provider_core::pricing`) only cover
+//! wvc's static pricing tables (`wvc_provider_core::pricing`) only cover
 //! first-party Anthropic/OpenAI models and go stale whenever a provider ships
 //! new models or changes prices. models.dev publishes a free, no-auth JSON
 //! catalog (`https://models.dev/api.json`) with per-model `input`/`output`/
 //! `cache_read`/`cache_write` USD prices per million tokens across 140+
-//! providers, including every OpenAI-compatible profile jcode ships.
+//! providers, including every OpenAI-compatible profile wvc ships.
 //!
 //! This module mirrors the OpenRouter catalog pattern:
-//!   - a 24h disk cache under `~/.jcode/cache/models_dev_pricing.json`,
+//!   - a 24h disk cache under `~/.wvc/cache/models_dev_pricing.json`,
 //!   - synchronous lookups that never block on the network,
 //!   - a background refresh scheduled on cache miss/staleness.
 //!
@@ -48,7 +48,7 @@ struct PricingCache {
 }
 
 /// In-memory pricing cache keyed by the on-disk cache path it was loaded
-/// from, so changing `JCODE_HOME` (tests, multi-home setups) never serves
+/// from, so changing `WVC_HOME` (tests, multi-home setups) never serves
 /// pricing that belongs to a different home directory.
 ///
 /// Held behind an `Arc` so per-route pricing lookups share one parsed catalog
@@ -59,7 +59,7 @@ static REFRESH_IN_FLIGHT: AtomicBool = AtomicBool::new(false);
 
 fn cache_path() -> PathBuf {
     crate::storage::wvc_dir()
-        .unwrap_or_else(|_| PathBuf::from(".").join(".jcode"))
+        .unwrap_or_else(|_| PathBuf::from(".").join(".wvc"))
         .join("cache")
         .join(CACHE_FILE)
 }
@@ -97,7 +97,7 @@ fn save_cache(cache: &PricingCache) {
     let _ = crate::storage::write_json(&path, cache);
 }
 
-/// Translate a jcode provider key (runtime key, activity source key, or
+/// Translate a wvc provider key (runtime key, activity source key, or
 /// compatible-profile id) to the models.dev provider id.
 pub fn models_dev_provider_id(wvc_provider: &str) -> Option<&'static str> {
     let key = wvc_provider
@@ -140,13 +140,13 @@ pub fn models_dev_provider_id(wvc_provider: &str) -> Option<&'static str> {
     })
 }
 
-/// Strip jcode-local suffixes/prefixes a model id may carry before catalog
+/// Strip wvc-local suffixes/prefixes a model id may carry before catalog
 /// lookup (`[1m]` long-context alias, `provider/` prefixes for OpenRouter ids).
 fn normalize_model_id(model: &str) -> &str {
     wvc_provider_core::model_id::strip_long_context_suffix(model).trim()
 }
 
-/// Look up live pricing for `model` under a jcode provider key. Returns `None`
+/// Look up live pricing for `model` under a wvc provider key. Returns `None`
 /// when the catalog has no entry; never blocks on the network. Schedules a
 /// background refresh when the disk cache is missing or stale.
 pub fn lookup(wvc_provider: &str, model: &str) -> Option<ModelCost> {
@@ -184,13 +184,13 @@ pub fn schedule_refresh() {
     // Keep tests hermetic: never hit the network from test builds (the
     // `test-support` feature also covers downstream crates' test targets via
     // feature unification), and let users opt out entirely.
-    // JCODE_FORCE_PRICING_REFRESH=1 re-enables the fetch for manual e2e checks
+    // WVC_FORCE_PRICING_REFRESH=1 re-enables the fetch for manual e2e checks
     // (e.g. `cargo run --example pricing_e2e_check`, which builds with
     // test-support unified in).
-    let forced = std::env::var_os("JCODE_FORCE_PRICING_REFRESH").is_some();
+    let forced = std::env::var_os("WVC_FORCE_PRICING_REFRESH").is_some();
     if !forced
         && (cfg!(any(test, feature = "test-support"))
-            || std::env::var_os("JCODE_DISABLE_PRICING_REFRESH").is_some())
+            || std::env::var_os("WVC_DISABLE_PRICING_REFRESH").is_some())
     {
         return;
     }
@@ -376,8 +376,8 @@ mod tests {
     fn lookup_normalizes_model_ids() {
         let _guard = crate::storage::lock_test_env();
         let temp = tempfile::tempdir().expect("tempdir");
-        let prev_home = std::env::var_os("JCODE_HOME");
-        crate::env::set_var("JCODE_HOME", temp.path());
+        let prev_home = std::env::var_os("WVC_HOME");
+        crate::env::set_var("WVC_HOME", temp.path());
         clear_memory_cache_for_tests();
 
         save_test_cache(&[
@@ -415,9 +415,9 @@ mod tests {
 
         clear_memory_cache_for_tests();
         if let Some(prev) = prev_home {
-            crate::env::set_var("JCODE_HOME", prev);
+            crate::env::set_var("WVC_HOME", prev);
         } else {
-            crate::env::remove_var("JCODE_HOME");
+            crate::env::remove_var("WVC_HOME");
         }
     }
 }

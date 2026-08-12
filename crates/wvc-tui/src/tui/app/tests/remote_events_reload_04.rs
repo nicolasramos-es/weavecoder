@@ -831,8 +831,8 @@ fn test_info_widget_data_includes_connection_type() {
 fn test_remote_tui_state_prefers_cached_model_during_brief_connecting_phase() {
     let _guard = crate::storage::lock_test_env();
     let temp_home = tempfile::TempDir::new().expect("create temp home");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp_home.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp_home.path());
 
     let session_id = "session_otter_123";
     let mut session = crate::session::Session::create_with_id(
@@ -853,9 +853,9 @@ fn test_remote_tui_state_prefers_cached_model_during_brief_connecting_phase() {
     );
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -863,8 +863,8 @@ fn test_remote_tui_state_prefers_cached_model_during_brief_connecting_phase() {
 fn test_remote_tui_state_falls_back_to_cached_model_after_startup_phase_clears() {
     let _guard = crate::storage::lock_test_env();
     let temp_home = tempfile::TempDir::new().expect("create temp home");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp_home.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp_home.path());
 
     let session_id = "session_otter_124";
     let mut session = crate::session::Session::create_with_id(
@@ -882,9 +882,9 @@ fn test_remote_tui_state_falls_back_to_cached_model_after_startup_phase_clears()
     assert_eq!(crate::tui::TuiState::provider_name(&app), "openai");
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -892,8 +892,8 @@ fn test_remote_tui_state_falls_back_to_cached_model_after_startup_phase_clears()
 fn test_new_for_remote_uses_startup_stub_without_loading_full_transcript() {
     let _guard = crate::storage::lock_test_env();
     let temp_home = tempfile::TempDir::new().expect("create temp home");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp_home.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp_home.path());
 
     let session_id = "session_otter_stub_125";
     let mut session = crate::session::Session::create_with_id(
@@ -932,37 +932,37 @@ fn test_new_for_remote_uses_startup_stub_without_loading_full_transcript() {
     assert_eq!(crate::tui::TuiState::provider_model(&app), "gpt-5.4");
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
-/// Run `f` with the shared env lock held and `JCODE_MODEL`/`JCODE_PROVIDER`
+/// Run `f` with the shared env lock held and `WVC_MODEL`/`WVC_PROVIDER`
 /// neutralized. Remote header tests assert on startup-phase labels, which are
 /// only shown when no model hint is known; a sibling test that persisted a
-/// config `default_model` (shared test home) or exported `JCODE_MODEL` would
+/// config `default_model` (shared test home) or exported `WVC_MODEL` would
 /// otherwise leak a concrete model into the header.
 fn with_neutral_remote_model_hints<T>(f: impl FnOnce() -> T) -> T {
     let _guard = crate::storage::lock_test_env();
-    let prev_model = std::env::var_os("JCODE_MODEL");
-    let prev_provider = std::env::var_os("JCODE_PROVIDER");
+    let prev_model = std::env::var_os("WVC_MODEL");
+    let prev_provider = std::env::var_os("WVC_PROVIDER");
     // "unknown" is sanitized to no-hint and, unlike removing the var, also
     // suppresses the config default_model fallback.
-    crate::env::set_var("JCODE_MODEL", "unknown");
-    crate::env::remove_var("JCODE_PROVIDER");
+    crate::env::set_var("WVC_MODEL", "unknown");
+    crate::env::remove_var("WVC_PROVIDER");
 
     let result = f();
 
     if let Some(prev_model) = prev_model {
-        crate::env::set_var("JCODE_MODEL", prev_model);
+        crate::env::set_var("WVC_MODEL", prev_model);
     } else {
-        crate::env::remove_var("JCODE_MODEL");
+        crate::env::remove_var("WVC_MODEL");
     }
     if let Some(prev_provider) = prev_provider {
-        crate::env::set_var("JCODE_PROVIDER", prev_provider);
+        crate::env::set_var("WVC_PROVIDER", prev_provider);
     } else {
-        crate::env::remove_var("JCODE_PROVIDER");
+        crate::env::remove_var("WVC_PROVIDER");
     }
     result
 }
@@ -982,10 +982,10 @@ fn test_remote_tui_state_shows_connected_after_startup_phase_clears_without_mode
 #[test]
 fn test_remote_tui_state_hides_brief_connecting_phase_without_cached_model() {
     let _guard = crate::storage::lock_test_env();
-    let prev_model = std::env::var_os("JCODE_MODEL");
-    let prev_provider = std::env::var_os("JCODE_PROVIDER");
-    crate::env::set_var("JCODE_MODEL", "unknown");
-    crate::env::remove_var("JCODE_PROVIDER");
+    let prev_model = std::env::var_os("WVC_MODEL");
+    let prev_provider = std::env::var_os("WVC_PROVIDER");
+    crate::env::set_var("WVC_MODEL", "unknown");
+    crate::env::remove_var("WVC_PROVIDER");
 
     let app = App::new_for_remote(None);
 
@@ -996,24 +996,24 @@ fn test_remote_tui_state_hides_brief_connecting_phase_without_cached_model() {
     assert_eq!(crate::tui::TuiState::provider_name(&app), "");
 
     if let Some(prev_model) = prev_model {
-        crate::env::set_var("JCODE_MODEL", prev_model);
+        crate::env::set_var("WVC_MODEL", prev_model);
     } else {
-        crate::env::remove_var("JCODE_MODEL");
+        crate::env::remove_var("WVC_MODEL");
     }
     if let Some(prev_provider) = prev_provider {
-        crate::env::set_var("JCODE_PROVIDER", prev_provider);
+        crate::env::set_var("WVC_PROVIDER", prev_provider);
     } else {
-        crate::env::remove_var("JCODE_PROVIDER");
+        crate::env::remove_var("WVC_PROVIDER");
     }
 }
 
 #[test]
 fn test_remote_tui_state_prefers_configured_model_during_brief_connecting_phase() {
     let _guard = crate::storage::lock_test_env();
-    let prev_model = std::env::var_os("JCODE_MODEL");
-    let prev_provider = std::env::var_os("JCODE_PROVIDER");
-    crate::env::set_var("JCODE_MODEL", "gpt-5.4");
-    crate::env::set_var("JCODE_PROVIDER", "openai");
+    let prev_model = std::env::var_os("WVC_MODEL");
+    let prev_provider = std::env::var_os("WVC_PROVIDER");
+    crate::env::set_var("WVC_MODEL", "gpt-5.4");
+    crate::env::set_var("WVC_PROVIDER", "openai");
 
     let app = App::new_for_remote(None);
 
@@ -1021,14 +1021,14 @@ fn test_remote_tui_state_prefers_configured_model_during_brief_connecting_phase(
     assert_eq!(crate::tui::TuiState::provider_name(&app), "openai");
 
     if let Some(prev_model) = prev_model {
-        crate::env::set_var("JCODE_MODEL", prev_model);
+        crate::env::set_var("WVC_MODEL", prev_model);
     } else {
-        crate::env::remove_var("JCODE_MODEL");
+        crate::env::remove_var("WVC_MODEL");
     }
     if let Some(prev_provider) = prev_provider {
-        crate::env::set_var("JCODE_PROVIDER", prev_provider);
+        crate::env::set_var("WVC_PROVIDER", prev_provider);
     } else {
-        crate::env::remove_var("JCODE_PROVIDER");
+        crate::env::remove_var("WVC_PROVIDER");
     }
 }
 
@@ -1394,15 +1394,15 @@ fn test_info_widget_remote_openai_uses_explicit_route_when_credential_is_missing
 fn test_info_widget_local_direct_api_runtime_shows_cost_based_usage() {
     let _guard = crate::storage::lock_test_env();
     let tracked_env = [
-        "JCODE_RUNTIME_PROVIDER",
-        "JCODE_OPENROUTER_ALLOW_NO_AUTH",
-        "JCODE_OPENROUTER_API_BASE",
-        "JCODE_OPENROUTER_PROVIDER_FEATURES",
-        "JCODE_OPENROUTER_TRANSPORT_STATE",
-        "JCODE_OPENROUTER_CACHE_NAMESPACE",
-        "JCODE_NAMED_PROVIDER_PROFILE",
-        "JCODE_PROVIDER_PROFILE_ACTIVE",
-        "JCODE_PROVIDER_PROFILE_NAME",
+        "WVC_RUNTIME_PROVIDER",
+        "WVC_OPENROUTER_ALLOW_NO_AUTH",
+        "WVC_OPENROUTER_API_BASE",
+        "WVC_OPENROUTER_PROVIDER_FEATURES",
+        "WVC_OPENROUTER_TRANSPORT_STATE",
+        "WVC_OPENROUTER_CACHE_NAMESPACE",
+        "WVC_NAMED_PROVIDER_PROFILE",
+        "WVC_PROVIDER_PROFILE_ACTIVE",
+        "WVC_PROVIDER_PROFILE_NAME",
     ];
     let saved_env = tracked_env
         .iter()
@@ -1452,8 +1452,8 @@ fn test_info_widget_local_direct_api_runtime_shows_cost_based_usage() {
     ];
 
     for (runtime_provider, provider_name, model, expected_auth) in cases {
-        crate::env::set_var("JCODE_RUNTIME_PROVIDER", runtime_provider);
-        crate::env::remove_var("JCODE_OPENROUTER_ALLOW_NO_AUTH");
+        crate::env::set_var("WVC_RUNTIME_PROVIDER", runtime_provider);
+        crate::env::remove_var("WVC_OPENROUTER_ALLOW_NO_AUTH");
         crate::auth::AuthStatus::invalidate_cache();
 
         let mut app = create_named_provider_test_app(provider_name, model);
@@ -1483,8 +1483,8 @@ fn test_info_widget_local_direct_api_runtime_shows_cost_based_usage() {
         assert!(usage.total_cost > 0.0);
     }
 
-    crate::env::set_var("JCODE_RUNTIME_PROVIDER", "wvc");
-    crate::env::remove_var("JCODE_OPENROUTER_ALLOW_NO_AUTH");
+    crate::env::set_var("WVC_RUNTIME_PROVIDER", "wvc");
+    crate::env::remove_var("WVC_OPENROUTER_ALLOW_NO_AUTH");
     let mut app = create_named_provider_test_app("openrouter", "subscription-model");
     app.streaming.streaming_input_tokens = 1_000;
     app.streaming.streaming_output_tokens = 1_000;
@@ -1500,8 +1500,8 @@ fn test_info_widget_local_direct_api_runtime_shows_cost_based_usage() {
     );
     assert!(data.usage_info.is_none());
 
-    crate::env::set_var("JCODE_RUNTIME_PROVIDER", "openai-compatible");
-    crate::env::set_var("JCODE_OPENROUTER_ALLOW_NO_AUTH", "1");
+    crate::env::set_var("WVC_RUNTIME_PROVIDER", "openai-compatible");
+    crate::env::set_var("WVC_OPENROUTER_ALLOW_NO_AUTH", "1");
     let mut app = create_named_provider_test_app("openrouter", "local-model");
     app.streaming.streaming_input_tokens = 1_000;
     app.streaming.streaming_output_tokens = 1_000;
@@ -1537,8 +1537,8 @@ fn test_anthropic_api_cost_accounts_for_split_cache_tokens() {
     //   - bill cache-creation (cache-write) tokens, which Anthropic charges at a
     //     premium over the input rate.
     let _guard = crate::storage::lock_test_env();
-    let saved_runtime = std::env::var_os("JCODE_RUNTIME_PROVIDER");
-    crate::env::set_var("JCODE_RUNTIME_PROVIDER", "claude-api");
+    let saved_runtime = std::env::var_os("WVC_RUNTIME_PROVIDER");
+    crate::env::set_var("WVC_RUNTIME_PROVIDER", "claude-api");
     crate::auth::AuthStatus::invalidate_cache();
 
     // claude-sonnet-4-6 API pricing: input $3/Mtok, output $15/Mtok,
@@ -1568,9 +1568,9 @@ fn test_anthropic_api_cost_accounts_for_split_cache_tokens() {
     );
 
     if let Some(value) = saved_runtime {
-        crate::env::set_var("JCODE_RUNTIME_PROVIDER", value);
+        crate::env::set_var("WVC_RUNTIME_PROVIDER", value);
     } else {
-        crate::env::remove_var("JCODE_RUNTIME_PROVIDER");
+        crate::env::remove_var("WVC_RUNTIME_PROVIDER");
     }
     crate::auth::AuthStatus::invalidate_cache();
 }
@@ -1772,8 +1772,8 @@ fn test_remote_fast_mode_tier_bills_premium_rates_and_reprices_on_toggle() {
 fn test_info_widget_local_gemini_shows_oauth_auth_method() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().expect("create temp dir");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp.path());
 
     let path = crate::auth::gemini::tokens_path().expect("gemini tokens path");
     crate::storage::write_json_secret(
@@ -1800,9 +1800,9 @@ fn test_info_widget_local_gemini_shows_oauth_auth_method() {
     assert!(data.usage_info.is_none());
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
     crate::auth::AuthStatus::invalidate_cache();
 }

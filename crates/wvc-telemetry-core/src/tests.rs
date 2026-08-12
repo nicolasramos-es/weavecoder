@@ -2,7 +2,7 @@ use super::*;
 use std::sync::{Mutex, OnceLock};
 
 // All of these tests mutate process-global state: the env-var opt-out tests
-// flip `JCODE_NO_TELEMETRY` / `DO_NOT_TRACK`, while the session tests drive the
+// flip `WVC_NO_TELEMETRY` / `DO_NOT_TRACK`, while the session tests drive the
 // global `SESSION_STATE`. They must be serialized against *each other* with a
 // single shared lock. Using two separate locks previously let an env test
 // disable telemetry (`is_enabled() == false`) while a session test was calling
@@ -56,7 +56,7 @@ fn background_delivery_queue_is_bounded() {
 
 #[test]
 fn telemetry_endpoint_uses_production_custom_domain() {
-    assert_eq!(TELEMETRY_ENDPOINT, "https://telemetry.jcode.sh/v1/event");
+    assert_eq!(TELEMETRY_ENDPOINT, "https://telemetry.weavecoder.sh/v1/event");
 }
 
 fn lock_test_env() -> std::sync::MutexGuard<'static, ()> {
@@ -70,9 +70,9 @@ fn lock_telemetry_test_state() -> std::sync::MutexGuard<'static, ()> {
 #[test]
 fn test_opt_out_env_var() {
     let _guard = lock_test_env();
-    wvc_core::env::set_var("JCODE_NO_TELEMETRY", "1");
+    wvc_core::env::set_var("WVC_NO_TELEMETRY", "1");
     assert!(!is_enabled());
-    wvc_core::env::remove_var("JCODE_NO_TELEMETRY");
+    wvc_core::env::remove_var("WVC_NO_TELEMETRY");
 }
 
 #[test]
@@ -105,7 +105,7 @@ fn test_is_ci_detects_ci_env() {
         "WOODPECKER",
         "BITBUCKET_BUILD_NUMBER",
         "NEXTEST",
-        "JCODE_E2E_BIN",
+        "WVC_E2E_BIN",
     ] {
         wvc_core::env::remove_var(key);
     }
@@ -624,9 +624,9 @@ fn test_onboarding_step_milestone_key_includes_provider_and_method() {
 #[test]
 fn test_install_marker_tracks_current_telemetry_id() {
     let _guard = lock_test_env();
-    let prev_home = std::env::var_os("JCODE_HOME");
+    let prev_home = std::env::var_os("WVC_HOME");
     let temp = tempfile::TempDir::new().expect("create temp dir");
-    wvc_core::env::set_var("JCODE_HOME", temp.path());
+    wvc_core::env::set_var("WVC_HOME", temp.path());
 
     assert!(!install_recorded_for_id("id-a"));
     mark_install_recorded("id-a");
@@ -634,18 +634,18 @@ fn test_install_marker_tracks_current_telemetry_id() {
     assert!(!install_recorded_for_id("id-b"));
 
     if let Some(prev_home) = prev_home {
-        wvc_core::env::set_var("JCODE_HOME", prev_home);
+        wvc_core::env::set_var("WVC_HOME", prev_home);
     } else {
-        wvc_core::env::remove_var("JCODE_HOME");
+        wvc_core::env::remove_var("WVC_HOME");
     }
 }
 
 #[test]
 fn test_install_conversion_id_is_validated_and_consumed() {
     let _guard = lock_test_env();
-    let prev_home = std::env::var_os("JCODE_HOME");
+    let prev_home = std::env::var_os("WVC_HOME");
     let temp = tempfile::TempDir::new().expect("create temp dir");
-    wvc_core::env::set_var("JCODE_HOME", temp.path());
+    wvc_core::env::set_var("WVC_HOME", temp.path());
 
     let path = install_conversion_id_path().expect("conversion path");
     write_private_file(&path, "11111111-2222-4333-8444-555555555555\n");
@@ -666,18 +666,18 @@ fn test_install_conversion_id_is_validated_and_consumed() {
     ));
 
     if let Some(prev_home) = prev_home {
-        wvc_core::env::set_var("JCODE_HOME", prev_home);
+        wvc_core::env::set_var("WVC_HOME", prev_home);
     } else {
-        wvc_core::env::remove_var("JCODE_HOME");
+        wvc_core::env::remove_var("WVC_HOME");
     }
 }
 
 #[test]
 fn test_attributed_install_bypasses_existing_install_marker() {
     let _guard = lock_test_env();
-    let prev_home = std::env::var_os("JCODE_HOME");
+    let prev_home = std::env::var_os("WVC_HOME");
     let temp = tempfile::TempDir::new().expect("create temp dir");
-    wvc_core::env::set_var("JCODE_HOME", temp.path());
+    wvc_core::env::set_var("WVC_HOME", temp.path());
 
     let id = get_or_create_id().expect("telemetry id");
     mark_install_recorded(&id);
@@ -693,30 +693,30 @@ fn test_attributed_install_bypasses_existing_install_marker() {
     assert!(should_record_install_for_id(&id, conversion_id.as_deref()));
 
     if let Some(prev_home) = prev_home {
-        wvc_core::env::set_var("JCODE_HOME", prev_home);
+        wvc_core::env::set_var("WVC_HOME", prev_home);
     } else {
-        wvc_core::env::remove_var("JCODE_HOME");
+        wvc_core::env::remove_var("WVC_HOME");
     }
 }
 
 #[test]
 fn test_install_conversion_id_is_removed_when_telemetry_is_disabled() {
     let _guard = lock_test_env();
-    let prev_home = std::env::var_os("JCODE_HOME");
+    let prev_home = std::env::var_os("WVC_HOME");
     let temp = tempfile::TempDir::new().expect("create temp dir");
-    wvc_core::env::set_var("JCODE_HOME", temp.path());
+    wvc_core::env::set_var("WVC_HOME", temp.path());
     let path = install_conversion_id_path().expect("conversion path");
     write_private_file(&path, "11111111-2222-4333-8444-555555555555\n");
 
-    wvc_core::env::set_var("JCODE_NO_TELEMETRY", "1");
+    wvc_core::env::set_var("WVC_NO_TELEMETRY", "1");
     record_install_if_first_run();
-    wvc_core::env::remove_var("JCODE_NO_TELEMETRY");
+    wvc_core::env::remove_var("WVC_NO_TELEMETRY");
     assert!(!path.exists());
 
     if let Some(prev_home) = prev_home {
-        wvc_core::env::set_var("JCODE_HOME", prev_home);
+        wvc_core::env::set_var("WVC_HOME", prev_home);
     } else {
-        wvc_core::env::remove_var("JCODE_HOME");
+        wvc_core::env::remove_var("WVC_HOME");
     }
 }
 
@@ -897,7 +897,7 @@ fn todo_telemetry_opt_out_emits_nothing() {
     let _guard = lock_telemetry_test_state();
     *SESSION_STATE.lock().unwrap() = None;
     TEST_EMITTED_PAYLOADS.lock().unwrap().clear();
-    wvc_core::env::set_var("JCODE_NO_TELEMETRY", "1");
+    wvc_core::env::set_var("WVC_NO_TELEMETRY", "1");
 
     begin_session("private-provider", "private-model");
     record_todo_update(TodoTelemetryUpdate {
@@ -910,7 +910,7 @@ fn todo_telemetry_opt_out_emits_nothing() {
     let correlation = current_session_correlation_id();
     let emitted = TEST_EMITTED_PAYLOADS.lock().unwrap().clone();
 
-    wvc_core::env::remove_var("JCODE_NO_TELEMETRY");
+    wvc_core::env::remove_var("WVC_NO_TELEMETRY");
     assert!(SESSION_STATE.lock().unwrap().is_none());
     assert!(correlation.is_none());
     assert!(emitted.is_empty(), "opt-out emitted payloads: {emitted:?}");
@@ -923,7 +923,7 @@ fn todo_telemetry_opt_out_emits_nothing() {
 #[test]
 fn test_begin_session_closes_superseded_session() {
     let _guard = lock_telemetry_test_state();
-    wvc_core::env::set_var("JCODE_TELEMETRY_DISABLED", "1");
+    wvc_core::env::set_var("WVC_TELEMETRY_DISABLED", "1");
 
     begin_session("prov-a", "model-a");
     let first_id = SESSION_STATE
@@ -948,7 +948,7 @@ fn test_begin_session_closes_superseded_session() {
     );
     drop(second);
 
-    wvc_core::env::remove_var("JCODE_TELEMETRY_DISABLED");
+    wvc_core::env::remove_var("WVC_TELEMETRY_DISABLED");
 }
 
 #[test]

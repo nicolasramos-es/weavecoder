@@ -166,7 +166,7 @@ pub fn load_env_value_from_env_or_config(env_key: &str, file_name: &str) -> Opti
     load_env_value_from_config_file(env_key, file_name)
 }
 
-/// Load a value only from the saved env file under the jcode config dir,
+/// Load a value only from the saved env file under the wvc config dir,
 /// ignoring the process environment.
 ///
 /// [`load_env_value_from_env_or_config`] prefers the process env var, which is
@@ -274,19 +274,19 @@ mod tests {
     #[test]
     fn loads_api_key_from_env_before_config_file() {
         let temp = tempfile::tempdir().expect("tempdir");
-        let _guard = EnvGuard::new(&["JCODE_HOME", "JCODE_PROVIDER_ENV_TEST_KEY"]);
-        wvc_core::env::set_var("JCODE_HOME", temp.path());
+        let _guard = EnvGuard::new(&["WVC_HOME", "WVC_PROVIDER_ENV_TEST_KEY"]);
+        wvc_core::env::set_var("WVC_HOME", temp.path());
 
         save_env_value_to_env_file(
-            "JCODE_PROVIDER_ENV_TEST_KEY",
+            "WVC_PROVIDER_ENV_TEST_KEY",
             "provider-env-test.env",
             Some("file-key"),
         )
         .expect("save file key");
-        wvc_core::env::set_var("JCODE_PROVIDER_ENV_TEST_KEY", "env-key");
+        wvc_core::env::set_var("WVC_PROVIDER_ENV_TEST_KEY", "env-key");
 
         assert_eq!(
-            load_api_key_from_env_or_config("JCODE_PROVIDER_ENV_TEST_KEY", "provider-env-test.env")
+            load_api_key_from_env_or_config("WVC_PROVIDER_ENV_TEST_KEY", "provider-env-test.env")
                 .as_deref(),
             Some("env-key")
         );
@@ -295,20 +295,20 @@ mod tests {
     #[test]
     fn loads_and_removes_values_from_sandboxed_config_file() {
         let temp = tempfile::tempdir().expect("tempdir");
-        let _guard = EnvGuard::new(&["JCODE_HOME", "JCODE_PROVIDER_ENV_TEST_VALUE"]);
-        wvc_core::env::set_var("JCODE_HOME", temp.path());
+        let _guard = EnvGuard::new(&["WVC_HOME", "WVC_PROVIDER_ENV_TEST_VALUE"]);
+        wvc_core::env::set_var("WVC_HOME", temp.path());
 
         save_env_value_to_env_file(
-            "JCODE_PROVIDER_ENV_TEST_VALUE",
+            "WVC_PROVIDER_ENV_TEST_VALUE",
             "provider-env-test.env",
             Some("file-value"),
         )
         .expect("save file value");
 
-        wvc_core::env::remove_var("JCODE_PROVIDER_ENV_TEST_VALUE");
+        wvc_core::env::remove_var("WVC_PROVIDER_ENV_TEST_VALUE");
         assert_eq!(
             load_env_value_from_env_or_config(
-                "JCODE_PROVIDER_ENV_TEST_VALUE",
+                "WVC_PROVIDER_ENV_TEST_VALUE",
                 "provider-env-test.env"
             )
             .as_deref(),
@@ -316,14 +316,14 @@ mod tests {
         );
 
         save_env_value_to_env_file(
-            "JCODE_PROVIDER_ENV_TEST_VALUE",
+            "WVC_PROVIDER_ENV_TEST_VALUE",
             "provider-env-test.env",
             None,
         )
         .expect("remove file value");
         assert_eq!(
             load_env_value_from_env_or_config(
-                "JCODE_PROVIDER_ENV_TEST_VALUE",
+                "WVC_PROVIDER_ENV_TEST_VALUE",
                 "provider-env-test.env"
             ),
             None
@@ -333,8 +333,8 @@ mod tests {
     #[test]
     fn accepts_legacy_zai_key_for_zhipu() {
         let temp = tempfile::tempdir().expect("tempdir");
-        let _guard = EnvGuard::new(&["JCODE_HOME", "ZHIPU_API_KEY", "ZAI_API_KEY"]);
-        wvc_core::env::set_var("JCODE_HOME", temp.path());
+        let _guard = EnvGuard::new(&["WVC_HOME", "ZHIPU_API_KEY", "ZAI_API_KEY"]);
+        wvc_core::env::set_var("WVC_HOME", temp.path());
 
         save_env_value_to_env_file("ZAI_API_KEY", "zai.env", Some("legacy-zai-key"))
             .expect("save legacy key");
@@ -371,8 +371,8 @@ mod tests {
     #[test]
     fn loads_api_key_with_zero_width_space_from_config_file() {
         let temp = tempfile::tempdir().expect("tempdir");
-        let _guard = EnvGuard::new(&["JCODE_HOME", "JCODE_PROVIDER_FOO_API_KEY"]);
-        wvc_core::env::set_var("JCODE_HOME", temp.path());
+        let _guard = EnvGuard::new(&["WVC_HOME", "WVC_PROVIDER_FOO_API_KEY"]);
+        wvc_core::env::set_var("WVC_HOME", temp.path());
 
         // Write an env file with a U+200B zero-width space prefixed onto the key,
         // mirroring issue #376's reproduction.
@@ -380,12 +380,12 @@ mod tests {
         std::fs::create_dir_all(&config_dir).expect("create config dir");
         std::fs::write(
             config_dir.join("provider-foo.env"),
-            "JCODE_PROVIDER_FOO_API_KEY=\u{200B}sk-mykey123\n",
+            "WVC_PROVIDER_FOO_API_KEY=\u{200B}sk-mykey123\n",
         )
         .expect("write env file");
 
         assert_eq!(
-            load_api_key_from_env_or_config("JCODE_PROVIDER_FOO_API_KEY", "provider-foo.env")
+            load_api_key_from_env_or_config("WVC_PROVIDER_FOO_API_KEY", "provider-foo.env")
                 .as_deref(),
             Some("sk-mykey123")
         );
@@ -394,13 +394,13 @@ mod tests {
     #[test]
     fn loads_api_key_with_invisible_chars_from_env_var() {
         let temp = tempfile::tempdir().expect("tempdir");
-        let _guard = EnvGuard::new(&["JCODE_HOME", "JCODE_PROVIDER_BAR_API_KEY"]);
-        wvc_core::env::set_var("JCODE_HOME", temp.path());
+        let _guard = EnvGuard::new(&["WVC_HOME", "WVC_PROVIDER_BAR_API_KEY"]);
+        wvc_core::env::set_var("WVC_HOME", temp.path());
         // NBSP + BOM padding around the env-provided key.
-        wvc_core::env::set_var("JCODE_PROVIDER_BAR_API_KEY", "\u{00A0}sk-env-key\u{FEFF}");
+        wvc_core::env::set_var("WVC_PROVIDER_BAR_API_KEY", "\u{00A0}sk-env-key\u{FEFF}");
 
         assert_eq!(
-            load_api_key_from_env_or_config("JCODE_PROVIDER_BAR_API_KEY", "provider-bar.env")
+            load_api_key_from_env_or_config("WVC_PROVIDER_BAR_API_KEY", "provider-bar.env")
                 .as_deref(),
             Some("sk-env-key")
         );

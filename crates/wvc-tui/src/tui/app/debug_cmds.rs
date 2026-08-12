@@ -402,9 +402,9 @@ impl App {
                     "emu",
                 ];
                 let samples = [
-                    "Editing crates/jcode-tui/src/tui/ui.rs\n  carving the gallery band off chat_area",
+                    "Editing crates/wvc-tui/src/tui/ui.rs\n  carving the gallery band off chat_area",
                     "Thinking about how to wire the bus tap\n  into the streaming loop without",
-                    "Running cargo build --profile selfdev\n  Compiling jcode-app-core",
+                    "Running cargo build --profile selfdev\n  Compiling wvc-app-core",
                     "Done: 4 tests passed, committed.",
                     "Waiting on coordinator approval for plan",
                 ];
@@ -943,11 +943,11 @@ impl App {
             }
         } else if cmd.starts_with("bundle-start:") {
             let name = cmd.strip_prefix("bundle-start:").unwrap_or("test");
-            crate::env::set_var("JCODE_TEST_BUNDLE", name);
+            crate::env::set_var("WVC_TEST_BUNDLE", name);
             format!("OK: test bundle '{}' started", name)
         } else if cmd == "bundle-save" {
             use crate::tui::test_harness::TestBundle;
-            let name = std::env::var("JCODE_TEST_BUNDLE").unwrap_or_else(|_| "unnamed".to_string());
+            let name = std::env::var("WVC_TEST_BUNDLE").unwrap_or_else(|_| "unnamed".to_string());
             let bundle = TestBundle::new(&name);
             let path = TestBundle::default_path(&name);
             match bundle.save(&path) {
@@ -1111,7 +1111,7 @@ impl App {
 
             // The actual exec happens in main.rs when run() returns
             // We store the binary path in an env var for the reload handler
-            crate::env::set_var("JCODE_MIGRATE_BINARY", stable_binary);
+            crate::env::set_var("WVC_MIGRATE_BINARY", stable_binary);
 
             crate::logging::info(&format!("Migrating to stable version {}...", version));
             self.set_status_notice(format!("Migrating to stable {}...", version));

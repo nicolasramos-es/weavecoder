@@ -10,7 +10,7 @@
 //! * **peak concurrency**: max nodes runnable at once (the natural parallelism),
 //!   which is what `run_plan`'s `concurrency_limit` (default 3) would clamp.
 //!
-//! Run with: `cargo run -p jcode-plan --example swarm_agent_count`
+//! Run with: `cargo run -p wvc-plan --example swarm_agent_count`
 //!
 //! The point is to replace hand-waving ("it spawns a lot") with reproducible
 //! numbers for several representative task shapes, and to show how the deep-mode

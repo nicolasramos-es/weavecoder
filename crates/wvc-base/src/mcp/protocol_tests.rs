@@ -4,10 +4,10 @@ use super::*;
 fn load_for_dir_without_project_does_not_load_process_cwd_config() {
     let _guard = crate::storage::lock_test_env();
     let original_cwd = std::env::current_dir().expect("current cwd");
-    let previous_home = std::env::var_os("JCODE_HOME");
+    let previous_home = std::env::var_os("WVC_HOME");
     let home = tempfile::tempdir().expect("home tempdir");
     let project = tempfile::tempdir().expect("project tempdir");
-    crate::env::set_var("JCODE_HOME", home.path());
+    crate::env::set_var("WVC_HOME", home.path());
     std::env::set_current_dir(project.path()).expect("set project cwd");
     std::fs::write(
         project.path().join(".mcp.json"),
@@ -25,9 +25,9 @@ fn load_for_dir_without_project_does_not_load_process_cwd_config() {
 
     std::env::set_current_dir(original_cwd).expect("restore cwd");
     if let Some(previous_home) = previous_home {
-        crate::env::set_var("JCODE_HOME", previous_home);
+        crate::env::set_var("WVC_HOME", previous_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
     result.expect("MCP cwd isolation assertions");
 }
@@ -182,14 +182,14 @@ fn test_load_project_locals_resolves_against_given_dir_not_cwd() {
 
 #[test]
 fn test_load_project_locals_merge_order() {
-    // `.jcode/mcp.json` loads first, then `.mcp.json` overrides same-named
+    // `.wvc/mcp.json` loads first, then `.mcp.json` overrides same-named
     // servers, then `.claude/mcp.json`.
     let temp = tempfile::tempdir().expect("tempdir");
     let project = temp.path();
-    std::fs::create_dir_all(project.join(".jcode")).unwrap();
+    std::fs::create_dir_all(project.join(".wvc")).unwrap();
     std::fs::create_dir_all(project.join(".claude")).unwrap();
     std::fs::write(
-        project.join(".jcode/mcp.json"),
+        project.join(".wvc/mcp.json"),
         r#"{"servers":{"shared-name":{"command":"wvc-bin"},"wvc-only":{"command":"a"}}}"#,
     )
     .unwrap();
@@ -209,7 +209,7 @@ fn test_load_project_locals_merge_order() {
     assert_eq!(
         config.servers.get("shared-name").unwrap().command,
         "claude-bin",
-        ".mcp.json must override .jcode/mcp.json for same-named servers"
+        ".mcp.json must override .wvc/mcp.json for same-named servers"
     );
     assert!(config.servers.contains_key("wvc-only"));
     assert!(config.servers.contains_key("legacy-only"));
@@ -329,9 +329,9 @@ fn http_entry_does_not_displace_a_working_stdio_server_of_the_same_name() {
     // losing a working server (issue #653).
     let temp = tempfile::tempdir().expect("tempdir");
     let project = temp.path();
-    std::fs::create_dir_all(project.join(".jcode")).unwrap();
+    std::fs::create_dir_all(project.join(".wvc")).unwrap();
     std::fs::write(
-        project.join(".jcode/mcp.json"),
+        project.join(".wvc/mcp.json"),
         r#"{"servers":{"github":{"type":"stdio","command":"npx","args":["-y","mcp-remote"]}}}"#,
     )
     .unwrap();
@@ -356,9 +356,9 @@ fn stdio_entry_still_overrides_an_existing_http_entry() {
     // still win over a non-runnable http one from an earlier config.
     let temp = tempfile::tempdir().expect("tempdir");
     let project = temp.path();
-    std::fs::create_dir_all(project.join(".jcode")).unwrap();
+    std::fs::create_dir_all(project.join(".wvc")).unwrap();
     std::fs::write(
-        project.join(".jcode/mcp.json"),
+        project.join(".wvc/mcp.json"),
         r#"{"servers":{"github":{"type":"http","url":"https://example.invalid/mcp/"}}}"#,
     )
     .unwrap();
@@ -377,9 +377,9 @@ fn stdio_entry_of_same_transport_still_overrides_by_precedence() {
     // Same-transport collisions keep the existing last-writer-wins behavior.
     let temp = tempfile::tempdir().expect("tempdir");
     let project = temp.path();
-    std::fs::create_dir_all(project.join(".jcode")).unwrap();
+    std::fs::create_dir_all(project.join(".wvc")).unwrap();
     std::fs::write(
-        project.join(".jcode/mcp.json"),
+        project.join(".wvc/mcp.json"),
         r#"{"servers":{"github":{"command":"old-bin"}}}"#,
     )
     .unwrap();
@@ -396,23 +396,23 @@ fn stdio_entry_of_same_transport_still_overrides_by_precedence() {
 #[test]
 fn claude_json_http_entry_does_not_displace_wvc_stdio_server() {
     // The exact configuration from issue #653: `github` is stdio in
-    // ~/.jcode/mcp.json and http in ~/.claude.json. The http entry used to win
+    // ~/.wvc/mcp.json and http in ~/.claude.json. The http entry used to win
     // the merge and then be dropped by the non-stdio filter, so a working
     // server vanished with no indication it had been overwritten.
     let _guard = crate::storage::lock_test_env();
     let original_cwd = std::env::current_dir().expect("current cwd");
-    let previous_home = std::env::var_os("JCODE_HOME");
+    let previous_home = std::env::var_os("WVC_HOME");
     let home = tempfile::tempdir().expect("home tempdir");
     let project = tempfile::tempdir().expect("project tempdir");
-    crate::env::set_var("JCODE_HOME", home.path());
+    crate::env::set_var("WVC_HOME", home.path());
     std::env::set_current_dir(project.path()).expect("set project cwd");
 
     std::fs::write(
         home.path().join("mcp.json"),
         r#"{"mcpServers":{"github":{"type":"stdio","command":"npx","args":["-y","mcp-remote"]}}}"#,
     )
-    .expect("write jcode mcp config");
-    // `user_home_path()` maps external configs under JCODE_HOME to an
+    .expect("write wvc mcp config");
+    // `user_home_path()` maps external configs under WVC_HOME to an
     // `external/` subdirectory, so this is where ~/.claude.json is read from.
     let external = home.path().join("external");
     std::fs::create_dir_all(&external).expect("create external dir");
@@ -434,9 +434,9 @@ fn claude_json_http_entry_does_not_displace_wvc_stdio_server() {
 
     std::env::set_current_dir(original_cwd).expect("restore cwd");
     if let Some(previous_home) = previous_home {
-        crate::env::set_var("JCODE_HOME", previous_home);
+        crate::env::set_var("WVC_HOME", previous_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
     result.expect("issue #653 merge assertions");
 }

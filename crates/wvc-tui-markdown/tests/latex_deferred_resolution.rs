@@ -1,7 +1,7 @@
 //! Companion to `latex_draw_path_latency.rs` (#735).
 //!
 //! Lives in its own test binary on purpose: the sibling test points the
-//! renderer at a hanging toolchain via process-global `JCODE_*_COMMAND`
+//! renderer at a hanging toolchain via process-global `WVC_*_COMMAND`
 //! environment variables, and the background render worker reads them
 //! asynchronously. Sharing a process would let that stub leak into this test.
 
@@ -24,10 +24,10 @@ fn a_deferred_formula_resolves_into_an_image_once_the_worker_finishes() {
     // Ensure the real toolchain is used even if an earlier test in this binary
     // pointed the renderer at a stub.
     unsafe {
-        std::env::remove_var("JCODE_LATEX_COMMAND");
-        std::env::remove_var("JCODE_DVIPNG_COMMAND");
-        std::env::remove_var("JCODE_PDFLATEX_COMMAND");
-        std::env::remove_var("JCODE_PDFTOCAIRO_COMMAND");
+        std::env::remove_var("WVC_LATEX_COMMAND");
+        std::env::remove_var("WVC_DVIPNG_COMMAND");
+        std::env::remove_var("WVC_PDFLATEX_COMMAND");
+        std::env::remove_var("WVC_PDFTOCAIRO_COMMAND");
     }
 
     let nonce = std::time::SystemTime::now()

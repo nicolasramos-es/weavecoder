@@ -217,7 +217,7 @@ mod tests {
     #[test]
     fn swarm_plan_status_notice_deep_mode_surfaces_low_confidence_ids() {
         // low_confidence_ids is deep-mode routing data (see PlanGraphStatus docs
-        // in jcode-protocol): completed items with shaky self-reported coverage.
+        // in wvc-protocol): completed items with shaky self-reported coverage.
         let mut summary = summary_fixture();
         summary.mode = "deep".to_string();
         summary.low_confidence_ids = vec!["task-1".to_string(), "task-3".to_string()];

@@ -100,7 +100,7 @@ fn fixed_meta() -> crate::meta::Meta {
     crate::meta::Meta {
         version: "v0.0.0-demo (0000000)".into(),
         update: crate::meta::UpdateState::Current,
-        account: Some("demo@jcode.dev (anthropic)".into()),
+        account: Some("demo@wvc.dev (anthropic)".into()),
     }
 }
 
@@ -114,7 +114,7 @@ fn connecting() -> Model {
         // machine's live preference behind the pinned palette.
         theme_preference: crate::theme::ThemeMode::Light,
         meta: fixed_meta(),
-        status: "connecting to ~/.jcode/jcode-api.sock...".into(),
+        status: "connecting to ~/.wvc/wvc-api.sock...".into(),
         session_id: None,
         transcript: crate::transcript::Transcript::default(),
         editor: crate::editor::Editor::default(),
@@ -289,7 +289,7 @@ fn attached_empty() -> Model {
         smooth: crate::scroll::Smooth::default(),
         // Fixed path, so captures do not depend on where the repo is checked
         // out or on whose `$HOME` the capture ran under.
-        working_dir: Some("/home/j/jcode".into()),
+        working_dir: Some("/home/j/wvc".into()),
         // Pinned off: a live RAM figure would make every capture depend on
         // the machine and moment it ran on.
         mem: None,
@@ -328,7 +328,7 @@ fn donut_dragged() -> Model {
     }
 }
 
-/// The donut turned off (`JCODE_DESKTOP2_DONUT=0`): the empty screen must still
+/// The donut turned off (`WVC_DESKTOP2_DONUT=0`): the empty screen must still
 /// read as a finished frame with nothing missing.
 fn donut_off() -> Model {
     Model {
@@ -508,21 +508,21 @@ fn demo_strip(focused: &str) -> crate::strip::Strip {
             crate::strip::Entry {
                 session_id: "session_clover_1785130341680_5a8db08".into(),
                 title: None,
-                working_dir: Some("/home/j/jcode".into()),
+                working_dir: Some("/home/j/wvc".into()),
                 busy: false,
                 weight: 480_000.0,
             },
             crate::strip::Entry {
                 session_id: "session_mushroom_1785129393446_e7007f8".into(),
                 title: None,
-                working_dir: Some("/home/j/jcode".into()),
+                working_dir: Some("/home/j/wvc".into()),
                 busy: true,
                 weight: 90_000.0,
             },
             crate::strip::Entry {
                 session_id: "session_pebble_1785130002233_1c93aa4".into(),
                 title: None,
-                working_dir: Some("/home/j/jcode".into()),
+                working_dir: Some("/home/j/wvc".into()),
                 busy: false,
                 weight: 6_000.0,
             },
@@ -631,7 +631,7 @@ fn overview_single_session() -> Model {
         vec![crate::strip::Entry {
             session_id: "session_willow_1785130555000_7d3e9f1".into(),
             title: None,
-            working_dir: Some("/home/j/jcode".into()),
+            working_dir: Some("/home/j/wvc".into()),
             busy: false,
             weight: 40_000.0,
         }],
@@ -788,17 +788,17 @@ fn stored_sessions() -> Vec<crate::resume::Record> {
     for (index, (id, dir, bytes)) in [
         (
             "session_mushroom_1785129393446_e7007f8",
-            Some("/home/j/jcode"),
+            Some("/home/j/wvc"),
             2_400_000u64,
         ),
         (
             "session_clover_1785130341680_5a8db08",
-            Some("/home/j/jcode"),
+            Some("/home/j/wvc"),
             180_000,
         ),
         (
             "session_pebble_1785130002233_1c93aa4",
-            Some("/home/j/jcode"),
+            Some("/home/j/wvc"),
             12_000,
         ),
         (
@@ -1049,7 +1049,7 @@ fn background_progress() -> Model {
     transcript.set_progress(
         "224715dw29",
         "bash",
-        "62% · Running jcode-desktop2 tests",
+        "62% · Running wvc-desktop2 tests",
         Some(62.0),
     );
     Model {
@@ -1078,7 +1078,7 @@ fn background_progress_many() -> Model {
     transcript.set_progress(
         "build-1",
         "bash",
-        "88% · Compiling jcode-app-core",
+        "88% · Compiling wvc-app-core",
         Some(88.0),
     );
     transcript.set_progress("test-1", "bash", "12/96 crates", Some(12.5));
@@ -1138,7 +1138,7 @@ fn edit_card() -> Model {
     transcript.push(Message::user("make the fade decay instead of snapping"));
     transcript.push_edit(&EditCard {
         intent: Some("decay the scrollbar fade instead of clearing it".into()),
-        files: vec!["crates/jcode-desktop2/src/scroll.rs".into()],
+        files: vec!["crates/wvc-desktop2/src/scroll.rs".into()],
         diff: "118- self.fade = 0.0;\n118+ self.fade = (self.fade - dt / FADE_SECONDS).max(0.0);\n"
             .into(),
         added: 1,
@@ -1163,9 +1163,9 @@ fn edit_cards_many() -> Model {
     let mut transcript = Transcript::default();
     transcript.push(Message::user("rename `alpha` to `fade` everywhere"));
     for (file, line) in [
-        ("crates/jcode-desktop2/src/scroll.rs", 118usize),
-        ("crates/jcode-desktop2/src/scene.rs", 402),
-        ("crates/jcode-desktop2/src/layout.rs", 77),
+        ("crates/wvc-desktop2/src/scroll.rs", 118usize),
+        ("crates/wvc-desktop2/src/scene.rs", 402),
+        ("crates/wvc-desktop2/src/layout.rs", 77),
     ] {
         transcript.push_edit(&EditCard {
             intent: Some(format!(
@@ -1233,7 +1233,7 @@ fn streaming() -> Model {
         activity: crate::activity::Activity::pinned(
             2,
             std::time::Duration::from_secs(8),
-            Some("reading crates/jcode-desktop2/src/scene.rs"),
+            Some("reading crates/wvc-desktop2/src/scene.rs"),
         ),
         ..attached_empty()
     }
@@ -1369,7 +1369,7 @@ fn markdown_typography() -> Model {
             // whitespace and a nested list item would silently flatten.
             concat!(
                 "# Renderer\n\n",
-                "Markdown comes from `jcode-render-core`, so the desktop and the TUI ",
+                "Markdown comes from `wvc-render-core`, so the desktop and the TUI ",
                 "agree on what a document *is*. See ",
                 "[the notes](https://example.com/notes) for the shape of it.\n\n",
                 "## Blocks\n\n",

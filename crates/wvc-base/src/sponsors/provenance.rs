@@ -8,7 +8,7 @@
 //! never user identity. Aggregates are flushed at most once per hour to
 //! `POST {sponsors.endpoint}/usage` and only while `sponsors.enabled` is
 //! true. The policy is disclosed at
-//! <https://jcode.sh/sponsored-discovery> and in the connect-time
+//! <https://weavecoder.sh/sponsored-discovery> and in the connect-time
 //! UI line.
 //!
 //! Everything here is process-local and best-effort: metering failures
@@ -227,7 +227,7 @@ mod tests {
     fn enable_sponsors() -> (std::sync::MutexGuard<'static, ()>, tempfile::TempDir) {
         let guard = crate::storage::lock_test_env();
         let temp = tempfile::tempdir().unwrap();
-        crate::env::set_var("JCODE_HOME", temp.path());
+        crate::env::set_var("WVC_HOME", temp.path());
         std::fs::write(
             temp.path().join("config.toml"),
             "[sponsors]\nenabled = true\n",
@@ -291,7 +291,7 @@ mod tests {
     fn disabled_sponsors_config_disables_everything() {
         let guard = crate::storage::lock_test_env();
         let temp = tempfile::tempdir().unwrap();
-        crate::env::set_var("JCODE_HOME", temp.path());
+        crate::env::set_var("WVC_HOME", temp.path());
         std::fs::write(
             temp.path().join("config.toml"),
             "[sponsors]\nenabled = false\n",

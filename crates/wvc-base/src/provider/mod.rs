@@ -65,7 +65,7 @@ pub use wvc_provider_core::cli_provider_arg_for_session_key;
 pub use wvc_provider_core::{
     ALL_CLAUDE_MODELS, ALL_OPENAI_MODELS, CHATGPT_WEB_MODEL, CHEAPNESS_REFERENCE_INPUT_TOKENS,
     CHEAPNESS_REFERENCE_OUTPUT_TOKENS, CredentialMode, DEFAULT_CONTEXT_LIMIT, EventStream,
-    JCODE_USER_AGENT, ModelCapabilities, ModelCatalogRefreshSummary, ModelRoute,
+    WVC_USER_AGENT, ModelCapabilities, ModelCatalogRefreshSummary, ModelRoute,
     ModelRouteApiMethod, NativeCompactionResult, NativeToolResult, NativeToolResultSender,
     PremiumMode, Provider, RouteBillingKind, RouteCheapnessEstimate, RouteCostConfidence,
     RouteCostSource, RouteSelection, RuntimeKey, dedupe_model_routes,
@@ -84,7 +84,7 @@ pub use wvc_provider_core::{ProviderFailoverPrompt, parse_failover_prompt_messag
 ///
 /// The memory sidecar ([`crate::sidecar::Sidecar`]) needs to make small,
 /// cheap model calls (rerank / relevance / extraction). It has dedicated fast
-/// paths for OpenAI (codex-spark) and Claude (haiku) OAuth, but jcode also runs
+/// paths for OpenAI (codex-spark) and Claude (haiku) OAuth, but wvc also runs
 /// on Copilot, Antigravity, Gemini, Cursor, Bedrock, and OpenRouter. For those
 /// providers there is no standalone sidecar HTTP client, so the sidecar falls
 /// back to *this* handle and dispatches through the already-working
@@ -334,21 +334,21 @@ pub struct MultiProvider {
     openai: RwLock<Option<Arc<dyn Provider>>>,
     /// GitHub Copilot API provider (direct API, hot-swappable after login).
     /// Held as `dyn Provider`: the concrete runtime lives downstream in
-    /// `jcode-provider-copilot-runtime` and is instantiated through
+    /// `wvc-provider-copilot-runtime` and is instantiated through
     /// `external::instantiate_external_provider`.
     copilot_api: RwLock<Option<Arc<dyn Provider>>>,
     /// Antigravity provider (direct HTTPS, hot-swappable after login). Held as
     /// `dyn Provider`: the concrete runtime lives downstream in
-    /// `jcode-provider-antigravity-runtime` and is instantiated through
+    /// `wvc-provider-antigravity-runtime` and is instantiated through
     /// `external::instantiate_external_provider`.
     antigravity: RwLock<Option<Arc<dyn Provider>>>,
     /// Gemini provider (hot-swappable after login). Held as `dyn Provider`:
-    /// the concrete runtime lives downstream in `jcode-provider-gemini-runtime`
+    /// the concrete runtime lives downstream in `wvc-provider-gemini-runtime`
     /// and is instantiated through `external::instantiate_external_provider`.
     gemini: RwLock<Option<Arc<dyn Provider>>>,
     /// Cursor provider (native/direct API, hot-swappable after login). Held as
     /// `dyn Provider`: the concrete runtime lives downstream in
-    /// `jcode-provider-cursor-runtime` and is instantiated through
+    /// `wvc-provider-cursor-runtime` and is instantiated through
     /// `external::instantiate_external_provider`.
     cursor: RwLock<Option<Arc<dyn Provider>>>,
     /// AWS Bedrock provider (native Converse/ConverseStream, IAM/SigV4)
@@ -505,9 +505,9 @@ impl MultiProvider {
         .join(",");
         format!(
             "{}|{}|{}|{:?}|{}|{}|{}|{}",
-            // Scope by home so sandboxes (tests, JCODE_HOME switches) never
+            // Scope by home so sandboxes (tests, WVC_HOME switches) never
             // share catalogs that were built from different credential files.
-            std::env::var("JCODE_HOME").unwrap_or_default(),
+            std::env::var("WVC_HOME").unwrap_or_default(),
             Self::provider_key(active),
             self.model(),
             credential_mode,
@@ -831,12 +831,12 @@ impl MultiProvider {
             }
             ActiveProvider::OpenRouter => {
                 // The OpenRouter slot multiplexes the public aggregator, the
-                // jcode subscription, and direct OpenAI-compatible profiles.
+                // wvc subscription, and direct OpenAI-compatible profiles.
                 let label = self
                     .active_openrouter_execution_provider()
                     .map(|execution| execution.runtime_display_name())
                     .unwrap_or_else(|| "OpenRouter".to_string());
-                let runtime = std::env::var("JCODE_RUNTIME_PROVIDER").ok();
+                let runtime = std::env::var("WVC_RUNTIME_PROVIDER").ok();
                 crate::provider_activity::source_key_for_provider_label(&label, runtime.as_deref())
             }
             other => Self::provider_key(other).to_string(),
@@ -996,7 +996,7 @@ impl MultiProvider {
                     claude.set_model(&model)?;
                 } else {
                     anyhow::bail!(
-                        "Claude credentials not available. Run `jcode login --provider claude` first."
+                        "Claude credentials not available. Run `wvc login --provider claude` first."
                     );
                 }
                 self.set_active_provider(ActiveProvider::Claude);
@@ -1017,7 +1017,7 @@ impl MultiProvider {
                         );
                     }
                     anyhow::bail!(
-                        "OpenAI credentials not available. Run `jcode login --provider openai` first."
+                        "OpenAI credentials not available. Run `wvc login --provider openai` first."
                     );
                 };
                 if let Some(mode) = openai_credential_mode {
@@ -1030,7 +1030,7 @@ impl MultiProvider {
             ActiveProvider::Copilot => {
                 let Some(copilot) = self.copilot_provider() else {
                     anyhow::bail!(
-                        "GitHub Copilot credentials not available. Run `jcode login --provider copilot` first."
+                        "GitHub Copilot credentials not available. Run `wvc login --provider copilot` first."
                     );
                 };
                 copilot.set_model(model)?;
@@ -1040,7 +1040,7 @@ impl MultiProvider {
             ActiveProvider::Antigravity => {
                 let Some(antigravity) = self.antigravity_provider() else {
                     anyhow::bail!(
-                        "Antigravity credentials not available. Run `jcode login --provider antigravity` first."
+                        "Antigravity credentials not available. Run `wvc login --provider antigravity` first."
                     );
                 };
                 antigravity.set_model(model)?;
@@ -1050,7 +1050,7 @@ impl MultiProvider {
             ActiveProvider::Gemini => {
                 let Some(gemini) = self.gemini_provider() else {
                     anyhow::bail!(
-                        "Gemini credentials not available. Run `jcode login --provider gemini` first."
+                        "Gemini credentials not available. Run `wvc login --provider gemini` first."
                     );
                 };
                 gemini.set_model(model)?;
@@ -1060,7 +1060,7 @@ impl MultiProvider {
             ActiveProvider::Cursor => {
                 let Some(cursor) = self.cursor_provider() else {
                     anyhow::bail!(
-                        "Cursor credentials not available. Run `jcode login --provider cursor` first."
+                        "Cursor credentials not available. Run `wvc login --provider cursor` first."
                     );
                 };
                 cursor.set_model(model)?;
@@ -1117,7 +1117,7 @@ impl MultiProvider {
                 } else {
                     let Some(openrouter) = self.openrouter_provider() else {
                         anyhow::bail!(
-                            "OpenRouter/OpenAI-compatible credentials not available. Set the configured API key or run `jcode login --provider openrouter` first."
+                            "OpenRouter/OpenAI-compatible credentials not available. Set the configured API key or run `wvc login --provider openrouter` first."
                         );
                     };
                     (openrouter, false)
@@ -1148,7 +1148,7 @@ impl MultiProvider {
         let resolved = crate::provider_catalog::resolve_openai_compatible_profile(profile);
         if !crate::provider_catalog::openai_compatible_profile_is_configured(profile) {
             anyhow::bail!(
-                "{} credentials not available. Run `jcode login --provider {}` first.",
+                "{} credentials not available. Run `wvc login --provider {}` first.",
                 resolved.display_name,
                 resolved.id,
             );
@@ -2169,7 +2169,7 @@ impl Provider for MultiProvider {
     fn handles_tools_internally(&self) -> bool {
         match self.active_provider() {
             ActiveProvider::Claude => {
-                // Direct API does NOT handle tools internally - jcode executes them
+                // Direct API does NOT handle tools internally - wvc executes them
                 if self.anthropic_provider().is_some() {
                     false
                 } else {
@@ -2192,8 +2192,8 @@ impl Provider for MultiProvider {
                 .cursor_provider()
                 .map(|o| o.handles_tools_internally())
                 .unwrap_or(false),
-            ActiveProvider::Bedrock => false, // jcode executes Bedrock tool calls
-            ActiveProvider::OpenRouter => false, // jcode executes tools
+            ActiveProvider::Bedrock => false, // wvc executes Bedrock tool calls
+            ActiveProvider::OpenRouter => false, // wvc executes tools
         }
     }
 

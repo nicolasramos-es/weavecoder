@@ -167,7 +167,7 @@ fn occasional_long_lines_do_not_move_widgets() {
 }
 
 /// Demonstration / quantification harness. Run with:
-///   cargo test -p jcode-tui info_widget_stability::tests::demo_quantify -- --ignored --nocapture
+///   cargo test -p wvc-tui info_widget_stability::tests::demo_quantify -- --ignored --nocapture
 #[test]
 #[ignore]
 fn demo_quantify() {
@@ -277,7 +277,7 @@ fn content_anchored_widgets_never_overlap_while_scrolling() {
 }
 
 /// A/B: stick-to-the-transcript anchoring vs holding a fixed screen row. Run with:
-///   cargo test -p jcode-tui info_widget_stability::tests::demo_content_anchor -- --ignored --nocapture
+///   cargo test -p wvc-tui info_widget_stability::tests::demo_content_anchor -- --ignored --nocapture
 #[test]
 #[ignore]
 fn demo_content_anchor() {
@@ -326,7 +326,7 @@ fn demo_content_anchor() {
 
 /// A/B: does stable (anchored) placement cost information vs greedy max-info?
 /// Run with:
-///   cargo test -p jcode-tui info_widget_stability::tests::demo_info_tradeoff -- --ignored --nocapture
+///   cargo test -p wvc-tui info_widget_stability::tests::demo_info_tradeoff -- --ignored --nocapture
 #[test]
 #[ignore]
 fn demo_info_tradeoff() {
@@ -381,7 +381,7 @@ fn demo_info_tradeoff() {
 /// LookAhead(W) across a sweep, reporting flicker, coverage, and per-kind
 /// visibility so we can pick the smallest W that kills the blink without
 /// sacrificing too much coverage. Run with:
-///   cargo test -p jcode-tui info_widget_stability::tests::demo_lookahead_sweep -- --ignored --nocapture
+///   cargo test -p wvc-tui info_widget_stability::tests::demo_lookahead_sweep -- --ignored --nocapture
 #[test]
 #[ignore]
 fn demo_lookahead_sweep() {

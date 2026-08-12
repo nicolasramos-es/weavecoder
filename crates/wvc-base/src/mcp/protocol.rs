@@ -169,7 +169,7 @@ pub struct ResourceContent {
 /// MCP server configuration
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct McpServerConfig {
-    /// Command for stdio servers. Empty for HTTP/SSE servers, which jcode does
+    /// Command for stdio servers. Empty for HTTP/SSE servers, which wvc does
     /// not yet support (such entries are skipped at load time).
     #[serde(default)]
     pub command: String,
@@ -186,7 +186,7 @@ pub struct McpServerConfig {
     /// only to recognize and skip non-stdio servers; defaults to stdio.
     #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
     pub transport: Option<String>,
-    /// URL for HTTP/SSE servers (Claude Code compat). Unused by jcode today.
+    /// URL for HTTP/SSE servers (Claude Code compat). Unused by wvc today.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub url: Option<String>,
     /// Whether this server is enabled (default: true). Disabled servers stay
@@ -201,7 +201,7 @@ pub struct McpServerConfig {
 }
 
 impl McpServerConfig {
-    /// jcode currently only supports stdio (command-based) MCP servers. A config
+    /// wvc currently only supports stdio (command-based) MCP servers. A config
     /// entry is stdio when it has a command and is not explicitly an http/sse
     /// transport.
     pub fn is_stdio(&self) -> bool {
@@ -234,7 +234,7 @@ fn default_shared() -> bool {
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub struct McpConfig {
     /// Server map. Accepts the canonical Claude Code key `mcpServers` as well as
-    /// jcode's historical `servers` key.
+    /// wvc's historical `servers` key.
     #[serde(default, alias = "mcpServers")]
     pub servers: std::collections::HashMap<String, McpServerConfig>,
 }
@@ -257,7 +257,7 @@ impl McpConfig {
     }
 
     /// Import MCP servers from Claude Code and Codex CLI on first run.
-    /// Only runs if ~/.jcode/mcp.json doesn't exist yet.
+    /// Only runs if ~/.wvc/mcp.json doesn't exist yet.
     #[expect(
         clippy::collapsible_if,
         reason = "Import logic keeps source-specific MCP config handling explicit"
@@ -311,7 +311,7 @@ impl McpConfig {
                     if count > 0 {
                         sources.push(format!("{} from Codex CLI", count));
                         // Codex overrides Claude for same-named servers, except
-                        // that a transport jcode cannot run must not displace a
+                        // that a transport wvc cannot run must not displace a
                         // working stdio definition (issue #653).
                         Self::merge_servers_preferring_runnable(
                             &mut imported.servers,
@@ -438,12 +438,12 @@ impl McpConfig {
     }
 
     /// Load project-local MCP config files from `project_root`, in override
-    /// order: `.jcode/mcp.json`, then `.mcp.json` (Claude Code project config),
+    /// order: `.wvc/mcp.json`, then `.mcp.json` (Claude Code project config),
     /// then `.claude/mcp.json` (legacy compatibility). Later files override
     /// same-named servers from earlier ones.
     fn load_project_locals(project_root: &std::path::Path) -> Self {
         let mut merged = Self::default();
-        for relative in [".jcode/mcp.json", ".mcp.json", ".claude/mcp.json"] {
+        for relative in [".wvc/mcp.json", ".mcp.json", ".claude/mcp.json"] {
             let path = project_root.join(relative);
             if path.exists()
                 && let Ok(config) = Self::load_from_file(&path)
@@ -454,14 +454,14 @@ impl McpConfig {
         merged
     }
 
-    /// Load from default locations (merges jcode global + local, local overrides),
+    /// Load from default locations (merges wvc global + local, local overrides),
     /// resolving project-local config against the process working directory.
     pub fn load() -> Self {
         Self::load_for_dir(None)
     }
 
     /// Load from default locations, resolving project-local config
-    /// (`.jcode/mcp.json`, `.mcp.json`, `.claude/mcp.json`, and the per-project
+    /// (`.wvc/mcp.json`, `.mcp.json`, `.claude/mcp.json`, and the per-project
     /// entries in `~/.claude.json`) against `project_dir` instead of the
     /// process working directory when provided.
     ///
@@ -478,7 +478,7 @@ impl McpConfig {
 
         let mut merged = Self::default();
 
-        // Load jcode's own global config (~/.jcode/mcp.json)
+        // Load wvc's own global config (~/.wvc/mcp.json)
         if let Ok(wvc_dir) = crate::storage::wvc_dir() {
             let wvc_mcp = wvc_dir.join("mcp.json");
             if wvc_mcp.exists() {
@@ -506,7 +506,7 @@ impl McpConfig {
             );
         }
 
-        // jcode only supports stdio servers today. Drop HTTP/SSE entries (common
+        // wvc only supports stdio servers today. Drop HTTP/SSE entries (common
         // in Claude Code configs) so they don't fail to spawn, but log them so
         // the omission is visible.
         merged.servers.retain(|name, cfg| {
@@ -524,11 +524,11 @@ impl McpConfig {
         merged
     }
 
-    /// Merge `incoming` over `existing`, except that an entry jcode cannot run
+    /// Merge `incoming` over `existing`, except that an entry wvc cannot run
     /// (HTTP/SSE) never displaces a working stdio entry for the same name.
     ///
     /// Without this, a `type: http` entry in `~/.claude.json` would overwrite a
-    /// working stdio server from `~/.jcode/mcp.json` and then be dropped by the
+    /// working stdio server from `~/.wvc/mcp.json` and then be dropped by the
     /// non-stdio filter, silently losing the server (issue #653).
     fn merge_servers_preferring_runnable(
         existing: &mut std::collections::HashMap<String, McpServerConfig>,

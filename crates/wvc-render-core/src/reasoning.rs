@@ -2,9 +2,9 @@
 //!
 //! Pure string helpers shared by the server/streaming path and the TUI renderer
 //! so the wrapping/escaping rules stay in lockstep with the renderer that
-//! consumes them. These live in `jcode-render-core` (a backend-neutral, pure
-//! crate) rather than in `jcode-tui-markdown` so the foundation/streaming layer
-//! can format reasoning lines without depending on any `jcode-tui-*` crate.
+//! consumes them. These live in `wvc-render-core` (a backend-neutral, pure
+//! crate) rather than in `wvc-tui-markdown` so the foundation/streaming layer
+//! can format reasoning lines without depending on any `wvc-tui-*` crate.
 
 /// Invisible separator placed just inside both ends of an emphasis run so the
 /// flanking `*` are always adjacent to non-whitespace (see
@@ -81,9 +81,9 @@ pub fn reasoning_partial_markup(line: &str) -> String {
 /// re-rendered from history in `current` reasoning-display mode (so reloaded /
 /// resumed sessions match the live collapse instead of replaying every line).
 ///
-/// Lives here (a backend-neutral, pure crate) rather than in `jcode-tui-markdown`
+/// Lives here (a backend-neutral, pure crate) rather than in `wvc-tui-markdown`
 /// so the foundation/streaming layer can format the summary without depending on
-/// any `jcode-tui-*` crate. Re-exported from `jcode-tui-markdown` for the
+/// any `wvc-tui-*` crate. Re-exported from `wvc-tui-markdown` for the
 /// existing `wvc_tui_markdown::reasoning_summary_line_markup` path.
 pub fn reasoning_summary_line_markup(line_count: usize) -> String {
     let label = match line_count {

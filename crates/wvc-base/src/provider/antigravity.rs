@@ -2,13 +2,13 @@
 //! (compatibility shim).
 //!
 //! The Antigravity provider *runtime* (`AntigravityProvider`) now lives in the
-//! downstream `jcode-provider-antigravity-runtime` crate so provider edits do
+//! downstream `wvc-provider-antigravity-runtime` crate so provider edits do
 //! not rebuild the base -> app-core -> tui spine. The binary's composition
 //! root registers it via [`crate::provider::external`].
 //!
 //! Base keeps two things here:
 //! - re-exports of the pure request/response types and helpers (from
-//!   `jcode-provider-antigravity`) at their historical paths, and
+//!   `wvc-provider-antigravity`) at their historical paths, and
 //! - the credentialed `fetchAvailableModels` catalog snapshot, because base's
 //!   `/usage` report needs per-model quota data without a runtime instance.
 

@@ -10,9 +10,9 @@
 //!   - At most once per week across all sessions (persisted timestamp), and
 //!     at most once per session.
 //!   - Never while onboarding is active, never for users who already hold
-//!     jcode account credentials, never in replay/test runtimes.
+//!     wvc account credentials, never in replay/test runtimes.
 //!
-//! `/subscribe` renders the full pitch and points at `/login jcode`.
+//! `/subscribe` renders the full pitch and points at `/login wvc`.
 
 use super::{App, AppRuntimeMode, DisplayMessage};
 use std::path::PathBuf;
@@ -26,9 +26,9 @@ const LONG_TASK_MIN_ELAPSED: Duration = Duration::from_secs(60 * 60);
 
 /// Copy appended to the rate-limit system message (trigger A).
 pub(super) const RATE_LIMIT_NUDGE_LINE: &str =
-    "Get more tokens with a jcode subscription: /subscribe";
+    "Get more tokens with a wvc subscription: /subscribe";
 /// Status-line tail shared by trigger B.
-const SUPPORT_NUDGE_NOTICE: &str = "Support jcode: /subscribe";
+const SUPPORT_NUDGE_NOTICE: &str = "Support wvc: /subscribe";
 
 /// Why a nudge fired. Used to build the message and recorded in the state file
 /// so we can tune trigger mix later.
@@ -49,7 +49,7 @@ impl SubscribeNudgeTrigger {
     }
 }
 
-/// Persisted nudge bookkeeping (one small JSON file under the jcode dir).
+/// Persisted nudge bookkeeping (one small JSON file under the wvc dir).
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 struct NudgeState {
     /// Unix seconds when a nudge was last shown, across all sessions.
@@ -129,7 +129,7 @@ fn format_elapsed(elapsed: Duration) -> String {
 /// The goodwill message for a completed long task.
 fn long_task_message(elapsed: Duration) -> String {
     format!(
-        "✦ jcode just worked {} for you. {}",
+        "✦ wvc just worked {} for you. {}",
         format_elapsed(elapsed),
         SUPPORT_NUDGE_NOTICE
     )
@@ -138,7 +138,7 @@ fn long_task_message(elapsed: Duration) -> String {
 /// The full `/subscribe` pitch. Reuses the live curated catalog so the plans
 /// and models never drift from `/subscription`.
 pub(super) fn subscribe_pitch_markdown() -> String {
-    let mut message = String::from("Subscribe to jcode\n\n");
+    let mut message = String::from("Subscribe to wvc\n\n");
     message.push_str("One subscription, more tokens, zero API keys:\n\n");
     message
         .push_str("  - Get more tokens: a monthly inference budget on curated frontier models\n");
@@ -152,12 +152,12 @@ pub(super) fn subscribe_pitch_markdown() -> String {
             model_names.join(", ")
         ));
     }
-    message.push_str("  - No key management: sign in once in the browser, jcode routes the rest\n");
+    message.push_str("  - No key management: sign in once in the browser, wvc routes the rest\n");
     message.push_str("  - Automatic failover routing when a provider has a bad day\n");
-    message.push_str("  - Funds jcode development - jcode is open source\n");
+    message.push_str("  - Funds wvc development - wvc is open source\n");
 
     message.push_str("\nPlans\n\n");
-    for tier in crate::subscription_catalog::JcodeTier::ALL.iter().copied() {
+    for tier in crate::subscription_catalog::WeavecoderTier::ALL.iter().copied() {
         message.push_str(&format!(
             "  - {} - ${}/mo, about ${:.2} usable inference budget\n",
             tier.display_name(),
@@ -166,7 +166,7 @@ pub(super) fn subscribe_pitch_markdown() -> String {
         ));
     }
 
-    message.push_str("\nStart: /login jcode (browser approval, no keys in the terminal)\n");
+    message.push_str("\nStart: /login wvc (browser approval, no keys in the terminal)\n");
     message.push_str("Details anytime: /subscription");
     message
 }
@@ -198,7 +198,7 @@ impl App {
         if self.onboarding_flow_active() {
             return false;
         }
-        // Never pitch existing jcode account holders.
+        // Never pitch existing wvc account holders.
         if crate::subscription_catalog::has_credentials() {
             return false;
         }
@@ -258,7 +258,7 @@ impl App {
     /// Render the `/subscribe` pitch into the transcript.
     pub(super) fn show_subscribe_pitch(&mut self) {
         self.push_display_message(DisplayMessage::system(subscribe_pitch_markdown()));
-        self.set_status_notice("Subscribe: /login jcode to start");
+        self.set_status_notice("Subscribe: /login wvc to start");
     }
 }
 
@@ -337,7 +337,7 @@ mod tests {
         let message = long_task_message(Duration::from_secs(60 * 83));
         assert_eq!(
             message,
-            "✦ jcode just worked 1h 23m for you. Support jcode: /subscribe"
+            "✦ wvc just worked 1h 23m for you. Support wvc: /subscribe"
         );
         assert!(long_task_message(Duration::from_secs(3600)).contains("worked 1h for you"));
         assert!(long_task_message(Duration::from_secs(59 * 60)).contains("worked 59m for you"));
@@ -354,10 +354,10 @@ mod tests {
         let pitch = subscribe_pitch_markdown();
         assert!(pitch.contains("Get more tokens"));
         assert!(pitch.contains("open source"));
-        assert!(pitch.contains("/login jcode"));
+        assert!(pitch.contains("/login wvc"));
         assert!(pitch.contains("/subscription"));
         // Every launched tier appears with its retail price.
-        for tier in crate::subscription_catalog::JcodeTier::ALL.iter().copied() {
+        for tier in crate::subscription_catalog::WeavecoderTier::ALL.iter().copied() {
             assert!(pitch.contains(tier.display_name()));
             assert!(pitch.contains(&format!("${}/mo", tier.retail_price_usd())));
         }

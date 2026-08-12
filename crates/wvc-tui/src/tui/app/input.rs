@@ -986,7 +986,7 @@ fn csi_run_length(bytes: &[u8]) -> Option<usize> {
 /// `None` when the run could plausibly be text the user typed.
 ///
 /// Requires at least one parameter byte and one of the final bytes emitted by
-/// the reporting modes jcode enables, so `array[0]` and `[TODO]` are left alone
+/// the reporting modes wvc enables, so `array[0]` and `[TODO]` are left alone
 /// while `[<65;50;24M` and `[200~` are recognized.
 fn bare_terminal_report_length(bytes: &[u8]) -> Option<usize> {
     debug_assert_eq!(bytes.first(), Some(&b'['));
@@ -1703,7 +1703,7 @@ impl App {
             .unwrap_or(false)
     }
 
-    /// Spawn a brand-new jcode session in a new terminal window.
+    /// Spawn a brand-new wvc session in a new terminal window.
     pub(crate) fn handle_new_terminal_hotkey(&mut self) {
         let cwd = commands::active_working_dir(self)
             .filter(|path| path.is_dir())
@@ -1712,7 +1712,7 @@ impl App {
         match super::spawn_fresh_session_in_new_terminal(&cwd) {
             Ok(true) => self.set_status_notice("↗ New terminal opened"),
             Ok(false) => {
-                self.set_status_notice("No supported terminal found; run `jcode` manually")
+                self.set_status_notice("No supported terminal found; run `wvc` manually")
             }
             Err(error) => self.set_status_notice(format!("New terminal failed: {}", error)),
         }
@@ -2453,7 +2453,7 @@ pub(super) fn handle_modal_key(
             // Ctrl+C over an active selection is universal copy muscle
             // memory. Falling through here used to reach the global handler,
             // which quits when idle, so trying to copy an error message
-            // closed jcode and lost the error (issue #497). Only fall
+            // closed wvc and lost the error (issue #497). Only fall
             // through (interrupt/quit) when nothing is selected.
             if code == KeyCode::Char('c')
                 && app
@@ -2826,7 +2826,7 @@ impl App {
             return Ok(());
         }
 
-        // Accept an armed "merge the diverged update" offer: spawn a jcode agent
+        // Accept an armed "merge the diverged update" offer: spawn a wvc agent
         // to reconcile the branches. Shares the fallback-switch accept key.
         if self.merge_offer_key_matches(code, modifiers) {
             self.accept_update_merge_offer();
@@ -3559,7 +3559,7 @@ impl App {
 
             if self.is_remote {
                 self.push_display_message(DisplayMessage::system(
-                    "Input-line ! shell commands are only available in a local jcode TUI session.",
+                    "Input-line ! shell commands are only available in a local wvc TUI session.",
                 ));
                 self.set_status_notice("Local shell unavailable in remote mode");
                 return;
@@ -3595,7 +3595,7 @@ impl App {
             // daemon-side `skill_manage reload_all` can update a different process.
             // On a slash miss, synchronously refresh from the active session working
             // directory before reporting Unknown skill so project-local skills such
-            // as .jcode/skills/optimization work immediately after reload/build.
+            // as .wvc/skills/optimization work immediately after reload/build.
             if skill.is_none() {
                 self.refresh_skills_snapshot();
                 skill = self.current_skills_snapshot().get(&skill_name).cloned();
@@ -3629,7 +3629,7 @@ impl App {
                             skill_name, install
                         ),
                         None => format!(
-                            "Skill /{} is endorsed but not installed (source: {}). Install it into ~/.jcode/skills/{}/SKILL.md.",
+                            "Skill /{} is endorsed but not installed (source: {}). Install it into ~/.wvc/skills/{}/SKILL.md.",
                             skill_name, endorsed.source, skill_name
                         ),
                     });

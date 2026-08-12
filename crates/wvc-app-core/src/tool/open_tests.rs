@@ -53,7 +53,7 @@ fn resolve_target_treats_file_url_as_local_path() {
 #[test]
 fn resolve_target_rejects_missing_local_path() {
     let ctx = make_ctx();
-    let err = resolve_target("./definitely-missing-jcode-open-target", &ctx).unwrap_err();
+    let err = resolve_target("./definitely-missing-wvc-open-target", &ctx).unwrap_err();
     assert!(err.to_string().contains("Target path does not exist"));
 }
 

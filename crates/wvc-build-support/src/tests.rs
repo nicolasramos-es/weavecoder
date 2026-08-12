@@ -11,13 +11,13 @@ fn test_env_lock() -> std::sync::MutexGuard<'static, ()> {
 fn with_temp_wvc_home<T>(f: impl FnOnce() -> T) -> T {
     let _guard = test_env_lock();
     let temp_home = tempfile::tempdir().expect("tempdir");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    wvc_core::env::set_var("JCODE_HOME", temp_home.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    wvc_core::env::set_var("WVC_HOME", temp_home.path());
     let result = f();
     if let Some(prev_home) = prev_home {
-        wvc_core::env::set_var("JCODE_HOME", prev_home);
+        wvc_core::env::set_var("WVC_HOME", prev_home);
     } else {
-        wvc_core::env::remove_var("JCODE_HOME");
+        wvc_core::env::remove_var("WVC_HOME");
     }
     result
 }
@@ -192,8 +192,8 @@ fn test_find_repo_in_ancestors_walks_upward() {
 fn test_client_update_candidate_prefers_dev_binary_for_selfdev() {
     let _guard = test_env_lock();
     let temp_home = tempfile::tempdir().expect("tempdir");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    wvc_core::env::set_var("JCODE_HOME", temp_home.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    wvc_core::env::set_var("WVC_HOME", temp_home.path());
 
     let version = "test-current";
     let version_binary =
@@ -209,9 +209,9 @@ fn test_client_update_candidate_prefers_dev_binary_for_selfdev() {
     );
 
     if let Some(prev_home) = prev_home {
-        wvc_core::env::set_var("JCODE_HOME", prev_home);
+        wvc_core::env::set_var("WVC_HOME", prev_home);
     } else {
-        wvc_core::env::remove_var("JCODE_HOME");
+        wvc_core::env::remove_var("WVC_HOME");
     }
 }
 
@@ -557,7 +557,7 @@ fn simulate_stable_update_channel_swap(new_version: &str) {
 fn daemon_reload_target_version() -> Option<String> {
     let (candidate, _label) = shared_server_update_candidate(false)?;
     let canonical = std::fs::canonicalize(&candidate).unwrap_or(candidate);
-    // versions/<version>/jcode -> <version>
+    // versions/<version>/wvc -> <version>
     canonical
         .parent()
         .and_then(|p| p.file_name())
@@ -717,7 +717,7 @@ fn selfdev_reload_target_diverges_from_update_probe_when_shared_server_pinned() 
     });
 }
 
-/// Write a distinct, real binary into `versions/<version>/jcode` with an
+/// Write a distinct, real binary into `versions/<version>/wvc` with an
 /// explicit mtime so channel-repair mtime comparisons are deterministic
 /// (install_binary_at_version hard-links and would share an mtime).
 fn write_versioned_binary(version: &str, mtime: std::time::SystemTime) -> PathBuf {

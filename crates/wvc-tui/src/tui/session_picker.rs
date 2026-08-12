@@ -50,7 +50,7 @@ pub enum PickerResult {
     SelectedInCurrentTerminal(Vec<ResumeTarget>),
     SelectedInNewTerminal(Vec<ResumeTarget>),
     /// The user explicitly confirmed handing a live Claude Code process over
-    /// to Jcode. This is never emitted by ordinary Enter/resume behavior.
+    /// to Weavecoder. This is never emitted by ordinary Enter/resume behavior.
     TakeOverClaude(ResumeTarget),
     RestoreCrashedGroup(Vec<String>),
     /// The onboarding "Start a new session" row was chosen.
@@ -929,7 +929,7 @@ impl SessionPicker {
         external_path: Option<String>,
     ) -> Option<Vec<PreviewMessage>> {
         match resume_target {
-            ResumeTarget::JcodeSession { session_id } => {
+            ResumeTarget::WeavecoderSession { session_id } => {
                 let Ok(session) = Session::load(&session_id) else {
                     return None;
                 };

@@ -2,7 +2,7 @@
 //!
 //! This crate intentionally contains only hot, self-contained numeric code
 //! (3D ray-marching samplers, the 3x3 subpixel glyph chooser and the HSV->RGB
-//! conversion). It is split out of `jcode-tui` for two reasons:
+//! conversion). It is split out of `wvc-tui` for two reasons:
 //!
 //! 1. It can be pinned to `opt-level = 3` via per-package profile overrides in
 //!    the workspace `Cargo.toml`, so the trig-heavy inner loops stay fully

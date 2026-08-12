@@ -59,7 +59,7 @@ pub fn add_max_token_parameter(body: &mut Value, model: &str, max_tokens: u32) {
     body[max_token_parameter_for_model(model)] = json!(max_tokens);
 }
 
-/// Build OpenAI-compatible messages array from jcode's message format.
+/// Build OpenAI-compatible messages array from wvc's message format.
 ///
 /// Properly pairs tool_use blocks (in assistant messages) with their
 /// corresponding tool_result blocks (in user messages), handling out-of-order

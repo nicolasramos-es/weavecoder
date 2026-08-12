@@ -256,7 +256,7 @@ fn max_and_swarm_efforts_are_preserved_at_the_strongest_api_level() {
     assert_eq!(request["reasoning"]["summary"], serde_json::json!("auto"));
 }
 
-/// GPT-5.6 Sol is jcode's default OpenAI model and defaults to `low`
+/// GPT-5.6 Sol is wvc's default OpenAI model and defaults to `low`
 /// reasoning effort when the user has not configured one. The default must
 /// surface in `reasoning_effort()` (status/UI), resolve per-model (other
 /// models keep their API-side default), and land in the request payload.
@@ -323,7 +323,7 @@ fn gpt_5_6_sol_defaults_to_low_reasoning_effort() {
 }
 
 /// Regression guard for issue #203: prompt overlays (`AGENTS.md`,
-/// `.jcode/prompt-overlay.md`) were silently dropped in ChatGPT/Codex OAuth
+/// `.wvc/prompt-overlay.md`) were silently dropped in ChatGPT/Codex OAuth
 /// mode because the provider replaced the caller's fully-built system prompt
 /// with a hardcoded ChatGPT instruction block. The composed system prompt must
 /// reach the Responses API verbatim in *both* ChatGPT-OAuth and API-key modes,

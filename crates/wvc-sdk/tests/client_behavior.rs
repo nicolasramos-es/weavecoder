@@ -14,7 +14,7 @@ use wvc_harness_api::{
     API_VERSION_MAJOR, ApiEvent, ApiRequest, ClientFrame, ModelRouteInfo, ServerFrame, SessionInfo,
     TextMatch, read_frame, write_frame,
 };
-use wvc_sdk::{ConnectOptions, JcodeClient, SearchTextOptions, Transport};
+use wvc_sdk::{ConnectOptions, WeavecoderClient, SearchTextOptions, Transport};
 
 /// A socket-pair transport, so the test drives the client over the same code
 /// path a real connection uses.
@@ -41,7 +41,7 @@ fn session(id: &str) -> SessionInfo {
 
 /// Start a fake harness on one end of a socket pair. `handle` is called for
 /// every client frame with a writer for replies.
-fn fake_harness(handle: impl Fn(&ClientFrame, &mut dyn Write) + Send + 'static) -> JcodeClient {
+fn fake_harness(handle: impl Fn(&ClientFrame, &mut dyn Write) + Send + 'static) -> WeavecoderClient {
     let (ours, theirs) = UnixStream::pair().expect("socket pair");
     std::thread::spawn(move || {
         let mut reader = BufReader::new(theirs.try_clone().expect("clone"));
@@ -68,7 +68,7 @@ fn fake_harness(handle: impl Fn(&ClientFrame, &mut dyn Write) + Send + 'static) 
             handle(&frame, &mut writer);
         }
     });
-    JcodeClient::connect_with(
+    WeavecoderClient::connect_with(
         Box::new(PairTransport(ours)),
         ConnectOptions {
             request_timeout: Some(Duration::from_secs(5)),
@@ -560,7 +560,7 @@ fn a_lost_connection_fails_requests_in_flight() {
         // Drop both ends: the client's pending request must be failed.
     });
 
-    let client = JcodeClient::connect_with(
+    let client = WeavecoderClient::connect_with(
         Box::new(PairTransport(ours)),
         ConnectOptions {
             request_timeout: Some(Duration::from_secs(5)),

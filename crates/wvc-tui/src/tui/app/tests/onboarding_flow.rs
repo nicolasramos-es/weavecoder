@@ -115,8 +115,8 @@ fn direct_api_key_login_does_not_advertise_a_static_model_default() {
 #[test]
 fn onboarding_strongest_model_only_runs_without_explicit_defaults() {
     with_temp_wvc_home(|| {
-        let previous_explicit = std::env::var_os("JCODE_INITIAL_PROVIDER_EXPLICIT");
-        crate::env::remove_var("JCODE_INITIAL_PROVIDER_EXPLICIT");
+        let previous_explicit = std::env::var_os("WVC_INITIAL_PROVIDER_EXPLICIT");
+        crate::env::remove_var("WVC_INITIAL_PROVIDER_EXPLICIT");
 
         let mut app = onboarding_test_app();
         assert!(app.onboarding_should_prefer_strongest_model());
@@ -133,7 +133,7 @@ fn onboarding_strongest_model_only_runs_without_explicit_defaults() {
 
         config.provider.default_provider = None;
         config.save().expect("clear explicit defaults");
-        crate::env::set_var("JCODE_INITIAL_PROVIDER_EXPLICIT", "1");
+        crate::env::set_var("WVC_INITIAL_PROVIDER_EXPLICIT", "1");
         assert!(!app.onboarding_should_prefer_strongest_model());
 
         app.onboarding_auto_model_selection_active
@@ -146,9 +146,9 @@ fn onboarding_strongest_model_only_runs_without_explicit_defaults() {
         );
 
         if let Some(value) = previous_explicit {
-            crate::env::set_var("JCODE_INITIAL_PROVIDER_EXPLICIT", value);
+            crate::env::set_var("WVC_INITIAL_PROVIDER_EXPLICIT", value);
         } else {
-            crate::env::remove_var("JCODE_INITIAL_PROVIDER_EXPLICIT");
+            crate::env::remove_var("WVC_INITIAL_PROVIDER_EXPLICIT");
         }
     });
 }
@@ -542,7 +542,7 @@ fn openrouter_key_typed_through_full_key_path_does_not_reopen_picker() {
         assert!(app.input.is_empty(), "input buffer should clear after submit");
 
         // Crucially: the key must actually be *persisted*, not just "not loop".
-        // It is written to $JCODE_HOME/config/jcode/openrouter.env and exported
+        // It is written to $WVC_HOME/config/wvc/openrouter.env and exported
         // to OPENROUTER_API_KEY so the provider can authenticate.
         let env_file = crate::storage::app_config_dir().unwrap().join("openrouter.env");
         let contents = std::fs::read_to_string(&env_file)
@@ -790,7 +790,7 @@ fn startup_check_skips_selfdev_canary_session() {
         let mut app = create_test_app();
         app.onboarding_flow = None;
         app.onboarding_startup_checked = false;
-        // Self-dev / canary sessions (e.g. the niri `jcode self-dev` hotkey) take
+        // Self-dev / canary sessions (e.g. the niri `wvc self-dev` hotkey) take
         // a launch path that never bumps `launch_count`, so without this guard the
         // new-user heuristic would re-onboard on every spawn.
         app.session.is_canary = true;
@@ -965,7 +965,7 @@ fn local_post_import_validation_waits_for_model_activation() {
 fn startup_check_skips_user_with_established_session_history() {
     with_temp_wvc_home(|| {
         // A low/missing launch_count alone must NOT classify someone as a new
-        // user when their jcode home has a substantial native session history
+        // user when their wvc home has a substantial native session history
         // (e.g. setup_hints.json was reset or lost). Seed >=10 native session
         // files in the temp home.
         let sessions_dir = crate::storage::wvc_dir()

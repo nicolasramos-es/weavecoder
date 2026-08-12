@@ -231,7 +231,7 @@ pub(super) fn draw_help_overlay(frame: &mut Frame, area: Rect, scroll: usize, ap
     ));
     lines.push(help_entry(
         "/skills",
-        "Show loaded skills and jcode-endorsed recommendations",
+        "Show loaded skills and wvc-endorsed recommendations",
     ));
     lines.push(help_entry("/info", "Show session info and token usage"));
     lines.push(help_entry(
@@ -373,11 +373,11 @@ pub(super) fn draw_help_overlay(frame: &mut Frame, area: Rect, scroll: usize, ap
     ));
     lines.push(help_entry(
         "/subscription",
-        "Inspect jcode subscription scaffold",
+        "Inspect wvc subscription scaffold",
     ));
     lines.push(help_entry(
         "/subscribe",
-        "Why and how to subscribe to jcode",
+        "Why and how to subscribe to wvc",
     ));
 
     lines.push(Line::from(""));
@@ -407,7 +407,7 @@ pub(super) fn draw_help_overlay(frame: &mut Frame, area: Rect, scroll: usize, ap
         "/debug-visual",
         "Enable visual debugging for TUI issues",
     ));
-    lines.push(help_entry("/quit", "Exit jcode"));
+    lines.push(help_entry("/quit", "Exit wvc"));
 
     // The sections above are hand-curated for ordering, but they drift as
     // commands are added. Anything registered and not already shown gets listed
@@ -606,7 +606,7 @@ pub(super) fn draw_help_overlay(frame: &mut Frame, area: Rect, scroll: usize, ap
     if let Some(label) = crate::tui::keybind::load_new_terminal_key().label {
         lines.push(key_entry(
             &label,
-            "Spawn new jcode session in a new terminal",
+            "Spawn new wvc session in a new terminal",
         ));
     }
 
@@ -667,7 +667,7 @@ pub(super) fn draw_model_status_overlay(
     let mut lines: Vec<Line<'static>> = Vec::new();
     lines.push(Line::from(Span::styled("  Model Status", title_style)));
     lines.push(Line::from(Span::styled(
-        "  Live verification evidence for provider/model behavior in jcode",
+        "  Live verification evidence for provider/model behavior in wvc",
         dim_style,
     )));
     lines.push(Line::from(""));
@@ -705,7 +705,7 @@ pub(super) fn draw_model_status_overlay(
 
 fn model_status_line_style(raw: &str, default: Style) -> Style {
     // Reuse the same semantic classification the CLI uses so the TUI overlay
-    // and `jcode provider-test-coverage` stay color-consistent.
+    // and `wvc provider-test-coverage` stay color-consistent.
     use crate::live_tests::CoverageLineStyle;
     match crate::live_tests::classify_provider_test_coverage_line(raw) {
         CoverageLineStyle::Title => Style::default()

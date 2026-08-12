@@ -103,8 +103,8 @@ fn available_models_display_includes_dynamic_cache_and_current_override() {
 fn available_models_display_seeds_from_persisted_catalog() {
     let _guard = wvc_base::storage::lock_test_env();
     let temp = tempfile::TempDir::new().expect("temp dir");
-    let previous = std::env::var_os("JCODE_HOME");
-    wvc_base::env::set_var("JCODE_HOME", temp.path());
+    let previous = std::env::var_os("WVC_HOME");
+    wvc_base::env::set_var("WVC_HOME", temp.path());
 
     let path = wvc_base::provider::antigravity::persisted_catalog_path().expect("catalog path");
     wvc_base::storage::write_json(
@@ -140,9 +140,9 @@ fn available_models_display_seeds_from_persisted_catalog() {
     );
 
     if let Some(previous) = previous {
-        wvc_base::env::set_var("JCODE_HOME", previous);
+        wvc_base::env::set_var("WVC_HOME", previous);
     } else {
-        wvc_base::env::remove_var("JCODE_HOME");
+        wvc_base::env::remove_var("WVC_HOME");
     }
 }
 
@@ -274,7 +274,7 @@ fn resolve_model_for_request_default_prefers_gemini_catalog_model() {
 
     // Even though Claude is listed first (and recommended), the default alias
     // resolves to the Gemini model, which works reliably with tool use on the
-    // Cloud Code backend. Claude on this backend rejects jcode's tool schemas.
+    // Cloud Code backend. Claude on this backend rejects wvc's tool schemas.
     assert_eq!(
         provider.resolve_model_for_request("default"),
         "gemini-3-flash"
@@ -478,7 +478,7 @@ fn strip_numeric_schema_bounds_drops_array_and_string_and_object_bounds() {
 
 #[test]
 fn antigravity_compatible_schema_passes_gemini_through_unchanged() {
-    // Gemini is the native backend path; it accepts everything jcode emits, so
+    // Gemini is the native backend path; it accepts everything wvc emits, so
     // the schema must be byte-identical (combiners and numeric bounds intact).
     let schema = serde_json::json!({
         "type": "object",

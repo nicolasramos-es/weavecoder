@@ -1,6 +1,6 @@
 //! Dev-only visual harness: dump rendered spans with fg colors as JSON so a
 //! script can paint an approximation of the TUI output. Run with:
-//! `cargo test -p jcode-tui-markdown --test color_dump -- --nocapture --ignored`
+//! `cargo test -p wvc-tui-markdown --test color_dump -- --nocapture --ignored`
 use ratatui::style::Color;
 
 #[test]

@@ -89,7 +89,7 @@ fn estimate_preview_message_bytes(message: &PreviewMessage) -> usize {
 
 fn estimate_resume_target_bytes(value: &ResumeTarget) -> usize {
     match value {
-        ResumeTarget::JcodeSession { session_id } => session_id.capacity(),
+        ResumeTarget::WeavecoderSession { session_id } => session_id.capacity(),
         ResumeTarget::ClaudeCodeSession {
             session_id,
             session_path,

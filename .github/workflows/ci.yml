@@ -125,7 +125,7 @@ jobs:
       - uses: actions/checkout@v4
 
       # Discord release announcements removed: discord-release.yml was deleted
-        # (jcode Discord channel no longer applicable to weavecoder).
+        # (wvc Discord channel no longer applicable to weavecoder).
 
   build:
     name: Build & Test (${{ matrix.os }})

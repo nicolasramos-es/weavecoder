@@ -1,7 +1,7 @@
-//! Import Claude Code sessions into jcode
+//! Import Claude Code sessions into wvc
 //!
 //! This module handles discovering, parsing, and converting Claude Code sessions
-//! so they can be resumed within jcode.
+//! so they can be resumed within wvc.
 
 use crate::message::{ContentBlock, Role};
 use crate::session::{Session, SessionStatus, StoredMessage};
@@ -375,7 +375,7 @@ fn find_session_file(session_id: &str) -> Result<PathBuf> {
     anyhow::bail!("Session {} not found", session_id);
 }
 
-/// Convert Claude Code content blocks to jcode ContentBlocks
+/// Convert Claude Code content blocks to wvc ContentBlocks
 fn convert_content_blocks(content: &ClaudeCodeContent) -> Vec<ContentBlock> {
     match content {
         ClaudeCodeContent::Empty => vec![],
@@ -585,10 +585,10 @@ fn normalize_imported_history(session: &mut Session, apply_limits: bool) -> bool
 }
 
 fn reuse_existing_imported_session(session_id: &str) -> bool {
-    // An imported snapshot becomes a normal jcode continuation as soon as the
+    // An imported snapshot becomes a normal wvc continuation as soon as the
     // user resumes it. Never rewrite that snapshot merely because the external
     // transcript changed or because an older import contains structured blocks:
-    // doing so can discard jcode-only turns and journal state. New imports are
+    // doing so can discard wvc-only turns and journal state. New imports are
     // normalized before their first save, while existing imports remain the
     // durable source of truth for subsequent resumes.
     Session::load(session_id).is_ok()
@@ -602,7 +602,7 @@ pub fn import_session(session_id: &str) -> Result<Session> {
 
 pub fn imported_session_id_for_target(target: &wvc_session_types::ResumeTarget) -> Option<String> {
     match target {
-        wvc_session_types::ResumeTarget::JcodeSession { session_id } => Some(session_id.clone()),
+        wvc_session_types::ResumeTarget::WeavecoderSession { session_id } => Some(session_id.clone()),
         wvc_session_types::ResumeTarget::ClaudeCodeSession { session_id, .. } => {
             Some(imported_claude_code_session_id(session_id))
         }
@@ -621,7 +621,7 @@ pub fn imported_session_id_for_target(target: &wvc_session_types::ResumeTarget) 
     }
 }
 
-pub fn resolve_resume_target_to_jcode(
+pub fn resolve_resume_target_to_wvc(
     target: &wvc_session_types::ResumeTarget,
 ) -> Result<wvc_session_types::ResumeTarget> {
     use wvc_session_types::ResumeTarget;
@@ -630,8 +630,8 @@ pub fn resolve_resume_target_to_jcode(
     let cache_hit;
     let source_label;
     let session_id = match target {
-        ResumeTarget::JcodeSession { session_id } => {
-            return Ok(ResumeTarget::JcodeSession {
+        ResumeTarget::WeavecoderSession { session_id } => {
+            return Ok(ResumeTarget::WeavecoderSession {
                 session_id: session_id.clone(),
             });
         }
@@ -699,7 +699,7 @@ pub fn resolve_resume_target_to_jcode(
         prepare_start.elapsed().as_millis()
     ));
 
-    Ok(ResumeTarget::JcodeSession { session_id })
+    Ok(ResumeTarget::WeavecoderSession { session_id })
 }
 
 pub fn import_external_resume_id(resume_id: &str) -> Result<Option<String>> {
@@ -870,13 +870,13 @@ fn remove_prepared_takeover_session(session_id: &str) {
     crate::session_list_cache::invalidate();
 }
 
-/// Explicitly hand a currently-running Claude Code session over to Jcode.
+/// Explicitly hand a currently-running Claude Code session over to Weavecoder.
 ///
 /// This is deliberately separate from normal resume. It first imports the
-/// current transcript into a fresh durable Jcode session, then gracefully stops
+/// current transcript into a fresh durable Weavecoder session, then gracefully stops
 /// the exact PID guarded by Claude's process-start token. After Claude exits we
 /// refresh the prepared snapshot once to capture any final transcript flush.
-/// A stop failure rolls back the staged Jcode session and leaves ordinary
+/// A stop failure rolls back the staged Weavecoder session and leaves ordinary
 /// resume behavior unchanged.
 pub fn take_over_live_claude_session(
     target: &wvc_session_types::ResumeTarget,
@@ -900,7 +900,7 @@ fn take_over_live_claude_session_with_timeout(
 
     let live = crate::claude_live::find_live_claude_session(session_id)?
         .ok_or_else(|| anyhow::anyhow!("Claude Code session {session_id} is no longer live"))?;
-    // Use a normal memorable Jcode session ID so the handed-off conversation
+    // Use a normal memorable Weavecoder session ID so the handed-off conversation
     // remains visible and resumable later. Imported-prefixed IDs are hidden from
     // the native session list because their external source row represents them.
     let takeover_id = Session::create(None, None).id;
@@ -929,7 +929,7 @@ fn take_over_live_claude_session_with_timeout(
     if stop_outcome == crate::claude_live::StopLiveClaudeOutcome::ExitUnconfirmed {
         crate::session_list_cache::invalidate();
         anyhow::bail!(
-            "Claude Code process {} was asked to exit, but its exit was not confirmed; prepared Jcode session {} was preserved and can be resumed",
+            "Claude Code process {} was asked to exit, but its exit was not confirmed; prepared Weavecoder session {} was preserved and can be resumed",
             live.pid,
             takeover_id
         );
@@ -957,7 +957,7 @@ fn take_over_live_claude_session_with_timeout(
         crate::session_list_cache::invalidate();
         return Err(err).with_context(|| {
             format!(
-                "Claude Code exited, but its final transcript could not be refreshed; prepared Jcode session {takeover_id} was preserved"
+                "Claude Code exited, but its final transcript could not be refreshed; prepared Weavecoder session {takeover_id} was preserved"
             )
         });
     }
@@ -967,7 +967,7 @@ fn take_over_live_claude_session_with_timeout(
         live.pid
     ));
     crate::session_list_cache::invalidate();
-    Ok(ResumeTarget::JcodeSession {
+    Ok(ResumeTarget::WeavecoderSession {
         session_id: takeover_id,
     })
 }
@@ -1001,7 +1001,7 @@ fn finalize_imported_session(
     created_at: DateTime<Utc>,
     updated_at: Option<DateTime<Utc>>,
 ) -> Result<Session> {
-    // Never overwrite a jcode-side continuation with a shorter external
+    // Never overwrite a wvc-side continuation with a shorter external
     // transcript. This protection applies to every importer, not only Claude.
     if crate::session::session_exists(&session.id)
         && let Ok(mut existing) = Session::load(&session.id)

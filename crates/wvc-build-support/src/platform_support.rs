@@ -49,7 +49,7 @@ pub fn atomic_symlink_swap(src: &Path, dst: &Path, temp: &Path) -> std::io::Resu
                 .unwrap_or_default()
         );
         let old = dst.parent().unwrap_or_else(|| Path::new(".")).join(format!(
-            ".jcode-launcher-old-{operation_id}{}",
+            ".wvc-launcher-old-{operation_id}{}",
             dst.extension()
                 .map(|extension| format!(".{}", extension.to_string_lossy()))
                 .unwrap_or_default()
@@ -92,7 +92,7 @@ mod tests {
         let dir = tempfile::tempdir().expect("temporary directory");
         let src = dir.path().join("source.exe");
         let dst = dir.path().join("wvc.exe");
-        let temp = dir.path().join(".jcode-current");
+        let temp = dir.path().join(".wvc-current");
         std::fs::write(&src, b"new binary").expect("source");
         std::fs::write(&dst, b"old binary").expect("destination");
 
@@ -102,7 +102,7 @@ mod tests {
         assert!(!temp.exists());
         assert!(
             !dir.path()
-                .join(format!(".jcode-launcher-old-{}.exe", std::process::id()))
+                .join(format!(".wvc-launcher-old-{}.exe", std::process::id()))
                 .exists()
         );
     }

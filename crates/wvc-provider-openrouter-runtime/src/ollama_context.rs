@@ -1,11 +1,11 @@
 //! Ollama serving-context discovery for the OpenAI-compatible runtime.
 //!
-//! Ollama's `/v1/models` response carries no `context_length`, so jcode used to
+//! Ollama's `/v1/models` response carries no `context_length`, so wvc used to
 //! fall back to a generic large default (or the model's advertised trained
 //! window) and reported, for example, a 262K window for `qwen3:35b` while the
 //! server was actually serving a 4K window. Ollama silently truncates the
 //! prompt to that serving window, which looks exactly like "the model forgot
-//! the conversation" (issue: Ollama conversations appear stateless in jcode).
+//! the conversation" (issue: Ollama conversations appear stateless in wvc).
 //!
 //! The serving window is `min(trained context, server default)` where the
 //! server default comes from `OLLAMA_CONTEXT_LENGTH` (Ollama >= 0.6 defaults to
@@ -159,7 +159,7 @@ pub(crate) async fn maybe_enrich(
 /// Best-effort: models whose metadata cannot be read keep whatever the
 /// OpenAI-compatible response provided. When the server default is known and a
 /// model reports a much larger trained window, a one-line hint is logged so the
-/// user knows to raise `OLLAMA_CONTEXT_LENGTH` instead of assuming jcode lost
+/// user knows to raise `OLLAMA_CONTEXT_LENGTH` instead of assuming wvc lost
 /// the conversation.
 async fn enrich_ollama_context_lengths(client: &Client, api_base: &str, models: &mut [ModelInfo]) {
     let root = ollama_native_root(api_base);

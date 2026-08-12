@@ -9,19 +9,19 @@ pub struct TerminalCommand {
     pub title: Option<String>,
     pub fresh_spawn: bool,
     /// What this spawn is for (e.g. "resume", "selfdev", "swarm-agent").
-    /// Exported as `JCODE_SPAWN_KIND` to spawn hooks and spawned terminals.
+    /// Exported as `WVC_SPAWN_KIND` to spawn hooks and spawned terminals.
     pub kind: Option<String>,
-    /// The jcode session this terminal will run, when known.
-    /// Exported as `JCODE_SPAWN_SESSION_ID`.
+    /// The wvc session this terminal will run, when known.
+    /// Exported as `WVC_SPAWN_SESSION_ID`.
     pub session_id: Option<String>,
-    /// Extra metadata env entries (e.g. `JCODE_SPAWN_SWARM_ID`) exported to
+    /// Extra metadata env entries (e.g. `WVC_SPAWN_SWARM_ID`) exported to
     /// spawn hooks and spawned terminals. Applied after the first-class
-    /// `JCODE_SPAWN_*` keys, so entries here win on key collisions.
+    /// `WVC_SPAWN_*` keys, so entries here win on key collisions.
     pub extra_env: Vec<(String, String)>,
     /// Terminal-identifying env vars captured from the *client* that requested
     /// this spawn (see [`snapshot_client_terminal_env`]). When set, these
     /// override the (possibly stale) server-inherited values for the same keys
-    /// and are also exported under a `JCODE_CLIENT_*` prefix so spawn/focus
+    /// and are also exported under a `WVC_CLIENT_*` prefix so spawn/focus
     /// hooks can target the terminal the user is actually attached to (#405).
     pub client_terminal_env: Vec<(String, String)>,
 }
@@ -77,7 +77,7 @@ impl TerminalCommand {
 /// Terminal/window-manager environment variables that identify *which*
 /// terminal, multiplexer, or display a client is attached to.
 ///
-/// The jcode server process is long-lived and captures these at *its* startup,
+/// The wvc server process is long-lived and captures these at *its* startup,
 /// so once a client connects from a different terminal/tmux/zellij session the
 /// server's copies are stale. Spawn and focus hooks executed by the server then
 /// target the wrong terminal (see issue #405). To fix this, clients snapshot
@@ -343,7 +343,7 @@ fn resume_terminal_candidates_with_client_env(
 
     // A tmux client already owns the user's terminal layout. Prefer a pane in
     // that exact client over opening another emulator window. Explicit
-    // JCODE_TERMINAL and configured spawn hooks still take precedence.
+    // WVC_TERMINAL and configured spawn hooks still take precedence.
     let in_herdr = terminal_env_value(client_terminal_env, "HERDR_ENV").is_some()
         && terminal_env_value(client_terminal_env, "HERDR_PANE_ID").is_some();
     if !in_herdr
@@ -386,14 +386,14 @@ fn resume_terminal_candidates_with_client_env(
 
 #[cfg(unix)]
 pub fn resume_terminal_candidates() -> Vec<String> {
-    let configured_terminal = std::env::var("JCODE_TERMINAL").ok();
+    let configured_terminal = std::env::var("WVC_TERMINAL").ok();
     resume_terminal_candidates_with_client_env(&[], configured_terminal.as_deref())
 }
 
 #[cfg(not(unix))]
 pub fn resume_terminal_candidates() -> Vec<String> {
     let mut candidates = Vec::new();
-    if let Ok(term) = std::env::var("JCODE_TERMINAL") {
+    if let Ok(term) = std::env::var("WVC_TERMINAL") {
         push_unique_terminal(&mut candidates, term);
     }
     if let Some(term) = detected_resume_terminal() {
@@ -414,7 +414,7 @@ pub fn spawn_command_in_new_terminal_with(
 
     #[cfg(unix)]
     let candidates = {
-        let configured_terminal = std::env::var("JCODE_TERMINAL").ok();
+        let configured_terminal = std::env::var("WVC_TERMINAL").ok();
         resume_terminal_candidates_with_client_env(
             &command.client_terminal_env,
             configured_terminal.as_deref(),
@@ -524,52 +524,52 @@ pub fn expand_home(program: &str) -> PathBuf {
     PathBuf::from(program)
 }
 
-/// The `JCODE_SPAWN_*` metadata env exported to spawn hooks and to terminals
+/// The `WVC_SPAWN_*` metadata env exported to spawn hooks and to terminals
 /// launched by the built-in fallback:
 ///
-/// - `JCODE_SPAWN_KIND`: why this spawn happened ("resume", "selfdev",
+/// - `WVC_SPAWN_KIND`: why this spawn happened ("resume", "selfdev",
 ///   "swarm-agent", ...), when known.
-/// - `JCODE_SPAWN_SESSION_ID`: the jcode session the window will run.
-/// - `JCODE_SPAWN_TITLE`: the suggested window/tab title.
-/// - `JCODE_SPAWN_CWD`: the working directory for the session.
-/// - `JCODE_SPAWN_PROGRAM`: path of the jcode binary to execute.
-/// - `JCODE_SPAWN_COMMAND`: the full command line, shell-escaped, for hooks
+/// - `WVC_SPAWN_SESSION_ID`: the wvc session the window will run.
+/// - `WVC_SPAWN_TITLE`: the suggested window/tab title.
+/// - `WVC_SPAWN_CWD`: the working directory for the session.
+/// - `WVC_SPAWN_PROGRAM`: path of the wvc binary to execute.
+/// - `WVC_SPAWN_COMMAND`: the full command line, shell-escaped, for hooks
 ///   (like tmux) that take a single shell-command string.
 ///
-/// `TerminalCommand::extra_env` entries (e.g. `JCODE_SPAWN_SWARM_ID`,
-/// `JCODE_SPAWN_COORDINATOR_SESSION_ID`) are appended last and win collisions.
+/// `TerminalCommand::extra_env` entries (e.g. `WVC_SPAWN_SWARM_ID`,
+/// `WVC_SPAWN_COORDINATOR_SESSION_ID`) are appended last and win collisions.
 fn spawn_metadata_env(command: &TerminalCommand, cwd: &Path) -> Vec<(String, String)> {
     let mut env: Vec<(String, String)> = Vec::new();
     if let Some(kind) = &command.kind {
-        env.push(("JCODE_SPAWN_KIND".to_string(), kind.clone()));
+        env.push(("WVC_SPAWN_KIND".to_string(), kind.clone()));
     }
     if let Some(session_id) = &command.session_id {
-        env.push(("JCODE_SPAWN_SESSION_ID".to_string(), session_id.clone()));
+        env.push(("WVC_SPAWN_SESSION_ID".to_string(), session_id.clone()));
     }
     if let Some(title) = &command.title {
-        env.push(("JCODE_SPAWN_TITLE".to_string(), title.clone()));
+        env.push(("WVC_SPAWN_TITLE".to_string(), title.clone()));
     }
     env.push((
-        "JCODE_SPAWN_CWD".to_string(),
+        "WVC_SPAWN_CWD".to_string(),
         cwd.to_string_lossy().into_owned(),
     ));
     env.push((
-        "JCODE_SPAWN_PROGRAM".to_string(),
+        "WVC_SPAWN_PROGRAM".to_string(),
         command.program.to_string_lossy().into_owned(),
     ));
     env.push((
-        "JCODE_SPAWN_COMMAND".to_string(),
+        "WVC_SPAWN_COMMAND".to_string(),
         shell_command(&command_parts(command)),
     ));
     // Re-export the requesting client's terminal env so spawn/focus hooks use
     // the client's terminal, not the server's stale startup env (#405). Each
     // var is exported both under its native name (overriding the inherited
     // value the spawned process/hook would otherwise see) and under a
-    // `JCODE_CLIENT_<NAME>` alias so hooks can explicitly distinguish the
+    // `WVC_CLIENT_<NAME>` alias so hooks can explicitly distinguish the
     // client's terminal from the server's.
     for (key, value) in &command.client_terminal_env {
         env.push((key.clone(), value.clone()));
-        env.push((format!("JCODE_CLIENT_{key}"), value.clone()));
+        env.push((format!("WVC_CLIENT_{key}"), value.clone()));
     }
     env.extend(command.extra_env.iter().cloned());
     env
@@ -579,11 +579,11 @@ fn spawn_metadata_env(command: &TerminalCommand, cwd: &Path) -> Vec<(String, Str
 ///
 /// The hook command is parsed shell-style, then the target program and its
 /// arguments are appended as additional argv entries (the `$TERMINAL -e`
-/// convention), so `hook --flag` becomes `hook --flag <jcode> <args...>`.
+/// convention), so `hook --flag` becomes `hook --flag <wvc> <args...>`.
 /// The hook runs in the session working directory with the full
-/// `JCODE_SPAWN_*` metadata env set (see [`spawn_metadata_env`]); hooks that
+/// `WVC_SPAWN_*` metadata env set (see [`spawn_metadata_env`]); hooks that
 /// need a single shell-command string (tmux, kitty `@ launch`) can use
-/// `$JCODE_SPAWN_COMMAND` instead of the appended argv.
+/// `$WVC_SPAWN_COMMAND` instead of the appended argv.
 pub fn build_hook_spawn_command(
     hook: &str,
     command: &TerminalCommand,
@@ -603,7 +603,7 @@ pub fn build_hook_spawn_command(
         .stdout(Stdio::null())
         .stderr(Stdio::null());
     if command.fresh_spawn {
-        cmd.env("JCODE_FRESH_SPAWN", "1");
+        cmd.env("WVC_FRESH_SPAWN", "1");
     }
     for (key, value) in spawn_metadata_env(command, cwd) {
         cmd.env(key, value);
@@ -619,7 +619,7 @@ fn build_spawn_command(term: &str, command: &TerminalCommand, cwd: &Path) -> Opt
         .stdout(Stdio::null())
         .stderr(Stdio::null());
     if command.fresh_spawn {
-        cmd.env("JCODE_FRESH_SPAWN", "1");
+        cmd.env("WVC_FRESH_SPAWN", "1");
     }
 
     match term {
@@ -649,7 +649,7 @@ fn build_spawn_command(term: &str, command: &TerminalCommand, cwd: &Path) -> Opt
                 .arg(cwd)
                 .arg(shell);
             if command.fresh_spawn {
-                cmd.env("JCODE_FRESH_SPAWN", "1");
+                cmd.env("WVC_FRESH_SPAWN", "1");
             }
         }
         #[cfg(unix)]
@@ -679,7 +679,7 @@ fn build_spawn_command(term: &str, command: &TerminalCommand, cwd: &Path) -> Opt
                 .args(["-na", "Ghostty", "--args", "-e", "/bin/bash", "-lc"])
                 .arg(shell);
             if command.fresh_spawn {
-                cmd.env("JCODE_FRESH_SPAWN", "1");
+                cmd.env("WVC_FRESH_SPAWN", "1");
             }
         }
         "kitty" => {
@@ -727,7 +727,7 @@ fn build_spawn_command(term: &str, command: &TerminalCommand, cwd: &Path) -> Opt
             // `open -a Terminal <binary> --args ...` does NOT execute the binary with
             // arguments; it asks Terminal to open the file as a document. On a default
             // macOS install (where Apple Terminal is the only available terminal), that
-            // means split/resume spawns silently fail to launch jcode. Use AppleScript's
+            // means split/resume spawns silently fail to launch wvc. Use AppleScript's
             // `do script` so the command actually runs in a new Terminal window.
             cmd = Command::new("osascript");
             cmd.args(["-e", &macos_terminal_applescript(command, cwd)]);
@@ -748,7 +748,7 @@ fn build_spawn_command(term: &str, command: &TerminalCommand, cwd: &Path) -> Opt
     // Export spawn metadata to the terminal process so programs running
     // inside (shells, multiplexers) can also see why the window was opened.
     // Note: terminals launched indirectly (macOS `open`/`osascript` paths) do
-    // not inherit this env, matching the existing JCODE_FRESH_SPAWN caveat.
+    // not inherit this env, matching the existing WVC_FRESH_SPAWN caveat.
     for (key, value) in spawn_metadata_env(command, cwd) {
         cmd.env(key, value);
     }
@@ -796,7 +796,7 @@ fn macos_terminal_inner_script(command: &TerminalCommand, cwd: &Path) -> String 
         "cd {} && exec {}{}",
         sh_escape(&cwd.to_string_lossy()),
         if command.fresh_spawn {
-            "env JCODE_FRESH_SPAWN=1 "
+            "env WVC_FRESH_SPAWN=1 "
         } else {
             ""
         },
@@ -828,9 +828,9 @@ mod tests {
     fn spawn_metadata_env_reexports_client_terminal_env_with_native_and_client_keys() {
         // A spawn carrying the requesting client's terminal env (#405) should
         // export each var both natively (overriding the spawned process's
-        // inherited/stale value) and under a `JCODE_CLIENT_*` alias so hooks can
+        // inherited/stale value) and under a `WVC_CLIENT_*` alias so hooks can
         // distinguish the client's terminal from the server's.
-        let command = TerminalCommand::new("/usr/local/bin/jcode", vec!["--resume".to_string()])
+        let command = TerminalCommand::new("/usr/local/bin/wvc", vec!["--resume".to_string()])
             .kind("swarm-agent")
             .session_id("ses_405")
             .client_terminal_env(vec![
@@ -848,24 +848,24 @@ mod tests {
 
         assert_eq!(lookup("ZELLIJ_SESSION_NAME").as_deref(), Some("sessionB"));
         assert_eq!(
-            lookup("JCODE_CLIENT_ZELLIJ_SESSION_NAME").as_deref(),
+            lookup("WVC_CLIENT_ZELLIJ_SESSION_NAME").as_deref(),
             Some("sessionB")
         );
         assert_eq!(lookup("DISPLAY").as_deref(), Some(":1"));
-        assert_eq!(lookup("JCODE_CLIENT_DISPLAY").as_deref(), Some(":1"));
+        assert_eq!(lookup("WVC_CLIENT_DISPLAY").as_deref(), Some(":1"));
         // The first-class spawn metadata still flows through.
-        assert_eq!(lookup("JCODE_SPAWN_KIND").as_deref(), Some("swarm-agent"));
+        assert_eq!(lookup("WVC_SPAWN_KIND").as_deref(), Some("swarm-agent"));
     }
 
     #[test]
     fn spawn_metadata_env_without_client_env_has_no_client_keys() {
-        let command = TerminalCommand::new("/usr/local/bin/jcode", vec!["--resume".to_string()])
+        let command = TerminalCommand::new("/usr/local/bin/wvc", vec!["--resume".to_string()])
             .kind("resume")
             .session_id("ses_plain");
         let env = spawn_metadata_env(&command, Path::new("/tmp/work"));
         assert!(
-            !env.iter().any(|(k, _)| k.starts_with("JCODE_CLIENT_")),
-            "no client terminal env should produce no JCODE_CLIENT_* keys"
+            !env.iter().any(|(k, _)| k.starts_with("WVC_CLIENT_")),
+            "no client terminal env should produce no WVC_CLIENT_* keys"
         );
     }
 
@@ -987,12 +987,12 @@ mod tests {
     #[cfg(unix)]
     fn missing_tmux_binary_falls_back_to_detected_emulator() {
         let _guard = ENV_LOCK.lock().unwrap();
-        let previous_terminal = std::env::var_os("JCODE_TERMINAL");
+        let previous_terminal = std::env::var_os("WVC_TERMINAL");
         unsafe {
-            std::env::remove_var("JCODE_TERMINAL");
+            std::env::remove_var("WVC_TERMINAL");
         }
         let command =
-            TerminalCommand::new("/usr/local/bin/jcode", vec![]).client_terminal_env(vec![
+            TerminalCommand::new("/usr/local/bin/wvc", vec![]).client_terminal_env(vec![
                 (
                     "TMUX".to_string(),
                     "/tmp/tmux-1000/default,123,0".to_string(),
@@ -1014,8 +1014,8 @@ mod tests {
             });
 
         match previous_terminal {
-            Some(value) => unsafe { std::env::set_var("JCODE_TERMINAL", value) },
-            None => unsafe { std::env::remove_var("JCODE_TERMINAL") },
+            Some(value) => unsafe { std::env::set_var("WVC_TERMINAL", value) },
+            None => unsafe { std::env::remove_var("WVC_TERMINAL") },
         }
         assert!(matches!(result, Ok(true)));
         assert_eq!(attempts, vec!["tmux", "kitty"]);
@@ -1025,7 +1025,7 @@ mod tests {
     #[cfg(unix)]
     fn tmux_spawn_opens_right_split_in_requesting_pane() {
         let command = TerminalCommand::new(
-            "/usr/local/bin/jcode",
+            "/usr/local/bin/wvc",
             vec!["--resume".to_string(), "ses_tmux".to_string()],
         )
         .client_terminal_env(vec![
@@ -1052,7 +1052,7 @@ mod tests {
                 "%42",
                 "-c",
                 "/work/dir",
-                "/usr/local/bin/jcode",
+                "/usr/local/bin/wvc",
                 "--resume",
                 "ses_tmux",
             ]
@@ -1064,7 +1064,7 @@ mod tests {
     #[cfg(unix)]
     fn herdr_spawn_splits_calling_pane_and_runs_resume_command() {
         let command = TerminalCommand::new(
-            "/usr/local/bin/jcode",
+            "/usr/local/bin/wvc",
             vec!["--resume".to_string(), "ses herdr".to_string()],
         )
         .client_terminal_env(vec![
@@ -1089,7 +1089,7 @@ mod tests {
         assert_eq!(args[2], "wvc-herdr-spawn");
         assert_eq!(args[3], "/opt/herdr/bin/herdr");
         assert_eq!(args[4], "/work/a b");
-        assert_eq!(args[5], "'/usr/local/bin/jcode' '--resume' 'ses herdr'");
+        assert_eq!(args[5], "'/usr/local/bin/wvc' '--resume' 'ses herdr'");
     }
 
     #[test]
@@ -1123,7 +1123,7 @@ mod tests {
         std::fs::set_permissions(&herdr, permissions).unwrap();
 
         let command = TerminalCommand::new(
-            "/opt/Jcode App/jcode",
+            "/opt/Weavecoder App/wvc",
             vec!["--resume".to_string(), "session with spaces".to_string()],
         )
         .client_terminal_env(vec![
@@ -1147,7 +1147,7 @@ mod tests {
         );
         assert_eq!(
             lines[1],
-            "pane run w9:p12 '/opt/Jcode App/jcode' '--resume' 'session with spaces'"
+            "pane run w9:p12 '/opt/Weavecoder App/wvc' '--resume' 'session with spaces'"
         );
         let _ = std::fs::remove_dir_all(dir);
     }
@@ -1156,7 +1156,7 @@ mod tests {
     fn shell_command_quotes_arguments() {
         let shell = shell_command(&["wvc".to_string(), "it's ok".to_string()]);
         #[cfg(unix)]
-        assert_eq!(shell, "'jcode' 'it'\"'\"'s ok'");
+        assert_eq!(shell, "'wvc' 'it'\"'\"'s ok'");
     }
 
     #[test]
@@ -1172,7 +1172,7 @@ mod tests {
     #[cfg(not(unix))]
     fn windows_cmd_fallback_runs_wvc_under_cmd_k() {
         let command = TerminalCommand::new(
-            std::path::PathBuf::from(r"C:\Program Files\jcode\jcode.exe"),
+            std::path::PathBuf::from(r"C:\Program Files\wvc\wvc.exe"),
             vec!["self-dev".to_string()],
         )
         .title("wvc");
@@ -1182,36 +1182,36 @@ mod tests {
             .map(|arg| arg.to_string_lossy().into_owned())
             .collect();
         assert_eq!(&args[..5], ["/C", "start", "wvc", "cmd.exe", "/K"]);
-        assert!(args[5].contains(r#""C:\Program Files\jcode\jcode.exe""#));
+        assert!(args[5].contains(r#""C:\Program Files\wvc\wvc.exe""#));
         assert!(args[5].contains("self-dev"));
     }
 
     #[test]
     #[cfg(unix)]
-    fn macos_terminal_inner_script_runs_jcode() {
+    fn macos_terminal_inner_script_runs_wvc() {
         let command = TerminalCommand::new(
-            std::path::PathBuf::from("/usr/local/bin/jcode"),
+            std::path::PathBuf::from("/usr/local/bin/wvc"),
             vec!["--resume".to_string(), "abc-123".to_string()],
         );
         let script = macos_terminal_inner_script(&command, Path::new("/work/dir"));
         assert_eq!(
             script,
-            "cd '/work/dir' && exec '/usr/local/bin/jcode' '--resume' 'abc-123'"
+            "cd '/work/dir' && exec '/usr/local/bin/wvc' '--resume' 'abc-123'"
         );
-        // Must actually exec jcode, not the broken `open -a Terminal <file>` form.
-        assert!(script.contains("exec '/usr/local/bin/jcode'"));
+        // Must actually exec wvc, not the broken `open -a Terminal <file>` form.
+        assert!(script.contains("exec '/usr/local/bin/wvc'"));
     }
 
     #[test]
     #[cfg(unix)]
     fn macos_terminal_inner_script_injects_fresh_spawn() {
         let command =
-            TerminalCommand::new(std::path::PathBuf::from("/usr/local/bin/jcode"), vec![])
+            TerminalCommand::new(std::path::PathBuf::from("/usr/local/bin/wvc"), vec![])
                 .fresh_spawn();
         let script = macos_terminal_inner_script(&command, Path::new("/tmp"));
         assert_eq!(
             script,
-            "cd '/tmp' && exec env JCODE_FRESH_SPAWN=1 '/usr/local/bin/jcode'"
+            "cd '/tmp' && exec env WVC_FRESH_SPAWN=1 '/usr/local/bin/wvc'"
         );
     }
 
@@ -1219,7 +1219,7 @@ mod tests {
     #[cfg(unix)]
     fn macos_terminal_applescript_uses_do_script() {
         let command = TerminalCommand::new(
-            std::path::PathBuf::from("/usr/local/bin/jcode"),
+            std::path::PathBuf::from("/usr/local/bin/wvc"),
             vec!["--resume".to_string(), "abc-123".to_string()],
         );
         let applescript = macos_terminal_applescript(&command, Path::new("/work/dir"));
@@ -1227,7 +1227,7 @@ mod tests {
         assert!(applescript.contains("do script"));
         // The shell's single quotes survive; AppleScript only escapes \\ and ".
         assert!(!applescript.contains("exec \\\""));
-        assert!(applescript.contains("'/usr/local/bin/jcode'"));
+        assert!(applescript.contains("'/usr/local/bin/wvc'"));
     }
 
     // Reproduction for issue #203 part 3: when no terminal emulator can be
@@ -1236,7 +1236,7 @@ mod tests {
     #[test]
     fn no_terminal_available_returns_ok_false() {
         let command = TerminalCommand::new(
-            std::path::PathBuf::from("/usr/local/bin/jcode"),
+            std::path::PathBuf::from("/usr/local/bin/wvc"),
             vec!["--resume".to_string(), "abc-123".to_string()],
         );
         let result = spawn_command_in_new_terminal_with(&command, Path::new("/tmp"), |_cmd| {
@@ -1282,13 +1282,13 @@ mod tests {
     #[test]
     fn hook_spawn_command_appends_program_args_and_exports_metadata() {
         let command = TerminalCommand::new(
-            std::path::PathBuf::from("/usr/local/bin/jcode"),
+            std::path::PathBuf::from("/usr/local/bin/wvc"),
             vec!["--resume".to_string(), "ses_abc".to_string()],
         )
-        .title("🦊 jcode ses_abc")
+        .title("🦊 wvc ses_abc")
         .kind("swarm-agent")
         .session_id("ses_abc")
-        .spawn_env("JCODE_SPAWN_SWARM_ID", "swarm-1")
+        .spawn_env("WVC_SPAWN_SWARM_ID", "swarm-1")
         .fresh_spawn();
 
         let cmd = build_hook_spawn_command("tmux-hook --flag", &command, Path::new("/work/dir"))
@@ -1301,7 +1301,7 @@ mod tests {
             .collect();
         assert_eq!(
             args,
-            vec!["--flag", "/usr/local/bin/jcode", "--resume", "ses_abc"]
+            vec!["--flag", "/usr/local/bin/wvc", "--resume", "ses_abc"]
         );
         assert_eq!(
             cmd.get_current_dir(),
@@ -1310,42 +1310,42 @@ mod tests {
         );
 
         assert_eq!(
-            env_value(&cmd, "JCODE_SPAWN_KIND").as_deref(),
+            env_value(&cmd, "WVC_SPAWN_KIND").as_deref(),
             Some("swarm-agent")
         );
         assert_eq!(
-            env_value(&cmd, "JCODE_SPAWN_SESSION_ID").as_deref(),
+            env_value(&cmd, "WVC_SPAWN_SESSION_ID").as_deref(),
             Some("ses_abc")
         );
         assert_eq!(
-            env_value(&cmd, "JCODE_SPAWN_TITLE").as_deref(),
-            Some("🦊 jcode ses_abc")
+            env_value(&cmd, "WVC_SPAWN_TITLE").as_deref(),
+            Some("🦊 wvc ses_abc")
         );
         assert_eq!(
-            env_value(&cmd, "JCODE_SPAWN_CWD").as_deref(),
+            env_value(&cmd, "WVC_SPAWN_CWD").as_deref(),
             Some("/work/dir")
         );
         assert_eq!(
-            env_value(&cmd, "JCODE_SPAWN_PROGRAM").as_deref(),
-            Some("/usr/local/bin/jcode")
+            env_value(&cmd, "WVC_SPAWN_PROGRAM").as_deref(),
+            Some("/usr/local/bin/wvc")
         );
         #[cfg(unix)]
         assert_eq!(
-            env_value(&cmd, "JCODE_SPAWN_COMMAND").as_deref(),
-            Some("'/usr/local/bin/jcode' '--resume' 'ses_abc'")
+            env_value(&cmd, "WVC_SPAWN_COMMAND").as_deref(),
+            Some("'/usr/local/bin/wvc' '--resume' 'ses_abc'")
         );
         assert_eq!(
-            env_value(&cmd, "JCODE_SPAWN_SWARM_ID").as_deref(),
+            env_value(&cmd, "WVC_SPAWN_SWARM_ID").as_deref(),
             Some("swarm-1")
         );
-        assert_eq!(env_value(&cmd, "JCODE_FRESH_SPAWN").as_deref(), Some("1"));
+        assert_eq!(env_value(&cmd, "WVC_FRESH_SPAWN").as_deref(), Some("1"));
     }
 
     #[test]
     #[cfg(all(unix, not(target_os = "macos")))]
     fn builtin_terminal_spawn_exports_metadata_env() {
         let command = TerminalCommand::new(
-            std::path::PathBuf::from("/usr/local/bin/jcode"),
+            std::path::PathBuf::from("/usr/local/bin/wvc"),
             vec!["--resume".to_string(), "ses_abc".to_string()],
         )
         .kind("resume")
@@ -1354,11 +1354,11 @@ mod tests {
         let cmd = build_spawn_command("kitty", &command, Path::new("/work/dir"))
             .expect("kitty spawn command should build");
         assert_eq!(
-            env_value(&cmd, "JCODE_SPAWN_KIND").as_deref(),
+            env_value(&cmd, "WVC_SPAWN_KIND").as_deref(),
             Some("resume")
         );
         assert_eq!(
-            env_value(&cmd, "JCODE_SPAWN_SESSION_ID").as_deref(),
+            env_value(&cmd, "WVC_SPAWN_SESSION_ID").as_deref(),
             Some("ses_abc")
         );
     }

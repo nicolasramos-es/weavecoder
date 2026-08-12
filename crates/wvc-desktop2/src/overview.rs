@@ -6,7 +6,7 @@
 //! working directory (a workspace) and a *card* is a session in it (a
 //! window), so "where am I, and what else is running" reads the same way it
 //! does on the desktop. A card's width tracks how much conversation the
-//! session holds, so "the wide one in the jcode row" is a thing you can point
+//! session holds, so "the wide one in the wvc row" is a thing you can point
 //! at and remember.
 //!
 //! Placement is deterministic: rows stack in first-appearance order and cards
@@ -566,9 +566,9 @@ mod tests {
     fn field() -> Field {
         layout(
             &[
-                entry("a1", "/home/j/jcode", 400.0),
-                entry("a2", "/home/j/jcode", 40.0),
-                entry("a3", "/home/j/jcode", 4.0),
+                entry("a1", "/home/j/wvc", 400.0),
+                entry("a2", "/home/j/wvc", 40.0),
+                entry("a3", "/home/j/wvc", 4.0),
                 entry("b1", "/home/j/site", 200.0),
                 entry("b2", "/home/j/site", 10.0),
             ],

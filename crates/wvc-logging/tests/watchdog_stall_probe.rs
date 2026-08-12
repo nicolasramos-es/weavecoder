@@ -1,7 +1,7 @@
 //! End-to-end probe: a real stalled thread must produce a `watchdog.stall`
 //! log line naming the last phase, so silent hangs stop being invisible.
 //!
-//! Run with: cargo test -p jcode-logging --test watchdog_stall_probe -- --ignored
+//! Run with: cargo test -p wvc-logging --test watchdog_stall_probe -- --ignored
 
 use std::time::{Duration, Instant};
 
@@ -12,8 +12,8 @@ fn stalled_process_emits_watchdog_stall_event() {
     std::fs::create_dir_all(&dir).unwrap();
     unsafe {
         std::env::set_var("HOME", &dir);
-        std::env::set_var("JCODE_WATCHDOG_STALL_SECS", "5");
-        std::env::set_var("JCODE_WATCHDOG_HEARTBEAT_SECS", "5");
+        std::env::set_var("WVC_WATCHDOG_STALL_SECS", "5");
+        std::env::set_var("WVC_WATCHDOG_HEARTBEAT_SECS", "5");
     }
 
     wvc_logging::init();

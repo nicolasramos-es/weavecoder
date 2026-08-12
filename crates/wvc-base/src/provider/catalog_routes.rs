@@ -264,7 +264,7 @@ pub(super) fn multiprovider_model_routes(provider: &MultiProvider) -> Vec<ModelR
     }
 
     let total_ms = routes_started.elapsed().as_millis();
-    if total_ms >= 250 || std::env::var("JCODE_LOG_MODEL_PICKER_TIMING").is_ok() {
+    if total_ms >= 250 || std::env::var("WVC_LOG_MODEL_PICKER_TIMING").is_ok() {
         crate::logging::info(&format!(
             "[TIMING] model_routes: routes={}, openrouter_configured={}, openrouter_models={}, openrouter_endpoint_cache_hits={}, openrouter_endpoint_routes={}, openrouter_scheduled_endpoint_refreshes={}, total={}ms",
             routes.len(),
@@ -843,15 +843,15 @@ pub fn remote_model_routes_fallback(
     remote_available_entries: &[String],
 ) -> Vec<ModelRoute> {
     if remote_provider_name.is_some_and(|name| {
-        name.eq_ignore_ascii_case(crate::subscription_catalog::JCODE_PROVIDER_DISPLAY_NAME)
+        name.eq_ignore_ascii_case(crate::subscription_catalog::WVC_PROVIDER_DISPLAY_NAME)
     }) {
         return remote_available_entries
             .iter()
             .filter(|model| is_listable_model_name(model))
             .map(|model| ModelRoute {
                 model: model.clone(),
-                provider: crate::subscription_catalog::JCODE_PROVIDER_DISPLAY_NAME.to_string(),
-                api_method: crate::subscription_catalog::JCODE_ROUTE_API_METHOD.to_string(),
+                provider: crate::subscription_catalog::WVC_PROVIDER_DISPLAY_NAME.to_string(),
+                api_method: crate::subscription_catalog::WVC_ROUTE_API_METHOD.to_string(),
                 available: true,
                 detail: "wvc subscription routing · managed server-side".to_string(),
                 cheapness: None,
@@ -1057,7 +1057,7 @@ pub fn remote_model_routes_lightweight_fallback(
     current_model: &str,
 ) -> Vec<ModelRoute> {
     let is_wvc_subscription = remote_provider_name.is_some_and(|name| {
-        name.eq_ignore_ascii_case(crate::subscription_catalog::JCODE_PROVIDER_DISPLAY_NAME)
+        name.eq_ignore_ascii_case(crate::subscription_catalog::WVC_PROVIDER_DISPLAY_NAME)
     });
     let provider = remote_provider_name
         .map(str::to_string)
@@ -1071,7 +1071,7 @@ pub fn remote_model_routes_lightweight_fallback(
             model: model.clone(),
             provider: provider.clone(),
             api_method: if is_wvc_subscription {
-                crate::subscription_catalog::JCODE_ROUTE_API_METHOD.to_string()
+                crate::subscription_catalog::WVC_ROUTE_API_METHOD.to_string()
             } else {
                 "remote-catalog".to_string()
             },
@@ -1272,10 +1272,10 @@ mod tests {
             let lock = crate::storage::lock_test_env();
             let temp = tempfile::tempdir().expect("tempdir");
             let vars = vec![
-                ("JCODE_HOME", std::env::var_os("JCODE_HOME")),
+                ("WVC_HOME", std::env::var_os("WVC_HOME")),
                 ("OPENCODE_API_KEY", std::env::var_os("OPENCODE_API_KEY")),
             ];
-            crate::env::set_var("JCODE_HOME", temp.path());
+            crate::env::set_var("WVC_HOME", temp.path());
             crate::env::set_var("OPENCODE_API_KEY", "sk-test-opencode");
             Self {
                 vars,
@@ -1285,7 +1285,7 @@ mod tests {
         }
 
         fn save_opencode_cache(&self, source_api_base: &str, model_ids: &[&str]) {
-            let wvc_home = std::env::var_os("JCODE_HOME").expect("JCODE_HOME set");
+            let wvc_home = std::env::var_os("WVC_HOME").expect("WVC_HOME set");
             let cache_dir = std::path::PathBuf::from(wvc_home).join("cache");
             std::fs::create_dir_all(&cache_dir).expect("create cache dir");
             let cache = wvc_provider_openrouter::DiskCache {
@@ -1455,7 +1455,7 @@ mod tests {
     }
 
     fn save_openrouter_catalog_cache(model_ids: &[&str]) {
-        let wvc_home = std::env::var_os("JCODE_HOME").expect("JCODE_HOME set");
+        let wvc_home = std::env::var_os("WVC_HOME").expect("WVC_HOME set");
         let cache_dir = std::path::PathBuf::from(wvc_home).join("cache");
         std::fs::create_dir_all(&cache_dir).expect("create cache dir");
         let cache = wvc_provider_openrouter::DiskCache {

@@ -207,9 +207,9 @@ fn parse_account_command(trimmed: &str) -> Option<Result<AccountCommand, String>
             "login" => AccountCommand::Login {
                 provider_id: provider.id.to_string(),
             },
-            "status" if provider.id == "wvc" => AccountCommand::JcodeStatus,
-            "manage" if provider.id == "wvc" => AccountCommand::JcodeManage,
-            "logout" if provider.id == "wvc" => AccountCommand::JcodeLogout,
+            "status" if provider.id == "wvc" => AccountCommand::WeavecoderStatus,
+            "manage" if provider.id == "wvc" => AccountCommand::WeavecoderManage,
+            "logout" if provider.id == "wvc" => AccountCommand::WeavecoderLogout,
             "add" => AccountCommand::Add {
                 provider_id: provider.id.to_string(),
                 label: (!value.is_empty()).then(|| value.to_string()),
@@ -389,9 +389,9 @@ pub(crate) fn execute_account_command_local(app: &mut App, command: AccountComma
                 ))),
             }
         }
-        AccountCommand::JcodeStatus => app.show_wvc_subscription_status(),
-        AccountCommand::JcodeManage => app.open_wvc_account_management(),
-        AccountCommand::JcodeLogout => app.start_wvc_account_logout(),
+        AccountCommand::WeavecoderStatus => app.show_wvc_subscription_status(),
+        AccountCommand::WeavecoderManage => app.open_wvc_account_management(),
+        AccountCommand::WeavecoderLogout => app.start_wvc_account_logout(),
         AccountCommand::Add { provider_id, label } => {
             execute_account_add_local(app, &provider_id, label.as_deref())
         }
@@ -838,7 +838,7 @@ fn save_openai_compat_setting(app: &mut App, setting: OpenAiCompatSetting, value
                 },
                 None => None,
             };
-            ("JCODE_OPENAI_COMPAT_API_BASE", normalized)
+            ("WVC_OPENAI_COMPAT_API_BASE", normalized)
         }
         OpenAiCompatSetting::ApiKeyName => {
             if let Some(value) = value
@@ -851,7 +851,7 @@ fn save_openai_compat_setting(app: &mut App, setting: OpenAiCompatSetting, value
                 return;
             }
             (
-                "JCODE_OPENAI_COMPAT_API_KEY_NAME",
+                "WVC_OPENAI_COMPAT_API_KEY_NAME",
                 value.map(ToString::to_string),
             )
         }
@@ -865,12 +865,12 @@ fn save_openai_compat_setting(app: &mut App, setting: OpenAiCompatSetting, value
                 return;
             }
             (
-                "JCODE_OPENAI_COMPAT_ENV_FILE",
+                "WVC_OPENAI_COMPAT_ENV_FILE",
                 value.map(ToString::to_string),
             )
         }
         OpenAiCompatSetting::DefaultModel => (
-            "JCODE_OPENAI_COMPAT_DEFAULT_MODEL",
+            "WVC_OPENAI_COMPAT_DEFAULT_MODEL",
             value.map(ToString::to_string),
         ),
     };
@@ -1170,20 +1170,20 @@ mod tests {
     #[test]
     fn parse_native_wvc_account_actions() {
         assert!(matches!(
-            parse_account_command("/account jcode login"),
+            parse_account_command("/account wvc login"),
             Some(Ok(AccountCommand::Login { provider_id })) if provider_id == "wvc"
         ));
         assert!(matches!(
-            parse_account_command("/account jcode status"),
-            Some(Ok(AccountCommand::JcodeStatus))
+            parse_account_command("/account wvc status"),
+            Some(Ok(AccountCommand::WeavecoderStatus))
         ));
         assert!(matches!(
-            parse_account_command("/account jcode manage"),
-            Some(Ok(AccountCommand::JcodeManage))
+            parse_account_command("/account wvc manage"),
+            Some(Ok(AccountCommand::WeavecoderManage))
         ));
         assert!(matches!(
-            parse_account_command("/account jcode logout"),
-            Some(Ok(AccountCommand::JcodeLogout))
+            parse_account_command("/account wvc logout"),
+            Some(Ok(AccountCommand::WeavecoderLogout))
         ));
     }
 
@@ -1194,6 +1194,6 @@ mod tests {
         assert!(markdown.contains("OpenAI (openai)"));
         assert!(markdown.contains("Next steps"));
         assert!(markdown.contains("wvc login --provider openai"));
-        assert!(markdown.contains("Review current state: jcode auth status --json"));
+        assert!(markdown.contains("Review current state: wvc auth status --json"));
     }
 }

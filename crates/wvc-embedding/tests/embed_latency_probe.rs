@@ -8,16 +8,16 @@
 //! ~100 MB stayed resident indefinitely.
 //!
 //! Run with:
-//!   cargo test -p jcode-embedding --test embed_latency_probe -- --ignored --nocapture
+//!   cargo test -p wvc-embedding --test embed_latency_probe -- --ignored --nocapture
 //!
-//! Requires the MiniLM model to be installed (~/.jcode/models/all-MiniLM-L6-v2).
+//! Requires the MiniLM model to be installed (~/.wvc/models/all-MiniLM-L6-v2).
 
 use std::path::PathBuf;
 
 fn model_dir() -> Option<PathBuf> {
     let home = std::env::var_os("HOME").map(PathBuf::from)?;
     let dir = home
-        .join(".jcode")
+        .join(".wvc")
         .join("models")
         .join(wvc_embedding::MODEL_NAME);
     dir.join("model.onnx").exists().then_some(dir)

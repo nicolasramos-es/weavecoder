@@ -140,7 +140,7 @@ const REGISTERED_COMMANDS: &[RegisteredCommand] = &[
     RegisteredCommand::public("/context", "Show the full session context snapshot"),
     RegisteredCommand::public(
         "/skills",
-        "Show loaded skills and jcode-endorsed recommendations",
+        "Show loaded skills and wvc-endorsed recommendations",
     ),
     RegisteredCommand::public("/version", "Show current version"),
     RegisteredCommand::public("/changelog", "Show recent changes in this build"),
@@ -151,13 +151,13 @@ const REGISTERED_COMMANDS: &[RegisteredCommand] = &[
         "Generate a shareable usage report + dashboard image",
     ),
     RegisteredCommand::public("/wrapped", "Alias for /productivity"),
-    RegisteredCommand::public("/feedback", "Send feedback about jcode"),
-    RegisteredCommand::public("/telemetry", "Show or change what jcode sends"),
+    RegisteredCommand::public("/feedback", "Send feedback about wvc"),
+    RegisteredCommand::public("/telemetry", "Show or change what wvc sends"),
     RegisteredCommand::public("/support", "Email support with diagnostics prefilled"),
-    RegisteredCommand::public("/subscription", "Show jcode subscription status"),
-    RegisteredCommand::public("/subscribe", "Why and how to subscribe to jcode"),
+    RegisteredCommand::public("/subscription", "Show wvc subscription status"),
+    RegisteredCommand::public("/subscribe", "Why and how to subscribe to wvc"),
     RegisteredCommand::public("/config", "Show or edit configuration"),
-    RegisteredCommand::public("/log", "Mark the current location in the jcode logs"),
+    RegisteredCommand::public("/log", "Mark the current location in the wvc logs"),
     RegisteredCommand::public(
         "/keys",
         "Show keybinding conflicts with your terminal and OS (/keys refresh to rescan)",
@@ -178,7 +178,7 @@ const REGISTERED_COMMANDS: &[RegisteredCommand] = &[
     RegisteredCommand::public("/reload", "Reload into newest available binary"),
     RegisteredCommand::public("/restart", "Restart with current binary"),
     RegisteredCommand::public("/rebuild", "Background rebuild and auto reload"),
-    RegisteredCommand::public("/selfdev", "Open a new self-dev jcode session"),
+    RegisteredCommand::public("/selfdev", "Open a new self-dev wvc session"),
     RegisteredCommand::public("/update", "Background update and auto reload"),
     RegisteredCommand::public("/resume", "Open session picker"),
     RegisteredCommand::public("/sessions", "Alias for /resume"),
@@ -193,7 +193,7 @@ const REGISTERED_COMMANDS: &[RegisteredCommand] = &[
     RegisteredCommand::hidden("/split", "Alias for /fork"),
     RegisteredCommand::public("/transfer", "Compact context into a fresh handoff session"),
     RegisteredCommand::public("/workspace", "Niri-style session workspace"),
-    RegisteredCommand::public("/quit", "Exit jcode"),
+    RegisteredCommand::public("/quit", "Exit wvc"),
     RegisteredCommand::public("/auth", "Show authentication status"),
     RegisteredCommand::public("/login", "Login to a provider"),
     RegisteredCommand::public("/logout", "Log out of a provider"),
@@ -1935,7 +1935,7 @@ mod external_cli_suggestion_tests {
     /// Faithful, real-home measurement of the per-frame onboarding cost.
     /// Ignored by default (depends on local ~/.codex and ~/.claude contents).
     /// Run with:
-    ///   cargo test -p jcode-tui --lib onboarding_suggestion_scan_cost -- --ignored --nocapture
+    ///   cargo test -p wvc-tui --lib onboarding_suggestion_scan_cost -- --ignored --nocapture
     #[test]
     #[ignore]
     fn onboarding_suggestion_scan_cost() {
@@ -1998,8 +1998,8 @@ mod external_cli_suggestion_tests {
         let path = temp.path().join("codex.jsonl");
         std::fs::write(
             &path,
-            r#"{"type":"session_meta","payload":{"id":"sid","cwd":"/home/jeremy/jcode"}}
-{"type":"response_item","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"check in on jcode"}]}}
+            r#"{"type":"session_meta","payload":{"id":"sid","cwd":"/home/jeremy/wvc"}}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"check in on wvc"}]}}
 "#,
         )
         .expect("write fixture");
@@ -2007,8 +2007,8 @@ mod external_cli_suggestion_tests {
         let candidate = suggestion_candidate_from_jsonl(&path, "Codex", SystemTime::UNIX_EPOCH)
             .expect("candidate");
         assert_eq!(candidate.session_id.as_deref(), Some("sid"));
-        assert_eq!(candidate.working_dir.as_deref(), Some("/home/jeremy/jcode"));
-        assert_eq!(candidate.context.as_deref(), Some("check in on jcode"));
+        assert_eq!(candidate.working_dir.as_deref(), Some("/home/jeremy/wvc"));
+        assert_eq!(candidate.context.as_deref(), Some("check in on wvc"));
     }
 
     #[test]

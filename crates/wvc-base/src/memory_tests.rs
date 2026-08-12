@@ -18,20 +18,20 @@ where
     F: FnOnce(&Path) -> T,
 {
     let _guard = crate::storage::lock_test_env();
-    let old = std::env::var("JCODE_HOME").ok();
+    let old = std::env::var("WVC_HOME").ok();
     let unique = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .expect("time went backwards")
         .as_nanos();
     let dir = std::env::temp_dir().join(format!("wvc-test-{}", unique));
     fs::create_dir_all(&dir).expect("create temp dir");
-    crate::env::set_var("JCODE_HOME", &dir);
+    crate::env::set_var("WVC_HOME", &dir);
 
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(&dir)));
 
     match old {
-        Some(value) => crate::env::set_var("JCODE_HOME", value),
-        None => crate::env::remove_var("JCODE_HOME"),
+        Some(value) => crate::env::set_var("WVC_HOME", value),
+        None => crate::env::remove_var("WVC_HOME"),
     }
     let _ = fs::remove_dir_all(&dir);
 
@@ -456,7 +456,7 @@ fn graph_based_memory_operations() {
 #[test]
 fn test_mode_ignores_the_project_dir_and_cannot_see_real_project_memory() {
     with_temp_home(|_home| {
-        let project_dir = "/tmp/jcode-729-real-project";
+        let project_dir = "/tmp/wvc-729-real-project";
 
         let real = MemoryManager::new().with_project_dir(project_dir);
         real.remember_project(MemoryEntry::new(
@@ -498,8 +498,8 @@ fn test_mode_ignores_the_project_dir_and_cannot_see_real_project_memory() {
 #[test]
 fn project_memories_are_isolated_by_explicit_project_dir() {
     with_temp_home(|_home| {
-        let manager_a = MemoryManager::new().with_project_dir("/tmp/jcode-project-a");
-        let manager_b = MemoryManager::new().with_project_dir("/tmp/jcode-project-b");
+        let manager_a = MemoryManager::new().with_project_dir("/tmp/wvc-project-a");
+        let manager_b = MemoryManager::new().with_project_dir("/tmp/wvc-project-b");
 
         manager_a
             .remember_project(MemoryEntry::new(
@@ -535,7 +535,7 @@ fn project_memories_are_isolated_by_explicit_project_dir() {
 #[test]
 fn manager_search_scoped_normalizes_whitespace_and_separators() {
     with_temp_home(|_home| {
-        let manager = MemoryManager::new().with_project_dir("/tmp/jcode-search-normalization");
+        let manager = MemoryManager::new().with_project_dir("/tmp/wvc-search-normalization");
 
         manager
             .remember_project(MemoryEntry::new(
@@ -554,7 +554,7 @@ fn manager_search_scoped_normalizes_whitespace_and_separators() {
 #[test]
 fn prompt_memories_scoped_keeps_only_most_recent_entries() {
     with_temp_home(|_home| {
-        let manager = MemoryManager::new().with_project_dir("/tmp/jcode-prompt-topk");
+        let manager = MemoryManager::new().with_project_dir("/tmp/wvc-prompt-topk");
 
         let mut oldest = MemoryEntry::new(MemoryCategory::Fact, "compile cache note");
         oldest.created_at = Utc::now() - chrono::Duration::seconds(30);
@@ -601,7 +601,7 @@ fn prompt_memories_scoped_keeps_only_most_recent_entries() {
 #[test]
 fn goal_memory_upsert_skips_embedding_generation() {
     with_temp_home(|_home| {
-        let manager = MemoryManager::new().with_project_dir("/tmp/jcode-goal-memory");
+        let manager = MemoryManager::new().with_project_dir("/tmp/wvc-goal-memory");
 
         let mut entry = MemoryEntry::new(
             MemoryCategory::Custom("goal".to_string()),
@@ -627,7 +627,7 @@ fn goal_memory_upsert_skips_embedding_generation() {
 #[test]
 fn scoped_retrieval_respects_project_vs_global() {
     with_temp_home(|_home| {
-        let manager = MemoryManager::new().with_project_dir("/tmp/jcode-scope-test");
+        let manager = MemoryManager::new().with_project_dir("/tmp/wvc-scope-test");
 
         manager
             .remember_project(MemoryEntry::new(
@@ -687,10 +687,10 @@ fn retrieval_candidates_include_local_skills() {
                 .collect()
         });
         let project_dir = home.join("project-with-skill");
-        fs::create_dir_all(project_dir.join(".jcode/skills/firefox-browser"))
+        fs::create_dir_all(project_dir.join(".wvc/skills/firefox-browser"))
             .expect("create skills dir");
         fs::write(
-                project_dir.join(".jcode/skills/firefox-browser/SKILL.md"),
+                project_dir.join(".wvc/skills/firefox-browser/SKILL.md"),
                 "---\nname: firefox-browser\ndescription: Control Firefox browser sessions\nallowed-tools: bash, read, write\n---\n\nUse this skill to open sites and click buttons.",
             )
             .expect("write skill");
@@ -834,7 +834,7 @@ fn hybrid_fuse_returns_dense_hits_without_lexical_overlap() {
 #[test]
 fn hybrid_excludes_superseded_memories() {
     with_temp_home(|_home| {
-        let manager = MemoryManager::new().with_project_dir("/tmp/jcode-hybrid-supersede");
+        let manager = MemoryManager::new().with_project_dir("/tmp/wvc-hybrid-supersede");
 
         // Two memories on the same topic with explicit distinct ids (avoid
         // same-millisecond id collisions).

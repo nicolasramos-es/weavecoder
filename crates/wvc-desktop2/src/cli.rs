@@ -115,7 +115,7 @@ fn check_primary_selection() -> Result<()> {
     // short-lived checker proves the write happened but not that the value
     // survives. Hold it long enough for another process to read it, which is
     // the situation that actually matters: the window stays open.
-    if std::env::var_os("JCODE_DESKTOP2_HOLD_SELECTION").is_some() {
+    if std::env::var_os("WVC_DESKTOP2_HOLD_SELECTION").is_some() {
         println!("holding {sentinel} for 10s");
         std::thread::sleep(std::time::Duration::from_secs(10));
     }
@@ -150,12 +150,12 @@ fn run_profile_states(args: &[String]) -> Result<()> {
 /// print the resulting composer state. Verifies real chord sequences end to
 /// end without a compositor, which synthetic-input tools make unreliable.
 ///
-///   jcode-desktop2 --script 'type:alpha beta' ctrl+a shift+right shift+right
+///   wvc-desktop2 --script 'type:alpha beta' ctrl+a shift+right shift+right
 ///
 /// The gesture verbs drive the same handlers the window does, so the held-Super
 /// overview is checkable without a compositor:
 ///
-///   jcode-desktop2 --script 'sessions:a=jcode,b=jcode,c=site' super-down \
+///   wvc-desktop2 --script 'sessions:a=wvc,b=wvc,c=site' super-down \
 ///       'settle' super+h super-up
 fn run_script(steps: &[String]) -> Result<()> {
     let mut app = App::default();
@@ -266,7 +266,7 @@ fn run_script(steps: &[String]) -> Result<()> {
 /// deliberately skipped. Makes the parity table discoverable to users instead
 /// of living only in the source.
 fn print_keys() {
-    println!("keybindings (ported from the jcode TUI)\n");
+    println!("keybindings (ported from the wvc TUI)\n");
     let width = keymap::PORTED
         .iter()
         .map(|row| row.chord.len())
@@ -672,7 +672,7 @@ fn check_reconnect() -> Result<()> {
     std::fs::create_dir_all(&runtime)?;
     // SAFETY: single-threaded, before any connection thread is spawned.
     unsafe {
-        std::env::set_var("JCODE_API_SOCKET", runtime.join("api.sock"));
+        std::env::set_var("WVC_API_SOCKET", runtime.join("api.sock"));
     }
     let bridge = |kill: bool| -> Option<u32> {
         let listening = std::process::Command::new("pgrep")

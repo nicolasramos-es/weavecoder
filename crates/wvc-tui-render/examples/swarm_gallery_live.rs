@@ -1,13 +1,13 @@
 //! Interactive, animated demo of the inline swarm gallery.
 //!
 //! This runs as a real full-screen terminal app so you can *see* the inline
-//! gallery the way it looks live in the jcode TUI, without touching any running
+//! gallery the way it looks live in the wvc TUI, without touching any running
 //! agents. It simulates a handful of mock swarm workers that stream output,
 //! change status, and finish over time, rendering them through the exact same
 //! `render_swarm_gallery` layout the real TUI uses.
 //!
 //! Run with:
-//!   cargo run --profile selfdev -p jcode-tui-render --example swarm_gallery_live
+//!   cargo run --profile selfdev -p wvc-tui-render --example swarm_gallery_live
 //!
 //! Controls:
 //!   q / Esc      quit
@@ -124,7 +124,7 @@ fn make_workers(n: usize) -> Vec<MockWorker> {
             vec![
                 "Searching the codebase for the auth flow...",
                 "Found 12 candidate files.",
-                "Reading crates/jcode-app-core/src/auth.rs",
+                "Reading crates/wvc-app-core/src/auth.rs",
                 "The OAuth callback is handled in handle_login()",
                 "Now cross-referencing the token refresh path.",
                 "Refresh happens in refresh_session() (line 412).",
@@ -135,7 +135,7 @@ fn make_workers(n: usize) -> Vec<MockWorker> {
             "implementer",
             None,
             vec![
-                "Editing crates/jcode-base/src/config.rs",
+                "Editing crates/wvc-base/src/config.rs",
                 "Added swarm_spawn_mode = inline",
                 "Running cargo check...",
                 "warning: unused import `Foo`",
@@ -162,7 +162,7 @@ fn make_workers(n: usize) -> Vec<MockWorker> {
             None,
             vec![
                 "Building the selfdev profile...",
-                "Compiling jcode-tui-render",
+                "Compiling wvc-tui-render",
                 "Running 5 tests",
                 "test cells_are_width_bounded ... ok",
                 "test many_agents_form_multiple_columns ... ok",
@@ -274,7 +274,7 @@ fn draw(f: &mut Frame, workers: &[MockWorker], max_pct: usize, paused: bool) {
         )]),
         Line::from(""),
         Line::from(vec![Span::styled(
-            "  The band above is the same renderer the jcode TUI shows above your chat",
+            "  The band above is the same renderer the wvc TUI shows above your chat",
             Style::default().fg(Color::Rgb(150, 150, 160)),
         )]),
         Line::from(vec![Span::styled(

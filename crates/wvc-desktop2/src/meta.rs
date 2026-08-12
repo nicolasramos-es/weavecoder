@@ -71,7 +71,7 @@ impl Meta {
     /// states that need an action survive here.
     pub fn alert(&self) -> Option<String> {
         if self.account.is_none() {
-            return Some("not signed in: run `jcode` and use /login".into());
+            return Some("not signed in: run `wvc` and use /login".into());
         }
         if self.update == UpdateState::Available {
             return Some("update ready: restart to apply".into());
@@ -120,7 +120,7 @@ pub fn update_state(running: Option<SystemTime>, channels: &[Option<SystemTime>]
 /// Whether the running binary is one the installer manages.
 ///
 /// A self-dev or `cargo run` binary lives in a target directory and is never
-/// written by the installer, so comparing it against `~/.jcode/builds` is
+/// written by the installer, so comparing it against `~/.wvc/builds` is
 /// meaningless: any later CLI install looks like a pending desktop update and
 /// the banner nags forever. Pure so the rule is testable.
 pub fn is_managed_install(running: &Path, builds: &Path) -> bool {
@@ -128,7 +128,7 @@ pub fn is_managed_install(running: &Path, builds: &Path) -> bool {
 }
 
 /// Format the account label from an auth store's active provider and email.
-/// Pure so the display rules are tested without touching `~/.jcode/auth.json`.
+/// Pure so the display rules are tested without touching `~/.wvc/auth.json`.
 pub fn account_label(provider: Option<&str>, email: Option<&str>) -> Option<String> {
     match (provider, email) {
         (Some(provider), Some(email)) => Some(format!("{email} ({provider})")),
@@ -150,7 +150,7 @@ fn detect_update_state() -> UpdateState {
     let Some(home) = home() else {
         return UpdateState::Unknown;
     };
-    let builds = home.join(".jcode/builds");
+    let builds = home.join(".wvc/builds");
     // Resolve symlinks: the channel dirs point into `builds/versions/<sha>`.
     let Some(exe) = std::env::current_exe()
         .ok()
@@ -175,10 +175,10 @@ fn detect_update_state() -> UpdateState {
     update_state(running, &channels)
 }
 
-/// Read the active account out of `~/.jcode/auth.json`. Only the account
+/// Read the active account out of `~/.wvc/auth.json`. Only the account
 /// identity is read; tokens are never touched.
 fn detect_account() -> Option<String> {
-    let path = home()?.join(".jcode/auth.json");
+    let path = home()?.join(".wvc/auth.json");
     let raw = std::fs::read_to_string(path).ok()?;
     let value: serde_json::Value = serde_json::from_str(&raw).ok()?;
     let object = value.as_object()?;
@@ -296,17 +296,17 @@ mod tests {
     }
 
     /// Regression: a self-dev desktop binary was compared against the CLI
-    /// payload in `~/.jcode/builds/current`, so every CLI install left the
+    /// payload in `~/.wvc/builds/current`, so every CLI install left the
     /// desktop permanently claiming "update ready: restart to apply".
     #[test]
     fn a_dev_build_outside_the_install_tree_is_not_managed() {
-        let builds = Path::new("/home/u/.jcode/builds");
+        let builds = Path::new("/home/u/.wvc/builds");
         assert!(!is_managed_install(
-            Path::new("/home/u/jcode/target/selfdev/jcode-desktop2"),
+            Path::new("/home/u/wvc/target/selfdev/wvc-desktop2"),
             builds
         ));
         assert!(is_managed_install(
-            Path::new("/home/u/.jcode/builds/versions/abc123/jcode-desktop2"),
+            Path::new("/home/u/.wvc/builds/versions/abc123/wvc-desktop2"),
             builds
         ));
     }

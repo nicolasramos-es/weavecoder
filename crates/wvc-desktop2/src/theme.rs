@@ -143,18 +143,18 @@ impl Theme {
         }
     }
 
-    /// The mode asked for by `JCODE_DESKTOP2_THEME=light|dark|system`.
+    /// The mode asked for by `WVC_DESKTOP2_THEME=light|dark|system`.
     /// Kept separate from resolution so the app can remember that "system"
     /// was requested and re-resolve when the system preference changes.
     pub fn preference_from_env() -> ThemeMode {
-        match std::env::var("JCODE_DESKTOP2_THEME").as_deref() {
+        match std::env::var("WVC_DESKTOP2_THEME").as_deref() {
             Ok("dark") => ThemeMode::Dark,
             Ok("light") => ThemeMode::Light,
             _ => ThemeMode::System,
         }
     }
 
-    /// Resolve from the environment: `JCODE_DESKTOP2_THEME=light|dark|system`.
+    /// Resolve from the environment: `WVC_DESKTOP2_THEME=light|dark|system`.
     pub fn from_env() -> Self {
         Self::for_mode(Self::preference_from_env(), system_prefers_dark())
     }

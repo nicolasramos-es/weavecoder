@@ -1,6 +1,6 @@
 //! Measure the palette topology from real rendered frames.
 //!
-//! The graph model in `jcode-tui-style::harmony::graph` needs to know which
+//! The graph model in `wvc-tui-style::harmony::graph` needs to know which
 //! roles actually cover screen area and which ones sit next to each other. Both
 //! are properties of the rendered UI, not of the palette, so they are measured
 //! here by rendering frames and attributing every cell back to a role.

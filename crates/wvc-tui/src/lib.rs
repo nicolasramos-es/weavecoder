@@ -6,19 +6,19 @@
     clippy::useless_conversion
 )]
 
-//! Presentation layer for jcode (terminal UI + offline replay export).
+//! Presentation layer for wvc (terminal UI + offline replay export).
 //!
 //! This crate holds the `tui` and `video_export` modules that were extracted
-//! out of the monolithic root `jcode` crate so they compile as a separate
+//! out of the monolithic root `wvc` crate so they compile as a separate
 //! rustc unit. The application core it builds on (server, agent, provider,
-//! auth, session, tool, config, ...) lives in `jcode-app-core` and is
+//! auth, session, tool, config, ...) lives in `wvc-app-core` and is
 //! re-exported here via `pub use wvc_app_core::*`, so every existing
 //! `crate::<module>` path (e.g. `crate::config`, `crate::server`) keeps
-//! resolving unchanged across the tui code. The root `jcode` crate (cli + bin)
+//! resolving unchanged across the tui code. The root `wvc` crate (cli + bin)
 //! re-exports this crate via `pub use wvc_tui::*`.
 
-// Application core: re-export every `jcode-app-core` module (which itself
-// re-exports `jcode-base`) so `crate::<module>` paths resolve here exactly as
+// Application core: re-export every `wvc-app-core` module (which itself
+// re-exports `wvc-base`) so `crate::<module>` paths resolve here exactly as
 // they did before the split.
 pub use wvc_app_core::*;
 

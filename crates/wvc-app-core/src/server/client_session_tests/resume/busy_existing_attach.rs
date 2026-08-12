@@ -146,7 +146,7 @@ async fn handle_resume_session_allows_live_attach_when_existing_agent_is_busy() 
         std::time::Duration::from_secs(1),
         handle_subscribe(
             77,
-            Some("/tmp/jcode-busy-desktop-attach".to_string()),
+            Some("/tmp/wvc-busy-desktop-attach".to_string()),
             Some(true),
             false,
             &mut client_selfdev,

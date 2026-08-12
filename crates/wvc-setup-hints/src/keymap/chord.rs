@@ -1,6 +1,6 @@
 //! A normalized, platform-independent representation of a key chord.
 //!
-//! Both jcode's own bindings and the bindings we discover on the machine
+//! Both wvc's own bindings and the bindings we discover on the machine
 //! (terminal config, macOS system hotkeys) are reduced to a [`KeyChord`] so they
 //! can be compared for conflicts regardless of where they came from.
 
@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 /// A single key combination: a set of modifiers plus one primary key token.
 ///
 /// The `key` token is stored in a canonical lowercase form (see
-/// [`KeyChord::normalize_key`]). Modifiers use jcode's vocabulary where the
+/// [`KeyChord::normalize_key`]). Modifiers use wvc's vocabulary where the
 /// macOS Command key maps to `cmd` (equivalent to crossterm's `SUPER`).
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct KeyChord {
@@ -104,7 +104,7 @@ impl KeyChord {
 
     /// Compact macOS-style symbol form, e.g. `⌘;` or `⌘⇧K`. Modifier symbols
     /// follow the standard Apple ordering (⌃⌥⇧⌘ is conventional, but we keep
-    /// jcode's cmd-first canonical order for consistency with `display`).
+    /// wvc's cmd-first canonical order for consistency with `display`).
     pub fn display_symbols(&self) -> String {
         let mut out = String::new();
         if self.ctrl {
@@ -123,8 +123,8 @@ impl KeyChord {
         out
     }
 
-    /// Parse a jcode-style binding string such as `ctrl+k`, `alt+right`, or
-    /// `cmd+shift+[` into a chord. Mirrors jcode's own keybinding grammar so the
+    /// Parse a wvc-style binding string such as `ctrl+k`, `alt+right`, or
+    /// `cmd+shift+[` into a chord. Mirrors wvc's own keybinding grammar so the
     /// conflict detector compares like with like. Returns `None` for empty or
     /// explicitly-disabled bindings (`none`/`off`/`disabled`).
     pub fn parse(raw: &str) -> Option<Self> {
@@ -148,7 +148,7 @@ impl KeyChord {
         for part in raw.split('+').map(str::trim).filter(|s| !s.is_empty()) {
             match part.to_ascii_lowercase().as_str() {
                 "ctrl" | "control" => ctrl = true,
-                // jcode treats alt/option/meta as Alt.
+                // wvc treats alt/option/meta as Alt.
                 "alt" | "option" | "meta" => alt = true,
                 "cmd" | "command" | "super" | "win" | "windows" => cmd = true,
                 "shift" => shift = true,
@@ -168,11 +168,11 @@ impl KeyChord {
     /// Normalize a raw key token (from any source) into a canonical token.
     /// Handles the differing spellings used by terminals (`arrow_left`,
     /// `page_up`, `digit_1`) and macOS virtual keycodes, collapsing them onto a
-    /// single vocabulary shared with jcode's own keybinding parser.
+    /// single vocabulary shared with wvc's own keybinding parser.
     pub fn normalize_key(raw: &str) -> String {
         let k = raw.trim().to_ascii_lowercase();
         match k.as_str() {
-            // Arrows (ghostty/kitty style -> jcode style)
+            // Arrows (ghostty/kitty style -> wvc style)
             "arrow_left" | "left" => "left",
             "arrow_right" | "right" => "right",
             "arrow_up" | "up" => "up",
@@ -333,10 +333,10 @@ mod tests {
 
     #[test]
     fn parse_matches_discovered_chord() {
-        // A jcode binding and a terminal binding for the same physical keys must
+        // A wvc binding and a terminal binding for the same physical keys must
         // compare equal so the conflict detector can pair them.
-        let jcode = KeyChord::parse("cmd+k").unwrap();
+        let wvc = KeyChord::parse("cmd+k").unwrap();
         let terminal = KeyChord::new(true, false, false, false, "k");
-        assert_eq!(jcode, terminal);
+        assert_eq!(wvc, terminal);
     }
 }

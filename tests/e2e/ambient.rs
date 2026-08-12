@@ -519,7 +519,7 @@ fn test_ambient_config_defaults() {
 #[test]
 fn test_ambient_lock() {
     use weavecoder::ambient::AmbientLock;
-    let _env = setup_test_env().expect("failed to setup isolated JCODE_HOME");
+    let _env = setup_test_env().expect("failed to setup isolated WVC_HOME");
 
     // First acquisition should succeed
     let lock1 = AmbientLock::try_acquire();
@@ -589,7 +589,7 @@ async fn test_full_ambient_cycle_simulation() -> Result<()> {
     registry.register_ambient_tools().await;
 
     let mut agent = Agent::new(provider.clone(), registry);
-    agent.set_system_prompt("You are the jcode ambient maintenance agent.");
+    agent.set_system_prompt("You are the wvc ambient maintenance agent.");
 
     let response = agent.run_once_capture("Begin your ambient cycle.").await?;
 

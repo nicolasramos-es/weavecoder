@@ -91,8 +91,8 @@ fn make_session_with_flags(
         search_index,
         server_name: None,
         server_icon: None,
-        source: SessionSource::Jcode,
-        resume_target: ResumeTarget::JcodeSession {
+        source: SessionSource::Weavecoder,
+        resume_target: ResumeTarget::WeavecoderSession {
             session_id: id.to_string(),
         },
         external_path: None,
@@ -634,8 +634,8 @@ fn test_filter_matches_recent_message_content() {
 fn test_loading_preview_refreshes_search_index_for_picker_filtering() {
     let _env_lock = crate::storage::lock_test_env();
     let temp = tempfile::tempdir().expect("temp dir");
-    let previous_home = std::env::var("JCODE_HOME").ok();
-    crate::env::set_var("JCODE_HOME", temp.path());
+    let previous_home = std::env::var("WVC_HOME").ok();
+    crate::env::set_var("WVC_HOME", temp.path());
 
     let mut session = Session::create_with_id(
         "session_preview_search".to_string(),
@@ -671,9 +671,9 @@ fn test_loading_preview_refreshes_search_index_for_picker_filtering() {
     assert_eq!(picker.visible_sessions.len(), 1);
 
     if let Some(previous_home) = previous_home {
-        crate::env::set_var("JCODE_HOME", previous_home);
+        crate::env::set_var("WVC_HOME", previous_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -1106,10 +1106,10 @@ fn test_space_selects_multiple_sessions_and_enter_returns_them() {
             assert_eq!(
                 ids,
                 vec![
-                    ResumeTarget::JcodeSession {
+                    ResumeTarget::WeavecoderSession {
                         session_id: "session_newer".to_string(),
                     },
-                    ResumeTarget::JcodeSession {
+                    ResumeTarget::WeavecoderSession {
                         session_id: "session_older".to_string(),
                     }
                 ]
@@ -1127,10 +1127,10 @@ fn test_space_selects_multiple_sessions_and_enter_returns_them() {
             assert_eq!(
                 ids,
                 vec![
-                    ResumeTarget::JcodeSession {
+                    ResumeTarget::WeavecoderSession {
                         session_id: "session_newer".to_string(),
                     },
-                    ResumeTarget::JcodeSession {
+                    ResumeTarget::WeavecoderSession {
                         session_id: "session_older".to_string(),
                     }
                 ]
@@ -1233,9 +1233,9 @@ fn onboarding_external_filter_picks_latest_visible_transcript() {
     };
 
     // A non-Codex session that must be filtered out.
-    let jcode = make_session("wvc_one", "wvc", false, SessionStatus::Closed);
+    let wvc = make_session("wvc_one", "wvc", false, SessionStatus::Closed);
 
-    let mut picker = SessionPicker::new(vec![older, jcode, newer]);
+    let mut picker = SessionPicker::new(vec![older, wvc, newer]);
     picker.activate_external_cli_filter(SessionFilterMode::Codex);
 
     assert_eq!(picker.visible_session_count(), 2);
@@ -1254,8 +1254,8 @@ fn onboarding_external_filter_picks_latest_visible_transcript() {
 
 #[test]
 fn onboarding_external_filter_with_no_matches_has_no_target() {
-    let jcode = make_session("wvc_only", "wvc", false, SessionStatus::Closed);
-    let mut picker = SessionPicker::new(vec![jcode]);
+    let wvc = make_session("wvc_only", "wvc", false, SessionStatus::Closed);
+    let mut picker = SessionPicker::new(vec![wvc]);
     picker.activate_external_cli_filter(SessionFilterMode::ClaudeCode);
 
     assert_eq!(picker.visible_session_count(), 0);
@@ -1317,7 +1317,7 @@ fn onboarding_banner_offers_review_then_new_session() {
 fn onboarding_banner_renders_prompt_and_both_action_rows() {
     let mut picker = SessionPicker::new(Vec::new());
     picker.activate_onboarding_banner(vec![
-        Line::from("Welcome to jcode"),
+        Line::from("Welcome to wvc"),
         Line::from("Choose how to begin."),
     ]);
 
@@ -1338,7 +1338,7 @@ fn onboarding_banner_renders_prompt_and_both_action_rows() {
         .collect::<Vec<_>>();
 
     assert!(
-        text.contains("Welcome to jcode"),
+        text.contains("Welcome to wvc"),
         "onboarding prompt should render in the banner: {text:?}"
     );
     assert!(
@@ -1360,7 +1360,7 @@ fn onboarding_banner_renders_prompt_and_both_action_rows() {
 
     let welcome_y = lines
         .iter()
-        .position(|line| line.contains("Welcome to jcode"))
+        .position(|line| line.contains("Welcome to wvc"))
         .expect("welcome row");
     let review_y = lines
         .iter()
@@ -1454,7 +1454,7 @@ fn buffer_text(picker: &mut SessionPicker, w: u16, h: u16) -> String {
 // Developer benchmarks: profile the operations exercised by the `/resume`
 // overlay. These are `#[ignore]`d so they never run in CI; run them with:
 //
-//   cargo test -p jcode-tui --lib --release -- --ignored --nocapture benchmark_resume_op
+//   cargo test -p wvc-tui --lib --release -- --ignored --nocapture benchmark_resume_op
 //
 // They print human-readable timing lines to stderr. They use synthetic
 // sessions so they are deterministic and independent of the user's session

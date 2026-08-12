@@ -51,7 +51,7 @@ impl Provider for OpenAIProvider {
             .read()
             .map(|guard| guard.clone())
             .unwrap_or_else(|poisoned| poisoned.into_inner().clone())
-            // No explicit user effort: fall back to the model's jcode-side
+            // No explicit user effort: fall back to the model's wvc-side
             // default (e.g. `low` for GPT-5.6 Sol).
             .or_else(|| Self::default_reasoning_effort_for_model(&model_id));
         // Map the `swarm` sentinel (and any future aliases) to the real effort
@@ -680,7 +680,7 @@ impl Provider for OpenAIProvider {
         let model = model.trim();
         if self.is_browser_only() && !is_chatgpt_web_model(model) {
             anyhow::bail!(
-                "OpenAI API credentials are not available for '{}'. The browser-only runtime can use '{}'; run `jcode login --provider openai` before selecting API models.",
+                "OpenAI API credentials are not available for '{}'. The browser-only runtime can use '{}'; run `wvc login --provider openai` before selecting API models.",
                 model,
                 CHATGPT_WEB_MODEL,
             );

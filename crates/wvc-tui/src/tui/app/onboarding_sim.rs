@@ -33,7 +33,7 @@ impl App {
         self.onboarding_sim.is_some()
     }
 
-    /// Entry point for the `jcode --onboarding-sim` CLI flag: start the
+    /// Entry point for the `wvc --onboarding-sim` CLI flag: start the
     /// simulator immediately at launch, before the remote session connects.
     pub fn start_onboarding_simulator_on_launch(&mut self) {
         self.start_onboarding_simulator();

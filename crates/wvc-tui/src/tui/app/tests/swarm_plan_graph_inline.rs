@@ -5,7 +5,7 @@
 // `crate::tui::markdown::mermaid_rendering_enabled()`, which supports a
 // scoped thread-local test override
 // (`with_mermaid_rendering_override`). Tests here must NOT mutate the
-// process-global JCODE_ENABLE_MERMAID env var: doing so races every other
+// process-global WVC_ENABLE_MERMAID env var: doing so races every other
 // test thread that consults the same gate (e.g. the side-panel
 // placeholder-mode tests in ui_pinned_tests.rs).
 
@@ -864,7 +864,7 @@ fn test_history_session_change_clears_swarm_plan_state_and_plan_graph_does_not_r
 #[test]
 fn test_swarm_plan_pushes_no_plan_graph_message_when_mermaid_disabled() {
     // Wiring-audit claim 4: with mermaid rendering disabled (opt-out, e.g.
-    // JCODE_ENABLE_MERMAID=0) the SwarmPlan handler pushes no inline
+    // WVC_ENABLE_MERMAID=0) the SwarmPlan handler pushes no inline
     // plan-graph message (raw mermaid source would be noise), while the plan
     // snapshot state is still applied. Uses the scoped thread-local override
     // instead of mutating the process env, which would race parallel tests.
@@ -1339,7 +1339,7 @@ fn test_margin_mode_plan_bump_accumulates_stale_diagram_in_info_widget_list() {
 
     // v1: task running. Render through the real swarm-message markdown path;
     // in Margin mode `mermaid_should_register_active()` is true (only None
-    // opts out, jcode-tui-markdown/src/lib.rs mermaid_should_register_active),
+    // opts out, wvc-tui-markdown/src/lib.rs mermaid_should_register_active),
     // so the diagram registers like a transcript render would.
     app.handle_server_event(
         swarm_plan_event(1, vec![swarm_plan_graph_item("haiku-1", "write a haiku")]),
@@ -1780,8 +1780,8 @@ fn test_local_session_picker_switch_is_never_consumed_and_keeps_plan_graph_state
                 search_index: "target".to_string(),
                 server_name: None,
                 server_icon: None,
-                source: crate::tui::session_picker::SessionSource::Jcode,
-                resume_target: crate::tui::session_picker::ResumeTarget::JcodeSession {
+                source: crate::tui::session_picker::SessionSource::Weavecoder,
+                resume_target: crate::tui::session_picker::ResumeTarget::WeavecoderSession {
                     session_id: "session_target_456".to_string(),
                 },
                 external_path: None,

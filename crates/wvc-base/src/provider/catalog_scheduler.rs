@@ -15,7 +15,7 @@
 //!   configured profiles on a fixed interval and asks the runtime hook to
 //!   refresh only the caches that are actually stale or missing.
 //!
-//! The runtime-side scheduler (`jcode-provider-openrouter-runtime`) still
+//! The runtime-side scheduler (`wvc-provider-openrouter-runtime`) still
 //! applies its own per-profile single-flight guard and exponential failure
 //! backoff, so a sweep is cheap and idempotent.
 

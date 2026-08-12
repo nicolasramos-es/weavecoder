@@ -2,7 +2,7 @@
 name = "wvc-provider-cursor-runtime"
 version = "0.1.0"
 edition = "2024"
-description = "Cursor provider runtime (direct ChatService streaming) for jcode, kept downstream of wvc-base so provider edits do not rebuild the app spine"
+description = "Cursor provider runtime (direct ChatService streaming) for wvc, kept downstream of wvc-base so provider edits do not rebuild the app spine"
 
 [lib]
 name = "wvc_provider_cursor_runtime"

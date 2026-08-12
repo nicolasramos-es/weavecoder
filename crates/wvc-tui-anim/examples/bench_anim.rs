@@ -1,7 +1,7 @@
 // Throughput benchmark: old "trig every iteration" samplers vs the new
 // precomputed-angle-table samplers. Run with:
-//   cargo run --profile selfdev --example bench_anim -p jcode-tui-anim
-// The jcode-tui-anim lib is pinned to opt-level=3 in every profile, so this
+//   cargo run --profile selfdev --example bench_anim -p wvc-tui-anim
+// The wvc-tui-anim lib is pinned to opt-level=3 in every profile, so this
 // measures the table speedup at the optimization level the TUI actually uses.
 
 use std::time::Instant;

@@ -21,9 +21,9 @@
 //! mechanism `evict_render_cache_for_test` exercises.
 //!
 //! Run with:
-//!   cargo test --release -p jcode-tui-mermaid --test layout_cache_resize_probe -- --ignored --nocapture
+//!   cargo test --release -p wvc-tui-mermaid --test layout_cache_resize_probe -- --ignored --nocapture
 //!
-//! NOTE: uses the real jcode mermaid cache dir (like the crate's unit tests);
+//! NOTE: uses the real wvc mermaid cache dir (like the crate's unit tests);
 //! diagrams are content-hash-unique per run, so no stale-cache interference
 //! and no interference with other probe files in this checkout.
 
@@ -35,7 +35,7 @@ use std::time::Instant;
 use wvc_tui_mermaid::{RenderResult, debug_stats, render_mermaid_untracked};
 
 /// Deterministic ~40-node / 45-edge flowchart. There is no `infra` fixture in
-/// this crate (checked `crates/jcode-tui-mermaid/` for fixtures/), so this is
+/// this crate (checked `crates/wvc-tui-mermaid/` for fixtures/), so this is
 /// the labeled substitute: a representative pipeline-shaped flowchart well
 /// above the 20-node bar and safely under the MAX_NODES=100 / MAX_EDGES=200
 /// complexity gate (both by the bracket-counting estimate and by real parse).

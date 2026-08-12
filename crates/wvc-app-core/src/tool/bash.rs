@@ -27,9 +27,9 @@ const MAX_OUTPUT_LEN: usize = 30000;
 const DEFAULT_TIMEOUT_MS: u64 = 120000;
 const STDIN_POLL_INTERVAL_MS: u64 = 500;
 const STDIN_INITIAL_DELAY_MS: u64 = 300;
-const PROGRESS_MARKER_PREFIX: &str = "JCODE_PROGRESS ";
-const CHECKPOINT_MARKER_PREFIX: &str = "JCODE_CHECKPOINT ";
-const BACKGROUND_PROGRESS_GUIDANCE: &str = "For long-running background commands, prefer scripts or commands that periodically print progress updates. Best format: print lines starting with `JCODE_PROGRESS ` followed by JSON like {\"percent\":42,\"message\":\"Running\"} or {\"current\":120,\"total\":1000,\"unit\":\"batches\",\"message\":\"Epoch 2/5\",\"eta_seconds\":30}. Supported JSON fields are `percent`, `message`, `current`, `total`, `unit`, `eta_seconds`, and optional `kind`=`indeterminate` or `kind`=`checkpoint`. For milestone-style wakeups, print `JCODE_CHECKPOINT {\"message\":\"Unit tests passed\"}`. Generic fallback output that can be parsed includes `42%`, `3/10 tests`, `3 of 10 steps`, `1.5/3.0 GiB`, or phase lines like `Compiling ...`, `Downloading ...`, `Running ...`, and `Building ...`. If you are writing the script yourself, add these progress/checkpoint lines explicitly. Put large temporary files, worktrees, and virtual environments under `$JCODE_SCRATCH_DIR`, not `/tmp`, because `/tmp` may be RAM-backed.";
+const PROGRESS_MARKER_PREFIX: &str = "WVC_PROGRESS ";
+const CHECKPOINT_MARKER_PREFIX: &str = "WVC_CHECKPOINT ";
+const BACKGROUND_PROGRESS_GUIDANCE: &str = "For long-running background commands, prefer scripts or commands that periodically print progress updates. Best format: print lines starting with `WVC_PROGRESS ` followed by JSON like {\"percent\":42,\"message\":\"Running\"} or {\"current\":120,\"total\":1000,\"unit\":\"batches\",\"message\":\"Epoch 2/5\",\"eta_seconds\":30}. Supported JSON fields are `percent`, `message`, `current`, `total`, `unit`, `eta_seconds`, and optional `kind`=`indeterminate` or `kind`=`checkpoint`. For milestone-style wakeups, print `WVC_CHECKPOINT {\"message\":\"Unit tests passed\"}`. Generic fallback output that can be parsed includes `42%`, `3/10 tests`, `3 of 10 steps`, `1.5/3.0 GiB`, or phase lines like `Compiling ...`, `Downloading ...`, `Running ...`, and `Building ...`. If you are writing the script yourself, add these progress/checkpoint lines explicitly. Put large temporary files, worktrees, and virtual environments under `$WVC_SCRATCH_DIR`, not `/tmp`, because `/tmp` may be RAM-backed.";
 const BASH_TOOL_DESCRIPTION: &str = "Run a bash command.";
 const WINDOWS_SHELL_TOOL_DESCRIPTION: &str =
     "Run a Windows cmd.exe command (compatibility name `bash`). Use cmd.exe syntax, not Bash.";
@@ -435,7 +435,7 @@ async fn handle_background_output_line(
         }
         Ok(None) => {}
         Err(err) => {
-            let warning = format!("[jcode warning] failed to parse background progress: {err}\n");
+            let warning = format!("[wvc warning] failed to parse background progress: {err}\n");
             file.write_all(warning.as_bytes()).await.ok();
             file.flush().await.ok();
         }
@@ -452,7 +452,7 @@ async fn handle_background_output_line(
 
 #[cfg(not(windows))]
 fn tool_scratch_dir() -> Option<std::path::PathBuf> {
-    let dir = std::env::var_os("JCODE_SCRATCH_DIR")
+    let dir = std::env::var_os("WVC_SCRATCH_DIR")
         .filter(|value| !value.is_empty())
         .map(std::path::PathBuf::from)
         .or_else(|| {
@@ -467,7 +467,7 @@ fn tool_scratch_dir() -> Option<std::path::PathBuf> {
 #[cfg(not(windows))]
 fn configure_tool_scratch(command: &mut TokioCommand) {
     if let Some(dir) = tool_scratch_dir() {
-        command.env("TMPDIR", &dir).env("JCODE_SCRATCH_DIR", dir);
+        command.env("TMPDIR", &dir).env("WVC_SCRATCH_DIR", dir);
     }
 }
 
@@ -528,11 +528,11 @@ fn build_detached_shell_wrapper(command: &str) -> StdCommand {
     let mut cmd = StdCommand::new("bash");
     cmd.arg("-lc")
         .arg(
-            r#"eval "$JCODE_RELOAD_DETACH_COMMAND"; status=$?; printf '\n--- Command finished with exit code: %s ---\n' "$status"; exit "$status""#,
+            r#"eval "$WVC_RELOAD_DETACH_COMMAND"; status=$?; printf '\n--- Command finished with exit code: %s ---\n' "$status"; exit "$status""#,
         )
-        .env("JCODE_RELOAD_DETACH_COMMAND", command);
+        .env("WVC_RELOAD_DETACH_COMMAND", command);
     if let Some(dir) = tool_scratch_dir() {
-        cmd.env("TMPDIR", &dir).env("JCODE_SCRATCH_DIR", dir);
+        cmd.env("TMPDIR", &dir).env("WVC_SCRATCH_DIR", dir);
     }
     cmd
 }
@@ -621,7 +621,7 @@ mod utf8_truncation_tests {
     #[tokio::test]
     async fn build_shell_command_uses_disk_backed_scratch_directory() {
         let expected = super::tool_scratch_dir().expect("wvc scratch directory");
-        let output = build_shell_command("printf '%s\\n%s\\n' \"$TMPDIR\" \"$JCODE_SCRATCH_DIR\"")
+        let output = build_shell_command("printf '%s\\n%s\\n' \"$TMPDIR\" \"$WVC_SCRATCH_DIR\"")
             .output()
             .await
             .expect("run bash command");
@@ -709,7 +709,7 @@ impl Tool for BashTool {
         if crate::browser::is_browser_command(&params.command) {
             params.command = crate::browser::rewrite_command_with_full_path(&params.command);
 
-            // Start/attach a browser session for this jcode session.
+            // Start/attach a browser session for this wvc session.
             // This gives each agent its own browser tab, preventing
             // multi-agent conflicts when using the browser bridge.
             if !cfg!(windows)

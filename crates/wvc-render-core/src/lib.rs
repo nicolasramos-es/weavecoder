@@ -1,6 +1,6 @@
-//! # jcode-render-core
+//! # wvc-render-core
 //!
-//! Backend-neutral document/render model shared by jcode's front-ends (the
+//! Backend-neutral document/render model shared by wvc's front-ends (the
 //! ratatui TUI and the desktop GPU UI).
 //!
 //! The pipeline is split at the seam where backends actually differ:
@@ -16,7 +16,7 @@
 //! [`wrap::WidthMeasure`] for its width units.
 //!
 //! This model is extracted from the *working* TUI markdown renderer
-//! (`jcode-tui-markdown`); that renderer remains authoritative until this core
+//! (`wvc-tui-markdown`); that renderer remains authoritative until this core
 //! reaches parity, after which front-ends migrate onto it.
 
 pub mod markdown;

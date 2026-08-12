@@ -1,7 +1,7 @@
 //! Probe: render a swarm-plan-style flowchart (the exact shape
-//! `jcode-tui`'s `swarm_plan_graph` emits) through the real mermaid pipeline
+//! `wvc-tui`'s `swarm_plan_graph` emits) through the real mermaid pipeline
 //! and report success/error. Useful when iterating on the renderer:
-//!   cargo run -p jcode-tui-mermaid --features renderer --example plan_graph_probe
+//!   cargo run -p wvc-tui-mermaid --features renderer --example plan_graph_probe
 fn probe(name: &str, src: &str) -> bool {
     match wvc_tui_mermaid::render_mermaid_untracked(src, Some(100)) {
         wvc_tui_mermaid::RenderResult::Image { width, height, .. } => {

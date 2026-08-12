@@ -8,7 +8,7 @@ use super::conflicts::{Conflict, detect_conflicts};
 use super::source::KeySource;
 
 /// Render a full diagnostic report: detected terminal, discovered binding
-/// counts, and any conflicts with jcode's configured bindings.
+/// counts, and any conflicts with wvc's configured bindings.
 pub fn render_report(cfg: &KeybindingsConfig, snapshot: &KeymapSnapshot) -> String {
     let mut out = String::new();
     out.push_str("Keymap diagnostics\n");
@@ -46,7 +46,7 @@ pub fn render_report(cfg: &KeybindingsConfig, snapshot: &KeymapSnapshot) -> Stri
 
     if term_count == 0 && sys_count == 0 && app_count == 0 {
         out.push_str(
-            "\nNo machine bindings were discovered. jcode can read Ghostty bindings, macOS\n\
+            "\nNo machine bindings were discovered. wvc can read Ghostty bindings, macOS\n\
              system shortcuts, and a few window managers (OmniWM, AeroSpace, skhd); other\n\
              terminals and tools are not yet inspected, so conflicts there will not be\n\
              detected.\n",
@@ -56,7 +56,7 @@ pub fn render_report(cfg: &KeybindingsConfig, snapshot: &KeymapSnapshot) -> Stri
     let conflicts = detect_conflicts(cfg, snapshot);
     out.push('\n');
     if conflicts.is_empty() {
-        out.push_str("No conflicts found between your jcode keybindings and the machine.\n");
+        out.push_str("No conflicts found between your wvc keybindings and the machine.\n");
     } else {
         out.push_str(&format!(
             "{} potential conflict{} found:\n\n",
@@ -69,8 +69,8 @@ pub fn render_report(cfg: &KeybindingsConfig, snapshot: &KeymapSnapshot) -> Stri
         }
         out.push_str(
             "These keys may be captured by your terminal, macOS, or another app (window\n\
-             manager, launcher) before jcode sees them.\n\
-             To fix: rebind the jcode action in ~/.jcode/config.toml under [keybindings],\n\
+             manager, launcher) before wvc sees them.\n\
+             To fix: rebind the wvc action in ~/.wvc/config.toml under [keybindings],\n\
              or change the conflicting shortcut in the other app's settings.\n",
         );
     }
@@ -102,11 +102,11 @@ fn render_conflict_block(c: &Conflict) -> String {
         }
     };
     format!(
-        "  ⚠ {key}\n      jcode: {action} ({field} = \"{raw}\")\n      taken by {interceptor}\n",
-        key = c.jcode.chord.display(),
-        action = c.jcode.action,
-        field = c.jcode.field,
-        raw = c.jcode.raw,
+        "  ⚠ {key}\n      wvc: {action} ({field} = \"{raw}\")\n      taken by {interceptor}\n",
+        key = c.wvc.chord.display(),
+        action = c.wvc.action,
+        field = c.wvc.field,
+        raw = c.wvc.raw,
         interceptor = interceptor_desc,
     )
 }
@@ -120,7 +120,7 @@ pub fn render_status_line(cfg: &KeybindingsConfig, snapshot: &KeymapSnapshot) ->
     }
     let keys: Vec<String> = conflicts
         .iter()
-        .map(|c| c.jcode.chord.display())
+        .map(|c| c.wvc.chord.display())
         .collect::<std::collections::BTreeSet<_>>()
         .into_iter()
         .collect();

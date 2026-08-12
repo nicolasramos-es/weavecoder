@@ -10,9 +10,9 @@ use std::process::Command;
 use std::time::SystemTime;
 use wvc_storage as storage;
 
-/// Get the jcode repository directory
+/// Get the wvc repository directory
 pub fn get_repo_dir() -> Option<PathBuf> {
-    if let Ok(path) = std::env::var("JCODE_REPO_DIR") {
+    if let Ok(path) = std::env::var("WVC_REPO_DIR") {
         let path = PathBuf::from(path);
         if is_wvc_repo(&path) {
             return Some(path);
@@ -77,8 +77,8 @@ pub const SELFDEV_CARGO_PROFILE: &str = "selfdev";
 
 /// Resolve a channel/launcher binary path to the file that actually runs.
 ///
-/// Release archives install a tiny `jcode` wrapper script alongside the real
-/// `jcode-<platform>.bin` payload (the wrapper sets `LD_LIBRARY_PATH` and execs
+/// Release archives install a tiny `wvc` wrapper script alongside the real
+/// `wvc-<platform>.bin` payload (the wrapper sets `LD_LIBRARY_PATH` and execs
 /// the payload). Channel symlinks point at the wrapper and reload/exec must
 /// keep using the wrapper, but the *running process* (`current_exe()`) is the
 /// payload. Any "is the candidate the same/newer binary than the running one?"
@@ -266,7 +266,7 @@ fn build_target_for_paths<'a>(paths: impl Iterator<Item = &'a str>) -> SelfDevBu
             // Workspace-wide changes can affect every binary.
             desktop2 = true;
             other = true;
-        } else if path.starts_with("crates/jcode-desktop2/") {
+        } else if path.starts_with("crates/wvc-desktop2/") {
             desktop2 = true;
         } else {
             other = true;
@@ -340,14 +340,14 @@ fn non_empty_env_path(name: &str) -> Option<PathBuf> {
 
 /// Directory for the single launcher path users execute from PATH.
 ///
-/// Defaults to `~/.local/bin` on Unix, `%LOCALAPPDATA%\jcode\bin` on Windows.
-/// Overridable with `JCODE_INSTALL_DIR`.
+/// Defaults to `~/.local/bin` on Unix, `%LOCALAPPDATA%\wvc\bin` on Windows.
+/// Overridable with `WVC_INSTALL_DIR`.
 pub fn launcher_dir() -> Result<PathBuf> {
-    if let Some(custom) = non_empty_env_path("JCODE_INSTALL_DIR") {
+    if let Some(custom) = non_empty_env_path("WVC_INSTALL_DIR") {
         return Ok(custom);
     }
 
-    if let Some(sandbox_home) = non_empty_env_path("JCODE_HOME") {
+    if let Some(sandbox_home) = non_empty_env_path("WVC_HOME") {
         return Ok(sandbox_home.join("bin"));
     }
 
@@ -368,7 +368,7 @@ pub fn launcher_dir() -> Result<PathBuf> {
     }
 }
 
-/// Path to the launcher binary (`~/.local/bin/jcode` by default).
+/// Path to the launcher binary (`~/.local/bin/wvc` by default).
 pub fn launcher_binary_path() -> Result<PathBuf> {
     Ok(launcher_dir()?.join(binary_name()))
 }
@@ -575,7 +575,7 @@ pub fn preferred_reload_candidate(is_selfdev_session: bool) -> Option<(PathBuf, 
     }
 }
 
-/// Check if a directory is the jcode repository
+/// Check if a directory is the wvc repository
 pub fn is_wvc_repo(dir: &Path) -> bool {
     // Check for Cargo.toml with name = "wvc"
     let cargo_toml = dir.join("Cargo.toml");
@@ -605,7 +605,7 @@ mod tests {
     fn repo_fixture(git_file: bool) -> tempfile::TempDir {
         let temp = tempfile::TempDir::new().expect("temp repo");
         if git_file {
-            std::fs::write(temp.path().join(".git"), "gitdir: /tmp/jcode-test-git\n")
+            std::fs::write(temp.path().join(".git"), "gitdir: /tmp/wvc-test-git\n")
                 .expect("git file");
         } else {
             std::fs::create_dir_all(temp.path().join(".git")).expect("git dir");
@@ -636,11 +636,11 @@ mod tests {
     fn every_build_target_builds_its_own_package() {
         let repo = repo_fixture(false);
         let cases = [
-            (SelfDevBuildTarget::Tui, vec!["-p jcode "]),
-            (SelfDevBuildTarget::Desktop2, vec!["-p jcode-desktop2 "]),
+            (SelfDevBuildTarget::Tui, vec!["-p wvc "]),
+            (SelfDevBuildTarget::Desktop2, vec!["-p wvc-desktop2 "]),
             (
                 SelfDevBuildTarget::All,
-                vec!["-p jcode ", "-p jcode-desktop2 "],
+                vec!["-p wvc ", "-p wvc-desktop2 "],
             ),
         ];
         for (target, expected) in cases {
@@ -664,7 +664,7 @@ mod tests {
         let tui = selfdev_build_command_for_target(repo.path(), SelfDevBuildTarget::Tui);
         assert!(!tui.display.contains("wvc-desktop"));
         let desktop2 = selfdev_build_command_for_target(repo.path(), SelfDevBuildTarget::Desktop2);
-        assert!(!desktop2.display.contains("-p jcode "));
+        assert!(!desktop2.display.contains("-p wvc "));
     }
 
     /// `auto` must route a change to the binary that contains it. Before
@@ -674,13 +674,13 @@ mod tests {
         let cases: Vec<(Vec<&str>, SelfDevBuildTarget)> = vec![
             (vec![], SelfDevBuildTarget::Tui),
             (vec!["src/main.rs"], SelfDevBuildTarget::Tui),
-            (vec!["crates/jcode-tui/src/lib.rs"], SelfDevBuildTarget::Tui),
+            (vec!["crates/wvc-tui/src/lib.rs"], SelfDevBuildTarget::Tui),
             (
-                vec!["crates/jcode-desktop2/src/main.rs"],
+                vec!["crates/wvc-desktop2/src/main.rs"],
                 SelfDevBuildTarget::Desktop2,
             ),
             (
-                vec!["crates/jcode-desktop2/src/editor.rs", "src/main.rs"],
+                vec!["crates/wvc-desktop2/src/editor.rs", "src/main.rs"],
                 SelfDevBuildTarget::All,
             ),
             // Workspace manifests can affect everything.
@@ -700,12 +700,12 @@ mod tests {
     fn porcelain_lines_are_parsed_including_renames() {
         assert_eq!(porcelain_path(" M src/main.rs"), "src/main.rs");
         assert_eq!(
-            porcelain_path("?? crates/jcode-desktop2/src/new.rs"),
-            "crates/jcode-desktop2/src/new.rs"
+            porcelain_path("?? crates/wvc-desktop2/src/new.rs"),
+            "crates/wvc-desktop2/src/new.rs"
         );
         assert_eq!(
-            porcelain_path("R  old/path.rs -> crates/jcode-desktop2/src/moved.rs"),
-            "crates/jcode-desktop2/src/moved.rs"
+            porcelain_path("R  old/path.rs -> crates/wvc-desktop2/src/moved.rs"),
+            "crates/wvc-desktop2/src/moved.rs"
         );
     }
 
@@ -734,14 +734,14 @@ mod tests {
         assert!(is_wvc_repo(repo.path()));
     }
 
-    /// Build a release-style install dir: `jcode` wrapper script + payload.
+    /// Build a release-style install dir: `wvc` wrapper script + payload.
     fn release_install_fixture() -> (tempfile::TempDir, PathBuf, PathBuf) {
         let temp = tempfile::TempDir::new().expect("temp install");
         let wrapper = temp.path().join("wvc");
         let payload = temp.path().join("wvc-linux-x86_64.bin");
         std::fs::write(
             &wrapper,
-            "#!/usr/bin/env sh\nexec ./jcode-linux-x86_64.bin \"$@\"\n",
+            "#!/usr/bin/env sh\nexec ./wvc-linux-x86_64.bin \"$@\"\n",
         )
         .expect("wrapper");
         std::fs::write(&payload, vec![0x7fu8; 64]).expect("payload");
@@ -759,7 +759,7 @@ mod tests {
 
     #[test]
     fn resolve_binary_payload_follows_channel_symlink_to_wrapper() {
-        // The real layout: builds/<channel>/jcode -> versions/<v>/jcode (wrapper).
+        // The real layout: builds/<channel>/wvc -> versions/<v>/wvc (wrapper).
         let (temp, wrapper, payload) = release_install_fixture();
         let channel_dir = temp.path().join("channel");
         std::fs::create_dir_all(&channel_dir).expect("channel dir");

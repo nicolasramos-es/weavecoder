@@ -31,7 +31,7 @@ pub(super) fn visual_variety(palette: &Palette) -> Criterion {
     // just as hard (0.93) on a desaturated olive-gray and read as drab. So the
     // penalty applies to the combination, not to concentration alone.
     //
-    // A near-neutral dominant color is the normal, good case: jcode's default
+    // A near-neutral dominant color is the normal, good case: wvc's default
     // `dim` is pure gray, which carries no hue to be monotone about.
     const MONOTONE_CONCENTRATION: f32 = 0.85;
     const TINTED_CHROMA: f32 = 0.05;

@@ -1,10 +1,10 @@
 //! Shared reasoning-effort ladders.
 //!
 //! Keep these in provider-core so provider runtimes and UI clients expose the
-//! same ordered values. `swarm` and `swarm-deep` are Jcode UI sentinels rather
+//! same ordered values. `swarm` and `swarm-deep` are Weavecoder UI sentinels rather
 //! than wire-level provider values, but they belong in the selectable ladder.
 
-/// OpenAI Responses API effort levels, followed by Jcode's swarm modes.
+/// OpenAI Responses API effort levels, followed by Weavecoder's swarm modes.
 pub const OPENAI_SELECTABLE_EFFORTS: &[&str] = &[
     "none",
     "minimal",
@@ -32,7 +32,7 @@ pub const OPENROUTER_SELECTABLE_EFFORTS: &[&str] = &[
     "swarm-deep",
 ];
 
-/// Direct DeepSeek effort levels, followed by Jcode's swarm modes.
+/// Direct DeepSeek effort levels, followed by Weavecoder's swarm modes.
 pub const DEEPSEEK_SELECTABLE_EFFORTS: &[&str] = &[
     "none",
     "low",

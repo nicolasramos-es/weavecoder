@@ -9,7 +9,7 @@ use crate::storage::{active_pids_dir, register_active_pid, unregister_active_pid
 
 /// RAII guard that marks a session as actively streaming for its lifetime.
 ///
-/// Wraps the on-disk streaming marker from `jcode-storage` (cleared on every
+/// Wraps the on-disk streaming marker from `wvc-storage` (cleared on every
 /// exit path so presence UIs never show a phantom streaming session) and
 /// additionally holds a macOS power assertion so the system does not
 /// idle-sleep in the middle of a streaming model response.
@@ -261,7 +261,7 @@ fn env_flag_enabled(name: &str) -> bool {
 }
 
 fn default_is_test_session() -> bool {
-    env_flag_enabled("JCODE_TEST_SESSION")
+    env_flag_enabled("WVC_TEST_SESSION")
 }
 
 pub fn derive_session_provider_key(provider_name: &str) -> Option<String> {
@@ -270,21 +270,21 @@ pub fn derive_session_provider_key(provider_name: &str) -> Option<String> {
         return Some("wvc".to_string());
     }
 
-    if let Ok(runtime_provider) = std::env::var("JCODE_RUNTIME_PROVIDER") {
+    if let Ok(runtime_provider) = std::env::var("WVC_RUNTIME_PROVIDER") {
         let runtime_provider = runtime_provider.trim().to_ascii_lowercase();
         if !runtime_provider.is_empty() && runtime_provider != "openai-compatible" {
             return Some(runtime_provider);
         }
     }
 
-    if let Ok(namespace) = std::env::var("JCODE_OPENROUTER_CACHE_NAMESPACE") {
+    if let Ok(namespace) = std::env::var("WVC_OPENROUTER_CACHE_NAMESPACE") {
         let namespace = namespace.trim().to_ascii_lowercase();
         if !namespace.is_empty() {
             return Some(namespace);
         }
     }
 
-    if let Ok(active) = std::env::var("JCODE_ACTIVE_PROVIDER") {
+    if let Ok(active) = std::env::var("WVC_ACTIVE_PROVIDER") {
         let active = active.trim().to_ascii_lowercase();
         if !active.is_empty() {
             return Some(active);
@@ -1087,10 +1087,10 @@ request in this new forked session, using the inherited conversation only as con
         false
     }
 
-    /// Check if this session is working on the jcode repository
+    /// Check if this session is working on the wvc repository
     pub fn is_self_dev(&self) -> bool {
         if let Some(ref dir) = self.working_dir {
-            // Check if working dir contains jcode source
+            // Check if working dir contains wvc source
             let path = std::path::Path::new(dir);
             path.join("Cargo.toml").exists()
                 && path.join("src/main.rs").exists()

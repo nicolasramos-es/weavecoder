@@ -5,12 +5,12 @@
 //! events until the turn completes.
 //!
 //! Usage:
-//!   cargo run -p jcode-harness-api --example harness_repl -- \
+//!   cargo run -p wvc-harness-api --example harness_repl -- \
 //!     [socket_path] [message]
 //!
 //! Until the server-side adapter lands (milestone 2), run with `--demo` to
 //! exercise the client against an in-process scripted server:
-//!   cargo run -p jcode-harness-api --example harness_repl -- --demo
+//!   cargo run -p wvc-harness-api --example harness_repl -- --demo
 
 use std::io::{BufRead, BufReader, Write};
 use wvc_harness_api::{
@@ -36,7 +36,7 @@ fn main() {
 
 fn default_socket_path() -> String {
     let home = std::env::var("HOME").expect("HOME not set");
-    format!("{home}/.jcode/jcode-api.sock")
+    format!("{home}/.wvc/wvc-api.sock")
 }
 
 fn run_session<R: BufRead, W: Write>(mut client: HarnessClient<R, W>, message: &str) {

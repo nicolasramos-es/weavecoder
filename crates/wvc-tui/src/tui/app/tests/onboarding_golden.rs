@@ -9,7 +9,7 @@
 //   2. Regression guards on the exact wording / option layout of each phase.
 //
 // To see all rendered screens:
-//   cargo test -p jcode-tui onboarding_golden -- --nocapture
+//   cargo test -p wvc-tui onboarding_golden -- --nocapture
 
 // NOTE: This file is `include!`d into `crate::tui::app::tests`, which already
 // imports `ExternalCli`, `OnboardingFlow`, and `OnboardingPhase` via the
@@ -230,7 +230,7 @@ fn onboarding_golden_walks_every_phase() {
         let app = app_in_phase(OnboardingPhase::Suggestions);
         let text = render_onboarding_text(&app, width, height);
         dump("Suggestions", &text);
-        assert!(text.contains("Welcome to jcode onboarding"), "{text}");
+        assert!(text.contains("Welcome to wvc onboarding"), "{text}");
     }
 }
 
@@ -256,7 +256,7 @@ fn onboarding_golden_walks_failure_and_async_states() {
     // Helper: assert the shared polish invariants for a guided screen.
     let assert_guided_polish = |title: &str, text: &str| {
         assert!(
-            text.contains("Welcome to jcode onboarding"),
+            text.contains("Welcome to wvc onboarding"),
             "{title}: must render the welcome title\n{text}"
         );
         assert!(
@@ -370,7 +370,7 @@ fn onboarding_golden_telemetry_settings_page() {
         text.contains("Send everything, including prompts"),
         "option 1: {text}"
     );
-    assert!(text.contains("Helps jcode the most"), "caption 1: {text}");
+    assert!(text.contains("Helps wvc the most"), "caption 1: {text}");
     assert!(
         text.contains("No prompts or transcripts"),
         "option 2: {text}"

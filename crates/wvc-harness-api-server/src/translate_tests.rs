@@ -11,16 +11,16 @@ fn wvc_home_test_lock() -> MutexGuard<'static, ()> {
         .unwrap_or_else(|poisoned| poisoned.into_inner())
 }
 
-struct ScopedJcodeHome {
+struct ScopedWeavecoderHome {
     path: PathBuf,
     previous: Option<OsString>,
     _guard: MutexGuard<'static, ()>,
 }
 
-impl ScopedJcodeHome {
+impl ScopedWeavecoderHome {
     fn new(label: &str) -> Self {
         let guard = wvc_home_test_lock();
-        let previous = std::env::var_os("JCODE_HOME");
+        let previous = std::env::var_os("WVC_HOME");
         let unique = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap_or_default()
@@ -29,10 +29,10 @@ impl ScopedJcodeHome {
             "wvc-harness-api-{label}-{}-{unique}",
             std::process::id()
         ));
-        std::fs::create_dir_all(&path).expect("create isolated JCODE_HOME");
-        // SAFETY: all tests in this module that mutate JCODE_HOME share `LOCK`,
+        std::fs::create_dir_all(&path).expect("create isolated WVC_HOME");
+        // SAFETY: all tests in this module that mutate WVC_HOME share `LOCK`,
         // and this guard restores the prior value before it is released.
-        unsafe { std::env::set_var("JCODE_HOME", &path) };
+        unsafe { std::env::set_var("WVC_HOME", &path) };
         Self {
             path,
             previous,
@@ -41,11 +41,11 @@ impl ScopedJcodeHome {
     }
 }
 
-impl Drop for ScopedJcodeHome {
+impl Drop for ScopedWeavecoderHome {
     fn drop(&mut self) {
         match self.previous.take() {
-            Some(value) => unsafe { std::env::set_var("JCODE_HOME", value) },
-            None => unsafe { std::env::remove_var("JCODE_HOME") },
+            Some(value) => unsafe { std::env::set_var("WVC_HOME", value) },
+            None => unsafe { std::env::remove_var("WVC_HOME") },
         }
         let _ = std::fs::remove_dir_all(&self.path);
     }
@@ -441,7 +441,7 @@ fn create_session_in_a_wvc_checkout_requests_selfdev() {
         .parent()
         .and_then(std::path::Path::parent)
         .expect("workspace root")
-        .join("crates/jcode-desktop2");
+        .join("crates/wvc-desktop2");
     let out = state.api_request_to_legacy(&json!({
         "req": "create_session",
         "id": 1,
@@ -990,25 +990,25 @@ fn a_plain_session_id_still_resolves() {
 
 /// Session records must be read from the *instance's* home, not the user's.
 ///
-/// `launch()` gives an embedded instance its own `JCODE_HOME` precisely so it
+/// `launch()` gives an embedded instance its own `WVC_HOME` precisely so it
 /// cannot see the user's work. Reading the user's home directly made
-/// `peek_session` return the real transcripts of the jcode the user runs
+/// `peek_session` return the real transcripts of the wvc the user runs
 /// interactively, from a client that was supposed to be sandboxed.
 #[test]
 fn session_records_are_read_from_the_instance_home() {
-    let home = ScopedJcodeHome::new("instance-home");
+    let home = ScopedWeavecoderHome::new("instance-home");
     let path = BridgeState::session_record_path("session_x_1_a");
     let path = path.expect("a normal session id must resolve");
     assert!(
         path.starts_with(&home.path),
-        "JCODE_HOME must scope session records, got {}",
+        "WVC_HOME must scope session records, got {}",
         path.display()
     );
 }
 
 #[test]
 fn unattached_list_sessions_discovers_all_persisted_records() {
-    let home = ScopedJcodeHome::new("persisted-discovery");
+    let home = ScopedWeavecoderHome::new("persisted-discovery");
     let first_root = home.path.join("first-project");
     let second_root = home.path.join("second-project");
     std::fs::create_dir_all(&first_root).unwrap();
@@ -1084,7 +1084,7 @@ fn runtime_info_reports_the_active_provider_and_complete_route_catalog() {
 
 #[test]
 fn archive_restore_and_retention_are_reversible_and_owner_only() {
-    let home = ScopedJcodeHome::new("archive");
+    let home = ScopedWeavecoderHome::new("archive");
     let root = home.path.join("project");
     std::fs::create_dir_all(&root).unwrap();
     write_session_record(&home.path, "recent_session", &root);
@@ -1165,9 +1165,9 @@ fn archive_restore_and_retention_are_reversible_and_owner_only() {
 }
 
 #[test]
-fn credential_provisioning_normalizes_gemini_and_supports_jcode() {
-    let home = ScopedJcodeHome::new("credentials");
-    let config = home.path.join("config/jcode");
+fn credential_provisioning_normalizes_gemini_and_supports_wvc() {
+    let home = ScopedWeavecoderHome::new("credentials");
+    let config = home.path.join("config/wvc");
     std::fs::create_dir_all(&config).unwrap();
     std::fs::write(
         config.join("gemini.env"),
@@ -1210,7 +1210,7 @@ fn credential_provisioning_normalizes_gemini_and_supports_jcode() {
     assert_eq!(notify["provider"], "wvc");
     assert_eq!(
         std::fs::read_to_string(config.join("wvc-subscription.env")).unwrap(),
-        "JCODE_API_KEY=jcode-secret\n"
+        "WVC_API_KEY=wvc-secret\n"
     );
 
     let event = only_reply_event(state.api_request_to_legacy(&json!({
@@ -1250,10 +1250,10 @@ fn credential_provisioning_normalizes_gemini_and_supports_jcode() {
 fn owner_only_writes_refuse_symlink_targets_and_directories() {
     use std::os::unix::fs::symlink;
 
-    let home = ScopedJcodeHome::new("credential-symlinks");
+    let home = ScopedWeavecoderHome::new("credential-symlinks");
     let outside_file = home.path.join("outside.env");
     std::fs::write(&outside_file, "unchanged\n").unwrap();
-    let config = home.path.join("config/jcode");
+    let config = home.path.join("config/wvc");
     std::fs::create_dir_all(&config).unwrap();
     symlink(&outside_file, config.join("gemini.env")).unwrap();
     let mut state = BridgeState::default();
@@ -1301,7 +1301,7 @@ fn owner_only_writes_refuse_symlink_targets_and_directories() {
 fn rooted_file_operations_reject_traversal_and_symlink_escapes_and_bound_results() {
     use std::os::unix::fs::symlink;
 
-    let home = ScopedJcodeHome::new("rooted-files");
+    let home = ScopedWeavecoderHome::new("rooted-files");
     let root = home.path.join("project");
     let outside = home.path.join("outside");
     std::fs::create_dir_all(root.join("src")).unwrap();

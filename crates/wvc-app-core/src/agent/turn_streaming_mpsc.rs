@@ -1227,7 +1227,7 @@ impl Agent {
             ));
 
             if self.provider.handles_tools_internally() {
-                tool_calls.retain(|tc| JCODE_NATIVE_TOOLS.contains(&tc.name.as_str()));
+                tool_calls.retain(|tc| WVC_NATIVE_TOOLS.contains(&tc.name.as_str()));
                 if tool_calls.is_empty() {
                     // === INJECTION POINT D: After provider-handled tools, before next API call ===
                     let injected = self.inject_soft_interrupts();
@@ -1311,7 +1311,7 @@ impl Agent {
 
                 self.validate_tool_allowed(&tc.name)?;
 
-                let is_native_tool = JCODE_NATIVE_TOOLS.contains(&tc.name.as_str());
+                let is_native_tool = WVC_NATIVE_TOOLS.contains(&tc.name.as_str());
 
                 if let Some((sdk_content, sdk_is_error)) = sdk_tool_results.remove(&tc.id) {
                     // For native tools, ignore SDK errors and execute locally

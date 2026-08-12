@@ -26,8 +26,8 @@ CASES=(
 run() {
   local binary="$1" out="$2"
   echo "=== $out ($binary)"
-  JCODE_BIN="$binary" python scripts/benchmark_discovery_rate.py \
-    --provider "${PROVIDER:-jcode}" --model "$MODEL" --timeout 150 --trials "$TRIALS" \
+  WVC_BIN="$binary" python scripts/benchmark_discovery_rate.py \
+    --provider "${PROVIDER:-wvc}" --model "$MODEL" --timeout 150 --trials "$TRIALS" \
     "${CASES[@]}" --output "target/discovery-rate/$out.json" || true
 }
 

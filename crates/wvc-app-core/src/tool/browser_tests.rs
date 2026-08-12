@@ -221,9 +221,9 @@ async fn readiness_does_not_trust_a_stale_setup_marker() {
     use std::os::unix::fs::PermissionsExt;
 
     let _guard = wvc_base::storage::lock_test_env();
-    let prev_home = std::env::var_os("JCODE_HOME");
+    let prev_home = std::env::var_os("WVC_HOME");
     let temp = tempfile::TempDir::new().expect("create temp dir");
-    wvc_base::env::set_var("JCODE_HOME", temp.path());
+    wvc_base::env::set_var("WVC_HOME", temp.path());
 
     let browser_dir = temp.path().join("browser");
     std::fs::create_dir_all(&browser_dir).expect("create browser dir");
@@ -249,8 +249,8 @@ async fn readiness_does_not_trust_a_stale_setup_marker() {
     assert!(message.contains("capability discovery"), "{message}");
 
     if let Some(prev_home) = prev_home {
-        wvc_base::env::set_var("JCODE_HOME", prev_home);
+        wvc_base::env::set_var("WVC_HOME", prev_home);
     } else {
-        wvc_base::env::remove_var("JCODE_HOME");
+        wvc_base::env::remove_var("WVC_HOME");
     }
 }

@@ -98,7 +98,7 @@ fn spawn_resume_in_new_terminal_uses_handterm_exec_mode() {
         std::env::var("PATH").unwrap_or_default()
     );
     let _path_guard = EnvVarGuard::set_value("PATH", &path);
-    let _term_guard = EnvVarGuard::set_value("JCODE_TERMINAL", "handterm");
+    let _term_guard = EnvVarGuard::set_value("WVC_TERMINAL", "handterm");
 
     let exe = temp.path().join("wvc-bin");
     let cwd = temp.path().join("cwd");
@@ -125,8 +125,8 @@ fn resumed_window_title_includes_server_name_when_registry_matches_socket() {
     let temp_home = tempfile::tempdir().expect("temp home");
     let temp_runtime = tempfile::tempdir().expect("temp runtime");
     let socket_path = temp_runtime.path().join("wvc.sock");
-    let _home_guard = EnvVarGuard::set_path("JCODE_HOME", temp_home.path());
-    let _socket_guard = EnvVarGuard::set_path("JCODE_SOCKET", &socket_path);
+    let _home_guard = EnvVarGuard::set_path("WVC_HOME", temp_home.path());
+    let _socket_guard = EnvVarGuard::set_path("WVC_SOCKET", &socket_path);
 
     let mut registry = crate::registry::ServerRegistry::default();
     registry.register(crate::registry::ServerInfo {
@@ -150,7 +150,7 @@ fn resumed_window_title_includes_server_name_when_registry_matches_socket() {
 
     assert_eq!(
         resumed_window_title("session_parrot_123"),
-        "🦜 jcode/blazing Parrot"
+        "🦜 wvc/blazing Parrot"
     );
 }
 
@@ -167,7 +167,7 @@ fn spawn_selfdev_in_new_terminal_uses_handterm_exec_mode() {
         std::env::var("PATH").unwrap_or_default()
     );
     let _path_guard = EnvVarGuard::set_value("PATH", &path);
-    let _term_guard = EnvVarGuard::set_value("JCODE_TERMINAL", "handterm");
+    let _term_guard = EnvVarGuard::set_value("WVC_TERMINAL", "handterm");
 
     let exe = temp.path().join("wvc-bin");
     let cwd = temp.path().join("cwd");
@@ -194,7 +194,7 @@ async fn suppresses_stale_server_spawning_phase_when_listener_is_already_live() 
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::tempdir().expect("temp dir");
     let socket_path = temp.path().join("wvc.sock");
-    let _socket_guard = EnvVarGuard::set_path("JCODE_SOCKET", &socket_path);
+    let _socket_guard = EnvVarGuard::set_path("WVC_SOCKET", &socket_path);
     let _listener = Listener::bind(&socket_path).expect("bind listener");
 
     assert!(
@@ -209,7 +209,7 @@ async fn keeps_server_spawning_phase_while_listener_is_not_live() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::tempdir().expect("temp dir");
     let socket_path = temp.path().join("wvc.sock");
-    let _socket_guard = EnvVarGuard::set_path("JCODE_SOCKET", &socket_path);
+    let _socket_guard = EnvVarGuard::set_path("WVC_SOCKET", &socket_path);
 
     assert!(
         should_show_server_spawning(true).await,

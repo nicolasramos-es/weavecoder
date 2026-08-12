@@ -10,8 +10,8 @@ use std::path::{Path, PathBuf};
 
 const SCHEMA_VERSION: u32 = 2;
 const DEFAULT_RETEST_DAYS: i64 = 14;
-const LEDGER_ENV: &str = "JCODE_LIVE_TEST_LEDGER";
-const COVERAGE_ENV: &str = "JCODE_LIVE_TEST_COVERAGE";
+const LEDGER_ENV: &str = "WVC_LIVE_TEST_LEDGER";
+const COVERAGE_ENV: &str = "WVC_LIVE_TEST_COVERAGE";
 
 pub const CHECKPOINT_TAXONOMY_VERSION: u32 = 3;
 
@@ -29,7 +29,7 @@ pub mod checkpoints {
     pub const TOOL_CALL_PARSE: &str = "tool_call_parse";
     pub const TOOL_EXECUTION_LOOP: &str = "tool_execution_loop";
     pub const TOOL_RESULT_FOLLOWUP: &str = "tool_result_followup";
-    pub const REAL_JCODE_TOOL_SMOKE: &str = "real_wvc_tool_smoke";
+    pub const REAL_WVC_TOOL_SMOKE: &str = "real_wvc_tool_smoke";
     /// Observe-only: did the model expose its reasoning (`streamed`), hide it
     /// behind an opaque signal (`opaque`, e.g. Gemini-3 / OpenAI), or emit none
     /// (`none`)? Never required for user-readiness; hiding reasoning is a pass.
@@ -145,7 +145,7 @@ const END_TO_END_CHECKPOINTS: &[LiveVerificationCheckpointDefinition] = &[
         category: "tools",
         required_for_user_ready: true,
         spends_balance: true,
-        description: "A full Jcode turn executes a harmless local tool requested by the model.",
+        description: "A full Weavecoder turn executes a harmless local tool requested by the model.",
     },
     LiveVerificationCheckpointDefinition {
         id: checkpoints::TOOL_RESULT_FOLLOWUP,
@@ -156,12 +156,12 @@ const END_TO_END_CHECKPOINTS: &[LiveVerificationCheckpointDefinition] = &[
         description: "The provider accepts tool results and the model completes the final assistant response.",
     },
     LiveVerificationCheckpointDefinition {
-        id: checkpoints::REAL_JCODE_TOOL_SMOKE,
-        label: "Real Jcode tool smoke",
+        id: checkpoints::REAL_WVC_TOOL_SMOKE,
+        label: "Real Weavecoder tool smoke",
         category: "tools",
         required_for_user_ready: true,
         spends_balance: true,
-        description: "A normal Jcode agent turn uses the real streamed parser, advertised tool schema, registry execution, tool-result followup, and transcript validation without malformed tool calls.",
+        description: "A normal Weavecoder agent turn uses the real streamed parser, advertised tool schema, registry execution, tool-result followup, and transcript validation without malformed tool calls.",
     },
     LiveVerificationCheckpointDefinition {
         id: checkpoints::REASONING_CAPABILITY,
@@ -228,7 +228,7 @@ pub const STRICT_PROVIDER_MODEL_COVERAGE_CHECKPOINTS: &[&str] = &[
     checkpoints::TOOL_CALL_PARSE,
     checkpoints::TOOL_EXECUTION_LOOP,
     checkpoints::TOOL_RESULT_FOLLOWUP,
-    checkpoints::REAL_JCODE_TOOL_SMOKE,
+    checkpoints::REAL_WVC_TOOL_SMOKE,
 ];
 
 pub fn strict_provider_model_coverage_checkpoint_ids() -> impl Iterator<Item = &'static str> {
@@ -768,7 +768,7 @@ pub struct LiveProviderModelCoveragePair {
     pub source_provider_ids: Vec<String>,
     pub covered: bool,
     pub latest_recorded_at: DateTime<Utc>,
-    /// jcode version string that produced the most recent entry for this pair.
+    /// wvc version string that produced the most recent entry for this pair.
     #[serde(default)]
     pub latest_wvc_version: String,
     /// Whether the most recent run came from a dirty (dev) build. Used to label
@@ -861,7 +861,7 @@ pub struct LiveProviderModelCoverageSummary {
     /// ledger (e.g. provider-doctor full-tier runs).
     #[serde(default)]
     pub recorded_spend: LiveCoverageRecordedSpend,
-    /// Full monitoring roster: every provider jcode knows about (OpenAI-compatible
+    /// Full monitoring roster: every provider wvc knows about (OpenAI-compatible
     /// profiles + login providers), whether `provider-doctor` can drive it, whether
     /// a credential is present, and how much live READY evidence exists. Lets the
     /// report enumerate *every* provider, not just ones with ledger evidence.
@@ -880,7 +880,7 @@ pub struct ProviderMonitorEntry {
     /// subscription) vs `anthropic-api` (direct API key).
     #[serde(default)]
     pub auth_method: String,
-    /// True when `jcode provider-doctor <id>` can drive this provider today
+    /// True when `wvc provider-doctor <id>` can drive this provider today
     /// (OpenAI-compatible profile exists for the id).
     pub doctor_drivable: bool,
     /// True when an API key is present in env or the provider's `.env` file.
@@ -1011,7 +1011,7 @@ pub fn format_provider_test_coverage_report(
 ) -> String {
     let mut out = String::new();
     out.push_str("# Provider test coverage\n\n");
-    out.push_str("Developer/live verification evidence recorded by jcode. This is evidence, not a guarantee of future provider availability.\n\n");
+    out.push_str("Developer/live verification evidence recorded by wvc. This is evidence, not a guarantee of future provider availability.\n\n");
     out.push_str(&format!("Provider: {}\n", provider_query));
     out.push_str(&format!("Model: {}\n\n", model_query));
 
@@ -1020,11 +1020,11 @@ pub fn format_provider_test_coverage_report(
         Err(err) => {
             out.push_str("Status: No verification ledger found on this install\n\n");
             out.push_str("No local or bundled developer live-test coverage file could be loaded. ");
-            out.push_str("Once jcode ships a curated developer coverage snapshot, this command should prefer that snapshot and separately show local evidence.\n\n");
+            out.push_str("Once wvc ships a curated developer coverage snapshot, this command should prefer that snapshot and separately show local evidence.\n\n");
             out.push_str(&format!("Ledger error: {}\n\n", err));
             out.push_str("You can generate local evidence with:\n\n");
             out.push_str(&format!(
-                "  jcode auth-test --provider {} --model {}",
+                "  wvc auth-test --provider {} --model {}",
                 provider_query, model_query
             ));
             return out;
@@ -1067,9 +1067,9 @@ pub fn format_provider_test_coverage_report(
     matches.sort_by_key(|entry| entry.recorded_at);
 
     let Some(entry) = matches.last() else {
-        out.push_str("Status: Not yet covered by this jcode verification ledger\n\n");
+        out.push_str("Status: Not yet covered by this wvc verification ledger\n\n");
         out.push_str(&format!("Ledger: {}\n\n", path.display()));
-        out.push_str("This does not mean the provider/model is broken. It only means jcode has no recorded live verification evidence for this exact provider/model pair.\n");
+        out.push_str("This does not mean the provider/model is broken. It only means wvc has no recorded live verification evidence for this exact provider/model pair.\n");
         return out;
     };
 
@@ -1116,7 +1116,7 @@ pub fn format_provider_test_coverage_report(
     out.push_str(&format!("Matching evidence entries: {}\n", matches.len()));
     out.push_str(&format!("Test name: {}\n", entry.test_name));
     out.push_str(&format!(
-        "Tested with: jcode {} ({}){}\n\n",
+        "Tested with: wvc {} ({}){}\n\n",
         entry.wvc_version,
         entry.wvc_git_hash,
         if entry.wvc_git_dirty { ", dirty" } else { "" }
@@ -1154,7 +1154,7 @@ pub fn format_provider_test_coverage_report(
     }
 
     out.push_str("\n## What this means\n\n");
-    out.push_str("These checks exercise real jcode runtime paths, including basic chat and tool-use smoke tests when present. Missing evidence should be read as 'not yet recorded', not as a failure.\n");
+    out.push_str("These checks exercise real wvc runtime paths, including basic chat and tool-use smoke tests when present. Missing evidence should be read as 'not yet recorded', not as a failure.\n");
     out
 }
 
@@ -1203,7 +1203,7 @@ fn provider_test_coverage_checkpoint_label(checkpoint: &str) -> String {
         checkpoints::TOOL_CALL_PARSE => "Tool call parsed".to_string(),
         checkpoints::TOOL_EXECUTION_LOOP => "Tool execution loop".to_string(),
         checkpoints::TOOL_RESULT_FOLLOWUP => "Tool result follow-up".to_string(),
-        checkpoints::REAL_JCODE_TOOL_SMOKE => "Real jcode tool smoke".to_string(),
+        checkpoints::REAL_WVC_TOOL_SMOKE => "Real wvc tool smoke".to_string(),
         other => other.replace('_', " "),
     }
 }
@@ -1360,7 +1360,7 @@ pub fn strict_live_provider_model_coverage_summary(
         ) {
             totals.3 += 1;
         }
-        match pair.checkpoint_status(checkpoints::REAL_JCODE_TOOL_SMOKE) {
+        match pair.checkpoint_status(checkpoints::REAL_WVC_TOOL_SMOKE) {
             Some(LiveVerificationStageStatus::Passed) => totals.4 += 1,
             Some(LiveVerificationStageStatus::Skipped) => totals.5 += 1,
             _ => {}
@@ -1446,7 +1446,7 @@ pub fn strict_live_provider_model_coverage_summary(
         coverage_source: coverage_source.into(),
         denominator: "observed canonical provider/model pairs in the live verification coverage ledger"
             .to_string(),
-        covered_definition: "covered means every strict provider/model E2E checkpoint passed for the exact canonical provider id and model after login-provider alias normalization: live catalog, current-session catalog refresh, TUI picker visibility/fallback labeling, model switch route, non-streaming completion, streaming completion, tool-call parse, tool execution loop, tool-result followup, and real Jcode tool smoke".to_string(),
+        covered_definition: "covered means every strict provider/model E2E checkpoint passed for the exact canonical provider id and model after login-provider alias normalization: live catalog, current-session catalog refresh, TUI picker visibility/fallback labeling, model switch route, non-streaming completion, streaming completion, tool-call parse, tool execution loop, tool-result followup, and real Weavecoder tool smoke".to_string(),
         total_provider_model_pairs,
         covered_provider_model_pairs,
         coverage_percent: percent(covered_provider_model_pairs, total_provider_model_pairs),
@@ -1671,7 +1671,7 @@ const STRICT_PIPELINE_STAGES: &[(&str, &str)] = &[
     (checkpoints::TOOL_CALL_PARSE, "tool-call parse"),
     (checkpoints::TOOL_EXECUTION_LOOP, "tool execution"),
     (checkpoints::TOOL_RESULT_FOLLOWUP, "tool-result followup"),
-    (checkpoints::REAL_JCODE_TOOL_SMOKE, "real tool smoke"),
+    (checkpoints::REAL_WVC_TOOL_SMOKE, "real tool smoke"),
 ];
 
 /// Plain-English description of the first thing standing between a pair and
@@ -1701,7 +1701,7 @@ fn doctor_tier_for_stage(stage_id: &str) -> &'static str {
         | checkpoints::TOOL_CALL_PARSE
         | checkpoints::TOOL_EXECUTION_LOOP
         | checkpoints::TOOL_RESULT_FOLLOWUP
-        | checkpoints::REAL_JCODE_TOOL_SMOKE => "full",
+        | checkpoints::REAL_WVC_TOOL_SMOKE => "full",
         checkpoints::MODEL_CATALOG_LIVE_ENDPOINT => "catalog",
         _ => "offline",
     }
@@ -1752,7 +1752,7 @@ fn provider_has_credential(provider_id: &str) -> bool {
 /// Build the full provider-monitoring roster: union of every OpenAI-compatible
 /// profile id and every login-provider id, annotated with doctor-drivability,
 /// credential presence, and the READY/observed pair tallies already computed for
-/// the report. Lets `provider-test-coverage` enumerate *every* provider jcode
+/// the report. Lets `provider-test-coverage` enumerate *every* provider wvc
 /// knows about, not just ones that already have ledger evidence.
 fn build_provider_roster(providers: &[LiveProviderCoverageSummary]) -> Vec<ProviderMonitorEntry> {
     use std::collections::BTreeMap;
@@ -1863,7 +1863,7 @@ pub fn format_strict_live_provider_model_coverage_summary(
         summary.coverage_percent,
         stage_count,
     ));
-    out.push_str("A pair is READY only after every stage below passes in a real Jcode runtime.\n");
+    out.push_str("A pair is READY only after every stage below passes in a real Weavecoder runtime.\n");
     out.push_str("Anything short of READY is work-in-progress, not necessarily broken -- the\n");
     out.push_str("list below shows exactly how far each pair got and what to run next.\n\n");
 
@@ -1957,7 +1957,7 @@ pub fn format_strict_live_provider_model_coverage_summary(
 
     if all_pairs.is_empty() {
         out.push_str("No provider+model pairs have live evidence yet. Run\n");
-        out.push_str("`jcode provider-doctor <provider> --tier full` to record one.\n\n");
+        out.push_str("`wvc provider-doctor <provider> --tier full` to record one.\n\n");
     } else {
         // `gap_limit == 0` means "no cap": show every pair.
         let cap = if gap_limit == 0 {
@@ -2021,7 +2021,7 @@ pub fn format_strict_live_provider_model_coverage_summary(
         out.push('\n');
     }
 
-    // -- Full provider monitoring roster: EVERY provider jcode knows about. ----
+    // -- Full provider monitoring roster: EVERY provider wvc knows about. ----
     if !summary.provider_roster.is_empty() {
         let roster = &summary.provider_roster;
         let ready = roster.iter().filter(|e| e.status == "READY").count();
@@ -2144,9 +2144,9 @@ pub fn format_strict_live_provider_model_coverage_summary(
     // -- Footer: how to act on this report. ------------------------------------
     out.push_str("Next steps:\n");
     out.push_str("  Drive any OpenAI-compatible pair through the pipeline (records evidence):\n");
-    out.push_str("    jcode provider-doctor <provider> --tier full   # spends balance\n");
+    out.push_str("    wvc provider-doctor <provider> --tier full   # spends balance\n");
     out.push_str(
-        "    jcode provider-doctor <provider> --tier offline # wiring only, no key/spend\n",
+        "    wvc provider-doctor <provider> --tier offline # wiring only, no key/spend\n",
     );
     out.push_str("  See docs/PROVIDER_DOCTOR.md for the full guide.\n");
     out.push_str(&format!("\nLedger: {}\n", summary.coverage_source));
@@ -2226,7 +2226,7 @@ fn coverage_actor_label(dirty: bool, version: &str) -> &'static str {
 fn pair_fix_hint(provider_id: &str, model: &str, stage_id: &str) -> String {
     if doctor_supports_provider(provider_id) {
         let tier = doctor_tier_for_stage(stage_id);
-        format!("run `jcode provider-doctor {provider_id} --model {model} --tier {tier}`")
+        format!("run `wvc provider-doctor {provider_id} --model {model} --tier {tier}`")
     } else {
         // opencode and other non-OpenAI-compatible providers are recorded by their
         // own live suites, not provider-doctor.
@@ -2589,7 +2589,7 @@ mod tests {
             checkpoints::TOOL_CALL_PARSE,
             checkpoints::TOOL_EXECUTION_LOOP,
             checkpoints::TOOL_RESULT_FOLLOWUP,
-            checkpoints::REAL_JCODE_TOOL_SMOKE,
+            checkpoints::REAL_WVC_TOOL_SMOKE,
             checkpoints::REASONING_CAPABILITY,
             checkpoints::RESTART_PERSISTENCE,
             checkpoints::NEGATIVE_ERROR_UX,
@@ -2824,7 +2824,7 @@ mod tests {
                     LiveVerificationStageStatus::Skipped,
                 ),
                 (
-                    checkpoints::REAL_JCODE_TOOL_SMOKE,
+                    checkpoints::REAL_WVC_TOOL_SMOKE,
                     LiveVerificationStageStatus::Skipped,
                 ),
             ]),

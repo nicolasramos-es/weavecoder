@@ -3,7 +3,7 @@
 //! This is the single source of truth for how swarm-agent viewports look:
 //! status accent colors, role glyphs, age formatting, the header line, member
 //! sorting, and the gallery [`SwarmGalleryConfig`]. Both the live TUI adapter
-//! (`jcode-tui`) and the `swarm_gallery_live` demo map their own data into
+//! (`wvc-tui`) and the `swarm_gallery_live` demo map their own data into
 //! [`GalleryMember`] and call [`render_gallery`], so the demo renders identical
 //! output to production and the two cannot drift.
 
@@ -1529,7 +1529,7 @@ fn clamp_line_to_width(line: &mut Line<'static>, max_width: usize) {
 /// Layout (at most `budget` lines, fewer when there is less content):
 /// ```text
 ///    ⠙ researcher · thinking · 12s
-///    │ Editing crates/jcode-tui/src/tui/ui.rs
+///    │ Editing crates/wvc-tui/src/tui/ui.rs
 ///    │   carving the gallery band off chat_area
 ///    ├ todos 3/9
 ///    │ ✓ wire the bus tap

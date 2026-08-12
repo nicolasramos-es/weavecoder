@@ -1,6 +1,6 @@
-//! Low-level terminal image primitives for jcode.
+//! Low-level terminal image primitives for wvc.
 //!
-//! This crate has no dependency on the rest of jcode; it provides:
+//! This crate has no dependency on the rest of wvc; it provides:
 //! - [`display`]: terminal image rendering (Kitty / iTerm2 / Sixel) with a
 //!   graceful no-protocol fallback.
 //! - [`metadata`]: small pure helpers for formatting image dimensions, byte

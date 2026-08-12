@@ -126,7 +126,7 @@ fn expires_at_from_access_token_handles_missing_exp_and_garbage() {
 #[test]
 fn legacy_tokens_without_expiry_recover_expires_at_from_jwt() {
     // Reproduces the onboarding bug: the imported Codex token carries no
-    // explicit `expires_at`, so we must derive it from the JWT so jcode can
+    // explicit `expires_at`, so we must derive it from the JWT so wvc can
     // refresh proactively instead of sending a dead token and forcing /login.
     let tokens = LegacyTokens {
         access_token: jwt_with_exp(1_780_000_000),
@@ -183,7 +183,7 @@ fn extract_email_from_jwt() {
 fn load_credentials_falls_back_to_env_api_key() {
     let _lock = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     let _api_key = EnvVarGuard::set("OPENAI_API_KEY", "sk-env-test");
     set_active_account_override(None);
 
@@ -198,7 +198,7 @@ fn load_credentials_falls_back_to_env_api_key() {
 fn multi_account_active_switch_works() {
     let _lock = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     set_active_account_override(None);
 
     upsert_account(OpenAiAccount {
@@ -235,7 +235,7 @@ fn multi_account_active_switch_works() {
 fn load_auth_file_migrates_legacy_codex_tokens() {
     let _lock = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     set_active_account_override(None);
 
     let legacy_path = temp
@@ -270,7 +270,7 @@ fn load_auth_file_migrates_legacy_codex_tokens() {
 fn load_credentials_ignores_legacy_oauth_without_consent() {
     let _lock = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     set_active_account_override(None);
 
     let legacy_path = temp
@@ -310,7 +310,7 @@ fn load_credentials_ignores_legacy_oauth_without_consent() {
 fn load_credentials_reads_legacy_oauth_when_allowed() {
     let _lock = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     let _allow = EnvVarGuard::set(ALLOW_LEGACY_AUTH_ENV, "1");
     set_active_account_override(None);
 
@@ -349,7 +349,7 @@ fn load_credentials_reads_legacy_oauth_without_changing_external_permissions() {
 
     let _lock = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     let _allow = EnvVarGuard::set(ALLOW_LEGACY_AUTH_ENV, "1");
     set_active_account_override(None);
 
@@ -399,7 +399,7 @@ fn load_credentials_reads_legacy_oauth_without_changing_external_permissions() {
 fn load_auth_file_renames_existing_labels_to_numbered_scheme() {
     let _lock = crate::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     set_active_account_override(None);
 
     let auth_path = temp.path().join("openai-auth.json");

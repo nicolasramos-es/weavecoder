@@ -5,7 +5,7 @@ edition = "2024"
 publish = false
 
 # Provider diagnostics that sit downstream of wvc-base: the strict
-# `jcode provider-doctor` end-to-end runner (provider_e2e), the live provider
+# `wvc provider-doctor` end-to-end runner (provider_e2e), the live provider
 # probes it drives, and the auth-lifecycle contract driver. Split out of
 # wvc-base so edits to the doctor cluster no longer rebuild the
 # base -> app-core -> tui spine, and base compiles faster with lower peak

@@ -17,7 +17,7 @@ use std::sync::Arc;
 
 impl App {
     fn open_auth_browser(url: &str) -> bool {
-        // Honors --no-browser/NO_BROWSER/JCODE_NO_BROWSER and never opens real
+        // Honors --no-browser/NO_BROWSER/WVC_NO_BROWSER and never opens real
         // browser windows from test binaries (login flows are exercised by TUI
         // tests; without this guard a test run pops OAuth pages on the
         // developer's desktop).
@@ -47,19 +47,19 @@ impl App {
             );
             if let Some(target) = callback_target {
                 notices.push(format!(
-                    "Local callback target {} is unavailable, so jcode is using manual-safe paste completion instead.",
+                    "Local callback target {} is unavailable, so wvc is using manual-safe paste completion instead.",
                     target
                 ));
             } else {
                 notices.push(
-                    "The local callback listener is unavailable, so jcode is using manual-safe paste completion instead."
+                    "The local callback listener is unavailable, so wvc is using manual-safe paste completion instead."
                         .to_string(),
                 );
             }
         }
         if !notices.is_empty() {
             notices.push(format!(
-                "If login still fails, run jcode auth doctor {} for a guided diagnosis.",
+                "If login still fails, run wvc auth doctor {} for a guided diagnosis.",
                 provider_id
             ));
         }
@@ -69,7 +69,7 @@ impl App {
     pub(super) fn show_wvc_subscription_status(&mut self) {
         let configured_key = crate::subscription_catalog::configured_api_key().is_some();
         let configured_base = crate::subscription_catalog::configured_api_base()
-            .unwrap_or_else(|| crate::subscription_catalog::DEFAULT_JCODE_API_BASE.to_string());
+            .unwrap_or_else(|| crate::subscription_catalog::DEFAULT_WVC_API_BASE.to_string());
         let runtime_mode = crate::subscription_catalog::is_runtime_mode_enabled();
         let cached_tier = crate::subscription_catalog::cached_tier();
 
@@ -79,7 +79,7 @@ impl App {
             if configured_key {
                 "configured"
             } else {
-                "not configured (/login jcode)"
+                "not configured (/login wvc)"
             }
         ));
         message.push_str(&format!(
@@ -113,7 +113,7 @@ impl App {
             } else {
                 ""
             };
-            let tier_suffix = if model.min_tier == crate::subscription_catalog::JcodeTier::Plus {
+            let tier_suffix = if model.min_tier == crate::subscription_catalog::WeavecoderTier::Plus {
                 String::new()
             } else {
                 format!(" [{}]", model.min_tier.display_name())
@@ -130,7 +130,7 @@ impl App {
         }
 
         message.push_str("\nTiers\n\n");
-        for tier in crate::subscription_catalog::JcodeTier::ALL.iter().copied() {
+        for tier in crate::subscription_catalog::WeavecoderTier::ALL.iter().copied() {
             message.push_str(&format!(
                 "  - {} - ${}/mo retail, about ${:.2} usable inference budget\n",
                 tier.display_name(),
@@ -142,7 +142,7 @@ impl App {
         if configured_key {
             message.push_str("\nFetching account status...");
         } else {
-            message.push_str("\nLog in with /login jcode to see account usage and tier.");
+            message.push_str("\nLog in with /login wvc to see account usage and tier.");
         }
 
         self.push_display_message(DisplayMessage::system(message));
@@ -188,11 +188,11 @@ impl App {
                                 == Some(&crate::subscription_api::AccountApiError::Unauthorized)
                             {
                                 let _ = crate::subscription_catalog::clear_account_credentials();
-                                "Weavecoder Account Status\n\nThe saved account key was revoked or expired. Local credentials were cleared. Use /account jcode login to sign in again."
+                                "Weavecoder Account Status\n\nThe saved account key was revoked or expired. Local credentials were cleared. Use /account wvc login to sign in again."
                                     .to_string()
                             } else {
                                 format!(
-                                    "Weavecoder Account Status\n\nCould not load /v1/me: {}\n\nThe local credential was retained. Retry /account jcode status, open /account jcode manage, or use /account jcode logout.",
+                                    "Weavecoder Account Status\n\nCould not load /v1/me: {}\n\nThe local credential was retained. Retry /account wvc status, open /account wvc manage, or use /account wvc logout.",
                                     error
                                 )
                             };
@@ -257,7 +257,7 @@ impl App {
             message.push('\n');
         }
         message.push_str(
-            "\nUse /login <provider> to authenticate. /login jcode is for curated jcode subscription access; /account opens the provider/account management center, /account <provider> settings shows provider-specific controls, and /auth doctor or /account <provider> doctor shows recovery steps.",
+            "\nUse /login <provider> to authenticate. /login wvc is for curated wvc subscription access; /account opens the provider/account management center, /account <provider> settings shows provider-specific controls, and /auth doctor or /account <provider> doctor shows recovery steps.",
         );
         self.push_display_message(DisplayMessage::system(message));
     }
@@ -279,13 +279,13 @@ impl App {
     ) {
         use crate::provider_catalog::LoginProviderTarget;
 
-        if matches!(provider.target, LoginProviderTarget::Jcode) {
+        if matches!(provider.target, LoginProviderTarget::Weavecoder) {
             self.start_wvc_account_logout();
             return;
         }
 
         let result: anyhow::Result<String> = (|| match provider.target {
-            LoginProviderTarget::Jcode => unreachable!("handled above"),
+            LoginProviderTarget::Weavecoder => unreachable!("handled above"),
             LoginProviderTarget::Claude => {
                 let removed = crate::auth::claude::clear_accounts()?;
                 Ok(format!("Logged out of {} Anthropic account(s).", removed))
@@ -384,18 +384,18 @@ impl App {
             &mut summary,
             &mut errors,
             "wvc subscription API key",
-            crate::subscription_catalog::JCODE_API_KEY_ENV,
-            crate::subscription_catalog::JCODE_ENV_FILE,
+            crate::subscription_catalog::WVC_API_KEY_ENV,
+            crate::subscription_catalog::WVC_ENV_FILE,
         );
         for env_key in [
-            crate::subscription_catalog::JCODE_API_BASE_ENV,
-            crate::subscription_catalog::JCODE_ACCOUNT_ID_ENV,
-            crate::subscription_catalog::JCODE_ACCOUNT_EMAIL_ENV,
-            crate::subscription_catalog::JCODE_TIER_ENV,
+            crate::subscription_catalog::WVC_API_BASE_ENV,
+            crate::subscription_catalog::WVC_ACCOUNT_ID_ENV,
+            crate::subscription_catalog::WVC_ACCOUNT_EMAIL_ENV,
+            crate::subscription_catalog::WVC_TIER_ENV,
         ] {
             if let Err(err) = crate::provider_catalog::save_env_value_to_env_file(
                 env_key,
-                crate::subscription_catalog::JCODE_ENV_FILE,
+                crate::subscription_catalog::WVC_ENV_FILE,
                 None,
             ) {
                 errors.push(format!("wvc subscription {}: {}", env_key, err));
@@ -554,7 +554,7 @@ impl App {
                     }
                 }
             }
-            crate::provider_catalog::LoginProviderTarget::Jcode => self.start_wvc_login(),
+            crate::provider_catalog::LoginProviderTarget::Weavecoder => self.start_wvc_login(),
             crate::provider_catalog::LoginProviderTarget::Claude => self.start_claude_login(),
             crate::provider_catalog::LoginProviderTarget::ClaudeApiKey => {
                 self.start_anthropic_api_key_login()
@@ -583,7 +583,7 @@ impl App {
                     provider.auth_kind.label(),
                 );
                 self.push_display_message(DisplayMessage::error(
-                    "Google/Gmail login is only available from the CLI right now. Run jcode login --provider google."
+                    "Google/Gmail login is only available from the CLI right now. Run wvc login --provider google."
                         .to_string(),
                 ));
             }
@@ -636,7 +636,7 @@ impl App {
             let device = match crate::subscription_api::request_device_authorization(
                 &client,
                 &api_base,
-                Some(crate::subscription_catalog::JcodeTier::Pro),
+                Some(crate::subscription_catalog::WeavecoderTier::Pro),
             )
             .await
             {
@@ -644,7 +644,7 @@ impl App {
                 Err(error) => {
                     publish(
                         format!(
-                            "Weavecoder Account Login\n\nCould not start browser approval: {}\n\nRetry /account jcode login. No credential was saved.",
+                            "Weavecoder Account Login\n\nCould not start browser approval: {}\n\nRetry /account wvc login. No credential was saved.",
                             error
                         ),
                         "Weavecoder account login failed",
@@ -656,7 +656,7 @@ impl App {
             let opened = App::open_auth_browser(&device.verification_uri_complete);
             publish(
                 format!(
-                    "Weavecoder Account Login\n\n{}\n\nApprove the request in the same browser. Jcode is waiting for the single-use exchange.{}",
+                    "Weavecoder Account Login\n\n{}\n\nApprove the request in the same browser. Weavecoder is waiting for the single-use exchange.{}",
                     device.verification_uri_complete,
                     if opened {
                         ""
@@ -706,7 +706,7 @@ impl App {
                 Ok(approved) => approved,
                 Err(error) => {
                     publish(
-                        format!("Weavecoder Account Login\n\n{error}\n\nRetry /account jcode login."),
+                        format!("Weavecoder Account Login\n\n{error}\n\nRetry /account wvc login."),
                         "Weavecoder account login stopped",
                     );
                     return;
@@ -745,7 +745,7 @@ impl App {
             {
                 ActivationOutcome::Active(me) => {
                     let message = format!(
-                        "Weavecoder Account Ready\n\n{} is active for {}. Models are being refreshed automatically.\n\nStatus: /account jcode status\nManage: /account jcode manage\nLogout: /account jcode logout",
+                        "Weavecoder Account Ready\n\n{} is active for {}. Models are being refreshed automatically.\n\nStatus: /account wvc status\nManage: /account wvc manage\nLogout: /account wvc logout",
                         me.parsed_tier()
                             .map(|tier| tier.display_name().to_string())
                             .unwrap_or(me.tier),
@@ -769,12 +769,12 @@ impl App {
                     );
                 }
                 ActivationOutcome::Canceled(_) => publish(
-                    "Weavecoder Account Login\n\nCheckout was canceled. The valid account key remains saved, but no paid plan is active.\n\nStatus: /account jcode status\nManage: /account jcode manage\nLogout: /account jcode logout".to_string(),
+                    "Weavecoder Account Login\n\nCheckout was canceled. The valid account key remains saved, but no paid plan is active.\n\nStatus: /account wvc status\nManage: /account wvc manage\nLogout: /account wvc logout".to_string(),
                     "Weavecoder account plan not active",
                 ),
                 ActivationOutcome::TimedOut { last_error_was_offline } => publish(
                     format!(
-                        "Weavecoder Account Login\n\nPlan activation was not confirmed before timeout{}. The valid account key remains saved.\n\nStatus: /account jcode status\nManage: /account jcode manage\nLogout: /account jcode logout",
+                        "Weavecoder Account Login\n\nPlan activation was not confirmed before timeout{}. The valid account key remains saved.\n\nStatus: /account wvc status\nManage: /account wvc manage\nLogout: /account wvc logout",
                         if last_error_was_offline { " because the API remained unreachable" } else { "" }
                     ),
                     "Weavecoder account activation pending",
@@ -782,7 +782,7 @@ impl App {
                 ActivationOutcome::Revoked | ActivationOutcome::Denied => {
                     let _ = crate::subscription_catalog::clear_account_credentials();
                     publish(
-                        "Weavecoder Account Login\n\nThe issued key was revoked or denied during activation checks. Local credentials were cleared. Retry /account jcode login.".to_string(),
+                        "Weavecoder Account Login\n\nThe issued key was revoked or denied during activation checks. Local credentials were cleared. Retry /account wvc login.".to_string(),
                         "Weavecoder account key rejected",
                     );
                 }
@@ -791,7 +791,7 @@ impl App {
     }
 
     pub(super) fn open_wvc_account_management(&mut self) {
-        let url = crate::subscription_catalog::JCODE_ACCOUNT_URL;
+        let url = crate::subscription_catalog::WVC_ACCOUNT_URL;
         let opened = Self::open_auth_browser(url);
         self.push_display_message(DisplayMessage::system(format!(
             "Weavecoder Account Management\n\n{}{}",
@@ -816,7 +816,7 @@ impl App {
                         .to_string(),
                 )),
                 Err(error) => self.push_display_message(DisplayMessage::error(format!(
-                    "Failed to clear local Jcode account credentials: {error}"
+                    "Failed to clear local Weavecoder account credentials: {error}"
                 ))),
             }
             return;
@@ -1630,7 +1630,7 @@ impl App {
         let provider_id = openai_compatible_profile
             .map(|profile| profile.id.to_string())
             .unwrap_or_else(|| match key_name {
-                crate::subscription_catalog::JCODE_API_KEY_ENV => "wvc".to_string(),
+                crate::subscription_catalog::WVC_API_KEY_ENV => "wvc".to_string(),
                 "OPENROUTER_API_KEY" => "openrouter".to_string(),
                 _ => provider.to_ascii_lowercase().replace(' ', "-"),
             });
@@ -1656,7 +1656,7 @@ impl App {
     fn start_azure_login(&mut self) {
         self.push_display_message(DisplayMessage::system(
             "Azure OpenAI Login\n\n\
-             jcode uses Azure OpenAI's /openai/v1 API with either Microsoft Entra ID or an API key.\n\n\
+             wvc uses Azure OpenAI's /openai/v1 API with either Microsoft Entra ID or an API key.\n\n\
              Enter your Azure OpenAI endpoint, for example https://your-resource.openai.azure.com, or type /cancel to abort."
                 .to_string(),
         ));
@@ -1671,7 +1671,7 @@ impl App {
             "Cursor API Key\n\n\
              Get your API key from: https://cursor.com/settings\n\
              (Dashboard > Integrations > User API Keys)\n\n\
-             jcode will save it securely and use the native Cursor HTTPS transport.\n\n\
+             wvc will save it securely and use the native Cursor HTTPS transport.\n\n\
              Paste your API key below, or type /cancel to abort."
                 .to_string(),
         ));
@@ -2214,7 +2214,7 @@ impl App {
                 // Record the key-save attempt before touching disk. This is the
                 // single most important breadcrumb for issue #312 ("paste API
                 // key for OpenAI-compatible/opencode silently returns to menu"):
-                // it proves the input was received and which env var/file jcode
+                // it proves the input was received and which env var/file wvc
                 // tried to write, without logging the key itself.
                 crate::logging::event_info(
                     "login_api_key_save_attempt",
@@ -2264,13 +2264,13 @@ impl App {
                                 )
                             }
                         })()
-                    } else if key_name == crate::subscription_catalog::JCODE_API_KEY_ENV {
+                    } else if key_name == crate::subscription_catalog::WVC_API_KEY_ENV {
                         (|| {
                             let mut content = format!("{}={}\n", key_name, key);
                             if let Some(base) = crate::subscription_catalog::configured_api_base() {
                                 content.push_str(&format!(
                                     "{}={}\n",
-                                    crate::subscription_catalog::JCODE_API_BASE_ENV,
+                                    crate::subscription_catalog::WVC_API_BASE_ENV,
                                     base
                                 ));
                             }
@@ -2319,7 +2319,7 @@ impl App {
                                 "bedrock",
                             );
                             if let Some(default_model) = default_model.as_deref() {
-                                crate::env::set_var("JCODE_BEDROCK_MODEL", default_model);
+                                crate::env::set_var("WVC_BEDROCK_MODEL", default_model);
                             }
                         }
 
@@ -2340,23 +2340,23 @@ impl App {
                         let model_hint = effective_default_model
                             .map(|m| format!("\nSuggested default model: {}", m))
                             .unwrap_or_default();
-                        let guidance = if key_name == crate::subscription_catalog::JCODE_API_KEY_ENV
+                        let guidance = if key_name == crate::subscription_catalog::WVC_API_KEY_ENV
                         {
                             format!(
-                                "Use /login jcode to access curated models via your router. If the model list looks stale, run /refresh-model-list.\nDocs: {}",
+                                "Use /login wvc to access curated models via your router. If the model list looks stale, run /refresh-model-list.\nDocs: {}",
                                 docs_url
                             )
                         } else if let Some(resolved) = resolved_openai_compatible.as_ref() {
                             if resolved.requires_api_key {
-                                "Fetching models now. Jcode will switch to an accessible model returned by the live catalog and show the catalog diff when discovery finishes. If the model list looks stale, run /refresh-model-list.".to_string()
+                                "Fetching models now. Weavecoder will switch to an accessible model returned by the live catalog and show the catalog diff when discovery finishes. If the model list looks stale, run /refresh-model-list.".to_string()
                             } else {
                                 format!(
-                                    "Local endpoint configured at {}. Fetching models now; Jcode will switch to an accessible model returned by the live catalog and show the catalog diff when discovery finishes. If the model list looks stale, run /refresh-model-list.",
+                                    "Local endpoint configured at {}. Fetching models now; Weavecoder will switch to an accessible model returned by the live catalog and show the catalog diff when discovery finishes. If the model list looks stale, run /refresh-model-list.",
                                     endpoint.as_deref().unwrap_or(resolved.api_base.as_str()),
                                 )
                             }
                         } else if key_name == crate::provider::bedrock::API_KEY_ENV {
-                            "You can now use /model to switch to Bedrock models. TUI onboarding saved region us-east-2; for a different region, run jcode login --provider bedrock from a terminal.".to_string()
+                            "You can now use /model to switch to Bedrock models. TUI onboarding saved region us-east-2; for a different region, run wvc login --provider bedrock from a terminal.".to_string()
                         } else if key_name == "OPENROUTER_API_KEY" {
                             "You can now use /model to switch to OpenRouter models. If the model list looks stale, run /refresh-model-list.".to_string()
                         } else {
@@ -2380,7 +2380,7 @@ impl App {
                             success: true,
                             message: format!(
                                 "{}.\n\n\
-                                 Stored at ~/.config/jcode/{}.\n\
+                                 Stored at ~/.config/wvc/{}.\n\
                                  {}{}",
                                 saved_label, env_file, guidance, model_hint
                             ),
@@ -2441,7 +2441,7 @@ impl App {
                         }
                     };
                     if let Err(err) = crate::provider_catalog::save_env_value_to_env_file(
-                        "JCODE_OPENAI_COMPAT_API_BASE",
+                        "WVC_OPENAI_COMPAT_API_BASE",
                         crate::provider_catalog::OPENAI_COMPAT_PROFILE.env_file,
                         Some(&normalized),
                     ) {
@@ -2576,8 +2576,8 @@ impl App {
                             provider: "cursor".to_string(),
                             success: true,
                             message: "Cursor API key saved.\n\n\
-                             Stored at ~/.config/jcode/cursor.env.\n\
-                             jcode will use it with the native Cursor HTTPS transport."
+                             Stored at ~/.config/wvc/cursor.env.\n\
+                             wvc will use it with the native Cursor HTTPS transport."
                                 .to_string(),
                         }));
                     }
@@ -2668,7 +2668,7 @@ impl App {
                 .default_model
                 .as_deref()
                 .is_some_and(|model| !model.trim().is_empty());
-        let runtime_provider_explicit = std::env::var("JCODE_INITIAL_PROVIDER_EXPLICIT")
+        let runtime_provider_explicit = std::env::var("WVC_INITIAL_PROVIDER_EXPLICIT")
             .ok()
             .is_some_and(|value| {
                 let value = value.trim().to_ascii_lowercase();
@@ -2954,7 +2954,7 @@ impl App {
             crate::bus::UiActivity::catalog(
                 Some(self.session.id.clone()),
                 format!(
-                    "{} Model Discovery Started\n\nSaved credentials are active. Jcode is fetching the live model catalog, will only switch to a model returned by that catalog, and will show what changed when discovery finishes.",
+                    "{} Model Discovery Started\n\nSaved credentials are active. Weavecoder is fetching the live model catalog, will only switch to a model returned by that catalog, and will show what changed when discovery finishes.",
                     provider_label
                 ),
                 Some(format!("{}: fetching models...", provider_label)),
@@ -3111,7 +3111,7 @@ impl App {
                                 crate::bus::UiActivity::catalog(
                                     Some(session_id),
                                     format!(
-                                        "{} Model Discovery Still Updating\n\nSaved credentials are active, but this local refresh pass did not find a selectable {} route yet. Jcode is still processing the auth-change catalog refresh and will switch once provider routes are available. If the model list still looks stale after the auth catalog update, run /refresh-model-list.",
+                                        "{} Model Discovery Still Updating\n\nSaved credentials are active, but this local refresh pass did not find a selectable {} route yet. Weavecoder is still processing the auth-change catalog refresh and will switch once provider routes are available. If the model list still looks stale after the auth catalog update, run /refresh-model-list.",
                                         provider_label, provider_label
                                     ),
                                     Some(format!(
@@ -3134,7 +3134,7 @@ impl App {
                             crate::bus::UiActivity::catalog(
                                 Some(session_id),
                                 format!(
-                                    "{} Model Discovery Still Updating\n\nSaved credentials are active, but this local refresh pass failed before the server auth-change catalog refresh finished. Jcode is still processing the auth-change catalog refresh and will switch once provider routes are available. If the model list still looks stale after the auth catalog update, run /refresh-model-list.\n\nLocal refresh error: {}",
+                                    "{} Model Discovery Still Updating\n\nSaved credentials are active, but this local refresh pass failed before the server auth-change catalog refresh finished. Weavecoder is still processing the auth-change catalog refresh and will switch once provider routes are available. If the model list still looks stale after the auth catalog update, run /refresh-model-list.\n\nLocal refresh error: {}",
                                     provider_label, error
                                 ),
                                 Some(format!(
@@ -3362,7 +3362,7 @@ impl App {
             success: true,
             message: format!(
                 "Azure OpenAI configuration saved.\n\n\
-                 Stored at ~/.config/jcode/{}.\n\
+                 Stored at ~/.config/wvc/{}.\n\
                  {}\n\n\
                  Use /model after your Azure deployment exists. If the model list looks stale, run /refresh-model-list.",
                 crate::auth::azure::ENV_FILE,
@@ -3382,7 +3382,7 @@ fn save_tui_openai_compatible_api_base(
             anyhow::anyhow!("OpenAI-compatible API base must be https://... or http://localhost.")
         })?;
         crate::provider_catalog::save_env_value_to_env_file(
-            "JCODE_OPENAI_COMPAT_API_BASE",
+            "WVC_OPENAI_COMPAT_API_BASE",
             crate::provider_catalog::OPENAI_COMPAT_PROFILE.env_file,
             Some(&normalized),
         )?;

@@ -94,7 +94,7 @@ pub struct DisplayConfig {
     pub keybinding_hints: bool,
     /// Color theme: "auto" (detect terminal background), "dark", or "light".
     /// Auto queries the terminal's background color (OSC 11) at startup and
-    /// adapts jcode's palette for light backgrounds. Default: auto.
+    /// adapts wvc's palette for light backgrounds. Default: auto.
     #[serde(default)]
     pub theme: String,
     /// Per-role color overrides, e.g. `user = "#8ab4f8"`. Any TUI color can be
@@ -111,7 +111,7 @@ pub struct DisplayConfig {
     pub active_sessions_manager: bool,
     /// Include transcripts discovered from other agent CLIs (Claude Code,
     /// Codex, Pi, OpenCode, Cursor) in the session picker so they can be
-    /// resumed or imported (default: true). Set false to show only jcode's own
+    /// resumed or imported (default: true). Set false to show only wvc's own
     /// sessions (issue #674).
     #[serde(default = "default_true")]
     pub external_sessions: bool,

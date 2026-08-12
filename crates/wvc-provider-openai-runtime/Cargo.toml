@@ -2,7 +2,7 @@
 name = "wvc-provider-openai-runtime"
 version = "0.1.0"
 edition = "2024"
-description = "OpenAI provider runtime (Codex OAuth + API key, Responses API over SSE/WebSocket) for jcode, kept downstream of wvc-base so provider edits do not rebuild the app spine"
+description = "OpenAI provider runtime (Codex OAuth + API key, Responses API over SSE/WebSocket) for wvc, kept downstream of wvc-base so provider edits do not rebuild the app spine"
 
 [lib]
 name = "wvc_provider_openai_runtime"

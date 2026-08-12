@@ -604,7 +604,7 @@ impl App {
             .filter(|route| {
                 route
                     .api_method
-                    .eq_ignore_ascii_case(crate::subscription_catalog::JCODE_ROUTE_API_METHOD)
+                    .eq_ignore_ascii_case(crate::subscription_catalog::WVC_ROUTE_API_METHOD)
             })
             .filter_map(|route| crate::subscription_catalog::canonical_model_id(&route.model))
             .collect::<HashSet<_>>();
@@ -622,8 +622,8 @@ impl App {
         {
             routes.push(crate::provider::ModelRoute {
                 model: model.id.to_string(),
-                provider: crate::subscription_catalog::JCODE_PROVIDER_DISPLAY_NAME.to_string(),
-                api_method: crate::subscription_catalog::JCODE_ROUTE_API_METHOD.to_string(),
+                provider: crate::subscription_catalog::WVC_PROVIDER_DISPLAY_NAME.to_string(),
+                api_method: crate::subscription_catalog::WVC_ROUTE_API_METHOD.to_string(),
                 available: true,
                 detail: crate::subscription_catalog::routing_policy_detail(model),
                 cheapness: None,
@@ -655,11 +655,11 @@ impl App {
         if remote_available_entries.is_empty() {
             return;
         }
-        // Jcode subscription routes are a complete, server-managed catalog.
+        // Weavecoder subscription routes are a complete, server-managed catalog.
         // Do not mix in locally configured Anthropic/OpenAI credentials merely
         // because a curated model also belongs to one of those upstreams.
         let provider_is_wvc_subscription = remote_provider_name.is_some_and(|name| {
-            name.eq_ignore_ascii_case(crate::subscription_catalog::JCODE_PROVIDER_DISPLAY_NAME)
+            name.eq_ignore_ascii_case(crate::subscription_catalog::WVC_PROVIDER_DISPLAY_NAME)
         });
         if provider_is_wvc_subscription {
             routes.clear();
@@ -675,10 +675,10 @@ impl App {
             && routes.iter().all(|route| {
                 route
                     .api_method
-                    .eq_ignore_ascii_case(crate::subscription_catalog::JCODE_ROUTE_API_METHOD)
+                    .eq_ignore_ascii_case(crate::subscription_catalog::WVC_ROUTE_API_METHOD)
             });
         if poisoned_by_wvc_subscription {
-            // Version 1 could turn a mixed provider catalog into all-Jcode rows
+            // Version 1 could turn a mixed provider catalog into all-Weavecoder rows
             // after seeing just one managed subscription route. Rebuild ordinary
             // routes from the names catalog, then append only the current tier's
             // actual subscription entitlements.
@@ -751,7 +751,7 @@ impl App {
             }
         }
         // Detailed provider hydration describes ordinary configured routes. A
-        // signed-in Jcode subscriber still needs the managed route for each
+        // signed-in Weavecoder subscriber still needs the managed route for each
         // entitled curated model alongside those Anthropic/OpenAI/etc. rows.
         // The curated client catalog is versioned with the backend and is the
         // authority for managed subscription entitlements. Do not hide newly
@@ -942,7 +942,7 @@ impl App {
             self.cursor_pos = 0;
         }
 
-        if std::env::var("JCODE_LOG_MODEL_PICKER_TIMING").is_ok() {
+        if std::env::var("WVC_LOG_MODEL_PICKER_TIMING").is_ok() {
             crate::logging::info(&format!(
                 "[TIMING] model_picker_open: cache_hit=true, remote={}, simplified={}, routes={}, models={}, entries={}, total={}ms",
                 self.is_remote,
@@ -1723,7 +1723,7 @@ impl App {
         let entries_ms = entries_started.elapsed().as_millis();
         let total_ms = picker_started.elapsed().as_millis();
 
-        if total_ms >= 250 || std::env::var("JCODE_LOG_MODEL_PICKER_TIMING").is_ok() {
+        if total_ms >= 250 || std::env::var("WVC_LOG_MODEL_PICKER_TIMING").is_ok() {
             crate::logging::info(&format!(
                 "[TIMING] model_picker_open: remote={}, simplified={}, routes={}, models={}, entries={}, routes={}ms, grouping={}ms, timestamps={}ms, entries_sort={}ms, total={}ms",
                 self.is_remote,
@@ -2465,7 +2465,7 @@ impl App {
             let current_session_id = super::commands::active_session_id(self);
             let mut names = Vec::with_capacity(targets.len());
             for target in targets {
-                let ResumeTarget::JcodeSession { session_id } = target else {
+                let ResumeTarget::WeavecoderSession { session_id } = target else {
                     continue;
                 };
                 let queue_position = catchup_queue_position(&current_session_id, session_id);
@@ -2500,7 +2500,7 @@ impl App {
         }
 
         let default_cwd = std::env::current_dir().unwrap_or_default();
-        let socket = std::env::var("JCODE_SOCKET").ok();
+        let socket = std::env::var("WVC_SOCKET").ok();
         let mut spawned = 0usize;
         let mut failed = Vec::new();
         let mut names = Vec::with_capacity(targets.len());
@@ -2518,7 +2518,7 @@ impl App {
             }
 
             let name = match target {
-                ResumeTarget::JcodeSession { session_id } => {
+                ResumeTarget::WeavecoderSession { session_id } => {
                     crate::id::extract_session_name(session_id)
                         .map(|s| s.to_string())
                         .unwrap_or_else(|| session_id.to_string())
@@ -2544,7 +2544,7 @@ impl App {
                     format!("Cursor {}", wvc_core::util::truncate_str(session_id, 8))
                 }
             };
-            let resolved_target = match crate::import::resolve_resume_target_to_jcode(target) {
+            let resolved_target = match crate::import::resolve_resume_target_to_wvc(target) {
                 Ok(target) => target,
                 Err(err) => {
                     failed.push(format!("failed to import {}: {}", name, err));
@@ -2558,12 +2558,12 @@ impl App {
                     names.push(name);
                 }
                 Ok(false) | Err(_) => {
-                    // No terminal emulator could be spawned. For a single jcode
+                    // No terminal emulator could be spawned. For a single wvc
                     // session, fall back to resuming in the current terminal
                     // instead of dead-ending with a manual command (issue #203).
                     if targets.len() == 1
                         && spawned == 0
-                        && matches!(resolved_target, ResumeTarget::JcodeSession { .. })
+                        && matches!(resolved_target, ResumeTarget::WeavecoderSession { .. })
                     {
                         self.handle_session_picker_current_terminal_selection(
                             std::slice::from_ref(target),
@@ -2623,7 +2623,7 @@ impl App {
         };
 
         let name = match target {
-            ResumeTarget::JcodeSession { session_id } => {
+            ResumeTarget::WeavecoderSession { session_id } => {
                 crate::id::extract_session_name(session_id)
                     .map(|s| s.to_string())
                     .unwrap_or_else(|| session_id.to_string())
@@ -2650,7 +2650,7 @@ impl App {
             }
         };
 
-        let resolved_target = match crate::import::resolve_resume_target_to_jcode(target) {
+        let resolved_target = match crate::import::resolve_resume_target_to_wvc(target) {
             Ok(target) => target,
             Err(err) => {
                 self.push_display_message(DisplayMessage::error(format!(
@@ -2661,7 +2661,7 @@ impl App {
             }
         };
 
-        let ResumeTarget::JcodeSession { session_id } = resolved_target else {
+        let ResumeTarget::WeavecoderSession { session_id } = resolved_target else {
             self.push_display_message(DisplayMessage::error(format!(
                 "Cannot resume {} in the current terminal.",
                 name
@@ -2711,9 +2711,9 @@ impl App {
                 return false;
             }
         };
-        let ResumeTarget::JcodeSession { session_id } = resolved else {
+        let ResumeTarget::WeavecoderSession { session_id } = resolved else {
             self.push_display_message(DisplayMessage::error(
-                "Claude takeover did not produce a Jcode session.",
+                "Claude takeover did not produce a Weavecoder session.",
             ));
             return false;
         };
@@ -2749,7 +2749,7 @@ impl App {
 
         let exe = launch_client_executable();
         let cwd = std::env::current_dir().unwrap_or_default();
-        let socket = std::env::var("JCODE_SOCKET").ok();
+        let socket = std::env::var("WVC_SOCKET").ok();
         let mut spawned = 0usize;
         let mut failed = Vec::new();
 
@@ -2778,7 +2778,7 @@ impl App {
         // Single recovered session that could not get a new terminal: resume it
         // in the current terminal instead of forcing a manual command (#203).
         if spawned == 0 && recovered.len() == 1 && failed.len() == 1 {
-            self.handle_session_picker_current_terminal_selection(&[ResumeTarget::JcodeSession {
+            self.handle_session_picker_current_terminal_selection(&[ResumeTarget::WeavecoderSession {
                 session_id: recovered[0].clone(),
             }]);
             return;
@@ -2792,7 +2792,7 @@ impl App {
         } else if spawned > 0 {
             let manual: Vec<String> = failed
                 .iter()
-                .map(|id| format!("  jcode --resume {}", id))
+                .map(|id| format!("  wvc --resume {}", id))
                 .collect();
             self.push_display_message(DisplayMessage::system(format!(
                 "Restored {} session(s) in new windows. {} failed:\n{}",
@@ -2803,7 +2803,7 @@ impl App {
         } else {
             let manual: Vec<String> = recovered
                 .iter()
-                .map(|id| format!("  jcode --resume {}", id))
+                .map(|id| format!("  wvc --resume {}", id))
                 .collect();
             self.push_display_message(DisplayMessage::system(format!(
                 "No terminal found. Resume manually:\n{}",
@@ -3977,7 +3977,7 @@ mod tests {
             &unavailable_openai_oauth_route,
         ));
 
-        // Current policy (see jcode-provider-core): claude-opus-4-8 is the
+        // Current policy (see wvc-provider-core): claude-opus-4-8 is the
         // recommended Anthropic flagship; older Opus and OpenRouter/Copilot
         // routes are not recommended.
         assert!(model_picker_route_is_recommended(

@@ -1,12 +1,12 @@
 //! Cross-provider activity ledger.
 //!
 //! Tracks two things per login/credential ("source key"):
-//!   1. When jcode last successfully used it (for recency-sorted `/usage`).
+//!   1. When wvc last successfully used it (for recency-sorted `/usage`).
 //!   2. Locally accumulated API-key spend in USD (day / month / all-time),
 //!      mirroring the dollar figures the TUI cost paths compute, since most
 //!      providers do not expose per-key spend through their public APIs.
 //!
-//! Data persists to `~/.jcode/provider_activity.json` and is shared across
+//! Data persists to `~/.wvc/provider_activity.json` and is shared across
 //! processes (server records last-used, TUI records spend, `/usage` reads
 //! both), so queries re-read the file with a short TTL instead of trusting a
 //! process-local cache.
@@ -15,7 +15,7 @@
 //!   - `claude:oauth:<label>` / `claude:api-key`
 //!   - `openai:oauth:<label>` / `openai:api-key`
 //!   - `openai-compatible:<profile-id>` (DeepSeek, Moonshot, NVIDIA NIM, ...)
-//!   - `openrouter`, `jcode`, `copilot`, `gemini`, `cursor`, `bedrock`,
+//!   - `openrouter`, `wvc`, `copilot`, `gemini`, `cursor`, `bedrock`,
 //!     `antigravity`, `azure-openai`
 
 use chrono::{Datelike, Utc};
@@ -71,7 +71,7 @@ static LEDGER: Mutex<Option<CachedStore>> = Mutex::new(None);
 
 fn ledger_path() -> PathBuf {
     crate::storage::wvc_dir()
-        .unwrap_or_else(|_| PathBuf::from(".").join(".jcode"))
+        .unwrap_or_else(|_| PathBuf::from(".").join(".wvc"))
         .join("provider_activity.json")
 }
 
@@ -297,7 +297,7 @@ pub fn format_relative_age(unix_secs: u64) -> String {
 }
 
 /// Map a human-facing provider label (e.g. `"DeepSeek"`, `"OpenRouter"`,
-/// `"NVIDIA NIM"`) plus the optional `JCODE_RUNTIME_PROVIDER` key onto a
+/// `"NVIDIA NIM"`) plus the optional `WVC_RUNTIME_PROVIDER` key onto a
 /// ledger source key. Used by spend recorders that only know display names.
 pub fn source_key_for_provider_label(label: &str, runtime_provider: Option<&str>) -> String {
     let normalized = label.trim().to_ascii_lowercase();
@@ -408,7 +408,7 @@ mod tests {
         let _env_lock = lock_env();
         clear_ledger_cache();
         let temp = tempfile::tempdir().expect("tempdir");
-        let _home = EnvVarGuard::set("JCODE_HOME", temp.path().as_os_str());
+        let _home = EnvVarGuard::set("WVC_HOME", temp.path().as_os_str());
 
         record_use("claude:oauth:claude-1");
         record_spend("claude:api-key", 0.25);
@@ -434,7 +434,7 @@ mod tests {
         let _env_lock = lock_env();
         clear_ledger_cache();
         let temp = tempfile::tempdir().expect("tempdir");
-        let _home = EnvVarGuard::set("JCODE_HOME", temp.path().as_os_str());
+        let _home = EnvVarGuard::set("WVC_HOME", temp.path().as_os_str());
 
         record_spend("openai:api-key", 0.0);
         record_spend("openai:api-key", -1.0);

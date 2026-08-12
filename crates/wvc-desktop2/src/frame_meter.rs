@@ -58,11 +58,11 @@ pub struct FrameMeter {
 }
 
 impl FrameMeter {
-    /// Enabled by `JCODE_DESKTOP2_FRAME_METER=1`, rather than a flag, so the
+    /// Enabled by `WVC_DESKTOP2_FRAME_METER=1`, rather than a flag, so the
     /// window it measures is the one the user was already running when they
     /// said it felt slow: a separate profiling build would not be.
     pub fn from_env() -> Self {
-        let enabled = std::env::var("JCODE_DESKTOP2_FRAME_METER")
+        let enabled = std::env::var("WVC_DESKTOP2_FRAME_METER")
             .is_ok_and(|value| value != "0" && !value.is_empty());
         if enabled {
             eprintln!(

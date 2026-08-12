@@ -300,7 +300,7 @@ impl SessionHeader {
 
 /// Find recent crashed sessions for showing resume hints.
 ///
-/// Uses a fast O(n) scan of `~/.jcode/active_pids/` (typically 0-5 files)
+/// Uses a fast O(n) scan of `~/.wvc/active_pids/` (typically 0-5 files)
 /// instead of scanning the full sessions directory (tens of thousands).
 /// Each file in active_pids/ contains a PID; if that PID is dead, the
 /// session crashed. We then load only those specific session files.
@@ -501,7 +501,7 @@ pub(super) fn is_pid_running(pid: u32) -> bool {
 // ---------------------------------------------------------------------------
 // Active PID tracking
 // ---------------------------------------------------------------------------
-// Lightweight files in ~/.jcode/active_pids/<session_id> containing the PID.
+// Lightweight files in ~/.wvc/active_pids/<session_id> containing the PID.
 // Written on mark_active(), removed on mark_closed()/mark_crashed().
 // On startup we only need to scan this tiny directory (usually 0-5 files)
 // instead of the entire sessions/ directory (tens of thousands of files).
@@ -528,13 +528,13 @@ fn session_matches_resume_title(session: &Session, normalized_query: &str) -> bo
 /// snapshot (`imported_<tool>_<id>`) if one already exists on disk.
 ///
 /// External CLI sessions (OpenCode, Codex, Claude Code) are imported into the
-/// jcode store under a stable `imported_<tool>_<provider_id>` stem. Resuming the
+/// wvc store under a stable `imported_<tool>_<provider_id>` stem. Resuming the
 /// full imported id always works, but a *bare* provider id (e.g. the OpenCode
 /// `ses_...` shown in the resume picker / reload handoff) previously only
 /// resolved by re-importing from the external tool's own storage. Once the user
 /// removed or reinstalled that tool, the re-import failed and resume hard-exited
 /// with "No session found matching 'ses_...'" even though the imported snapshot
-/// was still sitting in `~/.jcode/sessions` (issue #336).
+/// was still sitting in `~/.wvc/sessions` (issue #336).
 ///
 /// Pi sessions are intentionally excluded: their imported id is a hash of the
 /// session *path*, not the provider id, so there is no bare-id mapping.
@@ -660,7 +660,7 @@ mod batch_crash_tests {
     fn find_session_by_name_or_id_matches_custom_title() {
         let _guard = crate::storage::lock_test_env();
         let temp = tempfile::tempdir().expect("tempdir");
-        crate::env::set_var("JCODE_HOME", temp.path());
+        crate::env::set_var("WVC_HOME", temp.path());
 
         let session_id = "session_renamecli_1770000000000";
         let mut session = Session::create_with_id(
@@ -681,14 +681,14 @@ mod batch_crash_tests {
             session_id
         );
 
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 
     #[test]
     fn find_session_by_name_or_id_accepts_imported_session_ids() -> anyhow::Result<()> {
         let _guard = crate::storage::lock_test_env();
         let temp = tempfile::tempdir()?;
-        crate::env::set_var("JCODE_HOME", temp.path());
+        crate::env::set_var("WVC_HOME", temp.path());
 
         let imported_id = "imported_codex_test_resume";
         let mut session =
@@ -699,7 +699,7 @@ mod batch_crash_tests {
         let resolved = find_session_by_name_or_id(imported_id)?;
         assert_eq!(resolved, imported_id);
 
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
         Ok(())
     }
 
@@ -712,7 +712,7 @@ mod batch_crash_tests {
     -> anyhow::Result<()> {
         let _guard = crate::storage::lock_test_env();
         let temp = tempfile::tempdir()?;
-        crate::env::set_var("JCODE_HOME", temp.path());
+        crate::env::set_var("WVC_HOME", temp.path());
 
         let provider_id = "ses_2c72f8f4cffee6Qh7GId7D81Se";
         let imported_id = crate::import::imported_opencode_session_id(provider_id);
@@ -726,12 +726,12 @@ mod batch_crash_tests {
         session.provider_key = Some("opencode".to_string());
         session.save()?;
 
-        // No external OpenCode store exists under JCODE_HOME/external, so the only
+        // No external OpenCode store exists under WVC_HOME/external, so the only
         // way to resolve the bare id is via the local imported snapshot.
         let resolved = find_session_by_name_or_id(provider_id)?;
         assert_eq!(resolved, imported_id);
 
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
         Ok(())
     }
 
@@ -741,13 +741,13 @@ mod batch_crash_tests {
     fn find_session_by_name_or_id_bare_id_without_snapshot_still_errors() -> anyhow::Result<()> {
         let _guard = crate::storage::lock_test_env();
         let temp = tempfile::tempdir()?;
-        crate::env::set_var("JCODE_HOME", temp.path());
+        crate::env::set_var("WVC_HOME", temp.path());
         std::fs::create_dir_all(temp.path().join("sessions"))?;
 
         let err = find_session_by_name_or_id("ses_does_not_exist_anywhere");
         assert!(err.is_err(), "expected unknown bare id to error");
 
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
         Ok(())
     }
 }

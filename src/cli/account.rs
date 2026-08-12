@@ -9,7 +9,7 @@ pub(crate) async fn run_login(no_browser: bool) -> Result<()> {
 pub(crate) async fn run_status(json: bool) -> Result<()> {
     let Some(api_key) = crate::subscription_catalog::configured_api_key() else {
         anyhow::bail!(
-            "No Jcode account credential is configured. Run `jcode account login` to sign in."
+            "No Weavecoder account credential is configured. Run `wvc account login` to sign in."
         );
     };
     let client = crate::provider::shared_http_client();
@@ -41,7 +41,7 @@ pub(crate) async fn run_status(json: bool) -> Result<()> {
             crate::subscription_catalog::clear_account_credentials()
                 .context("The account key is revoked, and local credential cleanup failed")?;
             anyhow::bail!(
-                "The Jcode account key was revoked or expired. Local credentials were cleared. Run `jcode account login` to sign in again."
+                "The Weavecoder account key was revoked or expired. Local credentials were cleared. Run `wvc account login` to sign in again."
             )
         }
         Err(error) => Err(anyhow::Error::new(error)),
@@ -49,8 +49,8 @@ pub(crate) async fn run_status(json: bool) -> Result<()> {
 }
 
 pub(crate) fn run_manage() -> Result<()> {
-    let url = crate::subscription_catalog::JCODE_ACCOUNT_URL;
-    println!("Opening Jcode account management: {url}");
+    let url = crate::subscription_catalog::WVC_ACCOUNT_URL;
+    println!("Opening Weavecoder account management: {url}");
     if crate::auth::browser_suppressed(false) {
         println!("Browser launch is disabled. Open the URL above manually.");
         return Ok(());
@@ -76,18 +76,18 @@ pub(crate) async fn run_logout() -> Result<()> {
     // Local cleanup is unconditional, including offline and already-revoked
     // cases. This is the security boundary the CLI can always enforce.
     crate::subscription_catalog::clear_account_credentials()
-        .context("Failed to securely clear local Jcode account credentials")?;
+        .context("Failed to securely clear local Weavecoder account credentials")?;
     crate::auth::AuthStatus::invalidate_cache();
 
     match (api_key.is_some(), remote) {
         (false, _) => {
-            println!("No local Jcode account credential was present. Local account cache is clear.")
+            println!("No local Weavecoder account credential was present. Local account cache is clear.")
         }
         (true, Ok(())) => println!(
             "Weavecoder account key revoked. Local credentials and account cache were securely cleared."
         ),
         (true, Err(AccountApiError::Unauthorized)) => println!(
-            "The Jcode account key was already revoked. Local credentials and account cache were securely cleared."
+            "The Weavecoder account key was already revoked. Local credentials and account cache were securely cleared."
         ),
         (true, Err(AccountApiError::Offline(_))) => println!(
             "Local credentials and account cache were securely cleared. The account API was offline, so remote key revocation could not be confirmed."
@@ -106,12 +106,12 @@ fn public_manage_url(candidate: Option<&str>) -> &str {
                 reqwest::Url::parse(url),
                 Ok(parsed)
                     if parsed.scheme() == "https"
-                        && matches!(parsed.host_str(), Some("wvc.sh" | "www.jcode.sh" | "solosystems.dev"))
+                        && matches!(parsed.host_str(), Some("wvc.sh" | "www.weavecoder.sh" | "solosystems.dev"))
                         && parsed.username().is_empty()
                         && parsed.password().is_none()
             )
         })
-        .unwrap_or(crate::subscription_catalog::JCODE_ACCOUNT_URL)
+        .unwrap_or(crate::subscription_catalog::WVC_ACCOUNT_URL)
 }
 
 #[cfg(test)]
@@ -121,16 +121,16 @@ mod tests {
     #[test]
     fn manage_url_accepts_only_public_allowlisted_https_origins() {
         assert_eq!(
-            public_manage_url(Some("https://jcode.sh/account")),
-            "https://jcode.sh/account"
+            public_manage_url(Some("https://weavecoder.sh/account")),
+            "https://weavecoder.sh/account"
         );
         assert_eq!(
             public_manage_url(Some("https://evil.example/?key=jck_live_secret")),
-            crate::subscription_catalog::JCODE_ACCOUNT_URL
+            crate::subscription_catalog::WVC_ACCOUNT_URL
         );
         assert_eq!(
-            public_manage_url(Some("https://user:pass@jcode.sh/account")),
-            crate::subscription_catalog::JCODE_ACCOUNT_URL
+            public_manage_url(Some("https://user:pass@weavecoder.sh/account")),
+            crate::subscription_catalog::WVC_ACCOUNT_URL
         );
     }
 }

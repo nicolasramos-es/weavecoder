@@ -52,7 +52,7 @@ impl MultiProvider {
     }
 
     pub(super) fn initial_provider_from_env() -> Option<ActiveProvider> {
-        let explicit = std::env::var("JCODE_INITIAL_PROVIDER_EXPLICIT")
+        let explicit = std::env::var("WVC_INITIAL_PROVIDER_EXPLICIT")
             .ok()
             .is_some_and(|value| {
                 matches!(
@@ -64,7 +64,7 @@ impl MultiProvider {
             return None;
         }
 
-        std::env::var("JCODE_ACTIVE_PROVIDER")
+        std::env::var("WVC_ACTIVE_PROVIDER")
             .ok()
             .and_then(|value| Self::parse_provider_hint(&value))
     }
@@ -99,7 +99,7 @@ impl MultiProvider {
             LoginProviderTarget::Gemini => Some("gemini"),
             LoginProviderTarget::Antigravity => Some("antigravity"),
             LoginProviderTarget::AutoImport
-            | LoginProviderTarget::Jcode
+            | LoginProviderTarget::Weavecoder
             | LoginProviderTarget::Azure
             | LoginProviderTarget::Google => None,
         }
@@ -165,7 +165,7 @@ impl MultiProvider {
         };
 
         let provider_key = match &api_method_kind {
-            ModelRouteApiMethod::JcodeSubscription => Some("wvc".to_string()),
+            ModelRouteApiMethod::WeavecoderSubscription => Some("wvc".to_string()),
             ModelRouteApiMethod::AnthropicApiKey
                 if provider_display == "Anthropic"
                     && crate::provider::provider_for_model(bare_name) == Some("claude") =>
@@ -442,7 +442,7 @@ impl MultiProvider {
             .filter(|api_method| !api_method.is_empty())
         {
             match ModelRouteApiMethod::parse(api_method) {
-                ModelRouteApiMethod::JcodeSubscription => return model.to_string(),
+                ModelRouteApiMethod::WeavecoderSubscription => return model.to_string(),
                 ModelRouteApiMethod::ClaudeOAuth => return format!("claude-oauth:{model}"),
                 ModelRouteApiMethod::AnthropicApiKey => return format!("claude-api:{model}"),
                 ModelRouteApiMethod::OpenAIOAuth => return format!("openai-oauth:{model}"),

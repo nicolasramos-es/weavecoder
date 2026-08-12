@@ -32,7 +32,7 @@ impl Stage {
     /// What the client was doing at this stage, as a participle phrase.
     pub fn doing(self) -> &'static str {
         match self {
-            Self::Starting => "starting the jcode runtime",
+            Self::Starting => "starting the wvc runtime",
             Self::Connecting => "connecting to the harness API socket",
             Self::Handshake => "negotiating the harness API version",
             Self::Attaching => "attaching a session",
@@ -176,7 +176,7 @@ mod tests {
             Stage::Streaming,
             "harness connection closed",
             Some(Duration::from_secs(90)),
-            Path::new("/run/user/1000/jcode-api.sock"),
+            Path::new("/run/user/1000/wvc-api.sock"),
             SocketState::Listening,
         );
         assert!(text.contains("replacement bridge"), "{text}");
@@ -191,7 +191,7 @@ mod tests {
             Stage::Streaming,
             "harness connection closed",
             None,
-            Path::new("/run/user/1000/jcode-api.sock"),
+            Path::new("/run/user/1000/wvc-api.sock"),
             SocketState::Gone,
         );
         assert!(text.contains("exited"), "{text}");

@@ -2,7 +2,7 @@
 name = "wvc-provider-gemini-runtime"
 version = "0.1.0"
 edition = "2024"
-description = "Gemini provider runtime (Code Assist OAuth + Developer API key) for jcode, kept downstream of wvc-base so provider edits do not rebuild the app spine"
+description = "Gemini provider runtime (Code Assist OAuth + Developer API key) for wvc, kept downstream of wvc-base so provider edits do not rebuild the app spine"
 
 [lib]
 name = "wvc_provider_gemini_runtime"

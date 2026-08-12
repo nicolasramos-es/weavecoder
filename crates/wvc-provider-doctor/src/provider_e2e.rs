@@ -1,11 +1,11 @@
 //! Provider strict end-to-end diagnostic runner.
 //!
-//! This powers `jcode provider-doctor`: it walks the same strict provider/model
+//! This powers `wvc provider-doctor`: it walks the same strict provider/model
 //! checkpoints that the coverage ledger tracks, but as a user-facing diagnostic
 //! so anyone can answer "why is my provider/model or model picker broken?".
 //!
 //! Three tiers trade off safety vs. coverage:
-//! - [`DoctorTier::Offline`]: no API key, no network, no spend. Validates jcode's
+//! - [`DoctorTier::Offline`]: no API key, no network, no spend. Validates wvc's
 //!   own wiring (catalog reload, picker rendering, fallback labeling, model-switch
 //!   routing, auth-lifecycle transcript) against a synthetic catalog.
 //! - [`DoctorTier::Catalog`]: needs a key, ~no spend. Everything in offline plus the
@@ -42,7 +42,7 @@ use wvc_base::provider_catalog::OpenAiCompatibleProfile;
 /// How much of the strict pipeline to exercise.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DoctorTier {
-    /// No key, no network, no spend. Validates jcode-side wiring only.
+    /// No key, no network, no spend. Validates wvc-side wiring only.
     Offline,
     /// Needs a key, negligible spend. Adds the live model catalog fetch.
     Catalog,
@@ -273,7 +273,7 @@ const FULL_PIPELINE_LABELS: &[(&str, &str)] = &[
     (checkpoints::TOOL_CALL_PARSE, "Tool-call parse"),
     (checkpoints::TOOL_EXECUTION_LOOP, "Tool execution loop"),
     (checkpoints::TOOL_RESULT_FOLLOWUP, "Tool-result followup"),
-    (checkpoints::REAL_JCODE_TOOL_SMOKE, "Real Jcode tool smoke"),
+    (checkpoints::REAL_WVC_TOOL_SMOKE, "Real Weavecoder tool smoke"),
     (checkpoints::REASONING_CAPABILITY, "Reasoning capability"),
 ];
 
@@ -387,7 +387,7 @@ const API_DEPENDENT_CHECKPOINTS: &[&str] = &[
     checkpoints::TOOL_CALL_PARSE,
     checkpoints::TOOL_EXECUTION_LOOP,
     checkpoints::TOOL_RESULT_FOLLOWUP,
-    checkpoints::REAL_JCODE_TOOL_SMOKE,
+    checkpoints::REAL_WVC_TOOL_SMOKE,
     checkpoints::REASONING_CAPABILITY,
 ];
 
@@ -618,7 +618,7 @@ pub async fn run_claude_native_e2e(
     //
     // The `claude` login provider is specifically the OAuth/subscription path,
     // so pin OAuth mode before resolving: otherwise a self-dev session with
-    // `JCODE_RUNTIME_PROVIDER=claude-api` would silently test the API-key path
+    // `WVC_RUNTIME_PROVIDER=claude-api` would silently test the API-key path
     // and mislabel the credential. Pinning also points any provider instances
     // the probes build afterwards at the same OAuth path.
     let provider_runtime = AnthropicProvider::new();
@@ -631,7 +631,7 @@ pub async fn run_claude_native_e2e(
             label_for(checkpoints::AUTH_CREDENTIAL_LOADED),
             format!(
                 "could not select the Claude OAuth credential path: {error}. \
-                 Run `jcode login --provider claude` to mint a fresh OAuth token."
+                 Run `wvc login --provider claude` to mint a fresh OAuth token."
             ),
         ));
         return Ok(finish_report(
@@ -681,7 +681,7 @@ pub async fn run_claude_native_e2e(
                     label_for(checkpoints::AUTH_CREDENTIAL_LOADED),
                     format!(
                         "could not resolve a Claude credential: {error}. \
-                         Run `jcode login --provider claude` to mint a fresh OAuth token."
+                         Run `wvc login --provider claude` to mint a fresh OAuth token."
                     ),
                 ));
                 return Ok(finish_report(
@@ -900,7 +900,7 @@ async fn run_native_claude_api_checks(
                 checkpoints::TOOL_CALL_PARSE,
                 checkpoints::TOOL_EXECUTION_LOOP,
                 checkpoints::TOOL_RESULT_FOLLOWUP,
-                checkpoints::REAL_JCODE_TOOL_SMOKE,
+                checkpoints::REAL_WVC_TOOL_SMOKE,
             ] {
                 checks.push(DoctorCheck::passed(
                     checkpoint,
@@ -914,7 +914,7 @@ async fn run_native_claude_api_checks(
                 checkpoints::TOOL_CALL_PARSE,
                 checkpoints::TOOL_EXECUTION_LOOP,
                 checkpoints::TOOL_RESULT_FOLLOWUP,
-                checkpoints::REAL_JCODE_TOOL_SMOKE,
+                checkpoints::REAL_WVC_TOOL_SMOKE,
             ] {
                 checks.push(DoctorCheck::failed(
                     checkpoint,
@@ -951,7 +951,7 @@ fn native_antigravity_wiring_contract() -> WiringContract {
 }
 
 /// Credential descriptor for the native Antigravity doctor. Antigravity uses
-/// Google OAuth tokens minted by `jcode login --provider antigravity`; the
+/// Google OAuth tokens minted by `wvc login --provider antigravity`; the
 /// tokens rotate and are never persisted here, so we record only the source
 /// (and the resolved Google account email when available) without a secret.
 fn native_antigravity_auth(account: &str) -> LiveVerificationAuth {
@@ -966,7 +966,7 @@ fn native_antigravity_auth(account: &str) -> LiveVerificationAuth {
 /// Pick the cheapest sensible Antigravity model from a catalog for a smoke run.
 ///
 /// Prefers a Gemini Flash tier (cheapest, and the backend's native path that
-/// accepts every schema construct jcode emits), then any Gemini model, then any
+/// accepts every schema construct wvc emits), then any Gemini model, then any
 /// available catalog model. Returns `None` when the catalog is empty, letting
 /// the caller fall back to the runtime default.
 fn cheapest_antigravity_model(catalog_models: &[String]) -> Option<String> {
@@ -1039,7 +1039,7 @@ pub async fn run_antigravity_native_e2e(
                     label_for(checkpoints::AUTH_CREDENTIAL_LOADED),
                     format!(
                         "could not resolve an Antigravity credential: {error}. \
-                         Run `jcode login --provider antigravity` to sign in."
+                         Run `wvc login --provider antigravity` to sign in."
                     ),
                 ));
                 return Ok(finish_report(
@@ -1244,7 +1244,7 @@ async fn run_native_antigravity_api_checks(
                 checkpoints::TOOL_CALL_PARSE,
                 checkpoints::TOOL_EXECUTION_LOOP,
                 checkpoints::TOOL_RESULT_FOLLOWUP,
-                checkpoints::REAL_JCODE_TOOL_SMOKE,
+                checkpoints::REAL_WVC_TOOL_SMOKE,
             ] {
                 checks.push(DoctorCheck::passed(
                     checkpoint,
@@ -1258,7 +1258,7 @@ async fn run_native_antigravity_api_checks(
                 checkpoints::TOOL_CALL_PARSE,
                 checkpoints::TOOL_EXECUTION_LOOP,
                 checkpoints::TOOL_RESULT_FOLLOWUP,
-                checkpoints::REAL_JCODE_TOOL_SMOKE,
+                checkpoints::REAL_WVC_TOOL_SMOKE,
             ] {
                 checks.push(DoctorCheck::failed(
                     checkpoint,
@@ -1298,7 +1298,7 @@ pub enum NativeProviderKind {
     Cursor,
     Copilot,
     Bedrock,
-    Jcode,
+    Weavecoder,
     Azure,
 }
 
@@ -1311,7 +1311,7 @@ impl NativeProviderKind {
             "cursor" => Some(Self::Cursor),
             "copilot" => Some(Self::Copilot),
             "bedrock" => Some(Self::Bedrock),
-            "wvc" => Some(Self::Jcode),
+            "wvc" => Some(Self::Weavecoder),
             "azure-openai" => Some(Self::Azure),
             _ => None,
         }
@@ -1389,23 +1389,23 @@ impl NativeProviderKind {
                 auth_env_key: Some("AWS_BEARER_TOKEN_BEDROCK"),
                 login_hint: "wvc login --provider bedrock",
             },
-            Self::Jcode => NativeProviderSpec {
+            Self::Weavecoder => NativeProviderSpec {
                 provider_id: "wvc",
                 label: "Weavecoder Subscription",
                 // The transport is OpenAI-compatible internally, but the public
-                // route identity is the managed Jcode subscription. Model
+                // route identity is the managed Weavecoder subscription. Model
                 // switches use a bare model id so they stay on that runtime.
                 contract: WiringContract {
-                    api_method: wvc_base::subscription_catalog::JCODE_ROUTE_API_METHOD.to_string(),
-                    route_provider: wvc_base::subscription_catalog::JCODE_PROVIDER_DISPLAY_NAME
+                    api_method: wvc_base::subscription_catalog::WVC_ROUTE_API_METHOD.to_string(),
+                    route_provider: wvc_base::subscription_catalog::WVC_PROVIDER_DISPLAY_NAME
                         .to_string(),
                     expected_runtime: "wvc",
                     expected_namespace: None,
                     switch_prefix: String::new(),
                 },
-                auth_source: "Weavecoder subscription API key (JCODE_API_KEY)",
-                auth_env_key: Some("JCODE_API_KEY"),
-                login_hint: "wvc login --provider jcode",
+                auth_source: "Weavecoder subscription API key (WVC_API_KEY)",
+                auth_env_key: Some("WVC_API_KEY"),
+                login_hint: "wvc login --provider wvc",
             },
             Self::Azure => NativeProviderSpec {
                 provider_id: "azure-openai",
@@ -1464,7 +1464,7 @@ impl NativeProviderKind {
                 // `detect_tier_and_set_default` (run from `prefetch_models`). With
                 // the default grace window the doctor's immediate prefetch returns
                 // early without marking init done, so the live probes would hang.
-                wvc_base::env::set_var("JCODE_COPILOT_PREFETCH_STARTUP_GRACE_MS", "0");
+                wvc_base::env::set_var("WVC_COPILOT_PREFETCH_STARTUP_GRACE_MS", "0");
                 let runtime = match wvc_provider_copilot_runtime::CopilotApiProvider::new() {
                     Ok(runtime) => runtime,
                     Err(_) => wvc_provider_copilot_runtime::CopilotApiProvider::new_with_token(
@@ -1476,7 +1476,7 @@ impl NativeProviderKind {
             Self::Bedrock => {
                 std::sync::Arc::new(wvc_base::provider::bedrock::BedrockProvider::new())
             }
-            Self::Jcode => std::sync::Arc::new(wvc_base::provider::wvc::JcodeProvider::new()),
+            Self::Weavecoder => std::sync::Arc::new(wvc_base::provider::wvc::WeavecoderProvider::new()),
             Self::Azure => {
                 // Azure OpenAI is the OpenRouter transport configured via Azure
                 // env; apply that env (endpoint/key/header wiring) before building
@@ -1505,7 +1505,7 @@ impl NativeProviderKind {
         match self {
             Self::OpenAi => {
                 let credentials = wvc_base::auth::codex::load_credentials()
-                    .context("load OpenAI credentials (run `jcode login --provider openai`)")?;
+                    .context("load OpenAI credentials (run `wvc login --provider openai`)")?;
                 if credentials.access_token.trim().is_empty() {
                     anyhow::bail!("resolved an empty OpenAI access token");
                 }
@@ -1522,7 +1522,7 @@ impl NativeProviderKind {
             }
             Self::Cursor => {
                 let key = wvc_base::auth::cursor::load_api_key()
-                    .context("load Cursor credential (run `jcode login --provider cursor`)")?;
+                    .context("load Cursor credential (run `wvc login --provider cursor`)")?;
                 if key.trim().is_empty() {
                     anyhow::bail!("resolved an empty Cursor credential");
                 }
@@ -1530,7 +1530,7 @@ impl NativeProviderKind {
             }
             Self::Copilot => {
                 let token = wvc_base::auth::copilot::load_github_token()
-                    .context("load GitHub Copilot token (run `jcode login --provider copilot`)")?;
+                    .context("load GitHub Copilot token (run `wvc login --provider copilot`)")?;
                 if token.trim().is_empty() {
                     anyhow::bail!("resolved an empty GitHub Copilot token");
                 }
@@ -1545,11 +1545,11 @@ impl NativeProviderKind {
                 }
                 Ok("AWS Bedrock credential resolved".to_string())
             }
-            Self::Jcode => {
+            Self::Weavecoder => {
                 if !wvc_base::subscription_catalog::has_credentials() {
                     anyhow::bail!(
-                        "no Jcode subscription credential found (set JCODE_API_KEY or run \
-                         `jcode login --provider jcode`)"
+                        "no Weavecoder subscription credential found (set WVC_API_KEY or run \
+                         `wvc login --provider wvc`)"
                     );
                 }
                 Ok("Weavecoder subscription credential resolved".to_string())
@@ -1558,7 +1558,7 @@ impl NativeProviderKind {
                 if !wvc_base::auth::azure::has_configuration() {
                     anyhow::bail!(
                         "Azure OpenAI is not fully configured (need AZURE_OPENAI_ENDPOINT plus an \
-                         API key or Entra ID); run `jcode login --provider azure`"
+                         API key or Entra ID); run `wvc login --provider azure`"
                     );
                 }
                 Ok(format!(
@@ -1584,7 +1584,7 @@ impl NativeProviderKind {
             Self::Cursor => &["composer", "fast", "mini"],
             Self::Copilot => &["mini", "haiku", "flash", "fast"],
             Self::Bedrock => &["haiku", "micro", "lite", "mini", "flash"],
-            Self::Jcode => &["mini", "flash", "haiku", "lite", "nano"],
+            Self::Weavecoder => &["mini", "flash", "haiku", "lite", "nano"],
             Self::Azure => &["mini", "nano", "flash", "haiku"],
         };
         for marker in cheap_markers {
@@ -1606,7 +1606,7 @@ struct NativeProviderSpec {
     provider_id: &'static str,
     /// Human display label for messages and the report.
     label: &'static str,
-    /// jcode-side routing/activation contract for the wiring checkpoints.
+    /// wvc-side routing/activation contract for the wiring checkpoints.
     contract: WiringContract,
     /// Non-secret description of the credential source for the ledger.
     auth_source: &'static str,
@@ -1892,7 +1892,7 @@ async fn run_generic_native_api_checks(
                 checkpoints::TOOL_CALL_PARSE,
                 checkpoints::TOOL_EXECUTION_LOOP,
                 checkpoints::TOOL_RESULT_FOLLOWUP,
-                checkpoints::REAL_JCODE_TOOL_SMOKE,
+                checkpoints::REAL_WVC_TOOL_SMOKE,
             ] {
                 checks.push(DoctorCheck::passed(
                     checkpoint,
@@ -1906,7 +1906,7 @@ async fn run_generic_native_api_checks(
                 checkpoints::TOOL_CALL_PARSE,
                 checkpoints::TOOL_EXECUTION_LOOP,
                 checkpoints::TOOL_RESULT_FOLLOWUP,
-                checkpoints::REAL_JCODE_TOOL_SMOKE,
+                checkpoints::REAL_WVC_TOOL_SMOKE,
             ] {
                 checks.push(DoctorCheck::failed(
                     checkpoint,
@@ -1925,13 +1925,13 @@ async fn run_generic_native_api_checks(
     );
 }
 
-/// The jcode-side wiring a given compat profile is expected to activate.
+/// The wvc-side wiring a given compat profile is expected to activate.
 ///
 /// Most OpenAI-compatible profiles route through the generic
 /// `openai-compatible` runtime with a per-profile catalog namespace and an
 /// `openai-compatible:<id>` api_method. A few profile ids deliberately collide
 /// with native login providers (`anthropic-api`→Anthropic, `openai-api`→OpenAI)
-/// and jcode remaps them to their native runtimes. The doctor must assert the
+/// and wvc remaps them to their native runtimes. The doctor must assert the
 /// *native* wiring for those, not the generic compat contract, or the routing
 /// checkpoints fail even though the live API works.
 struct WiringContract {
@@ -2206,7 +2206,7 @@ async fn run_full_api_checks(
                 checkpoints::TOOL_CALL_PARSE,
                 checkpoints::TOOL_EXECUTION_LOOP,
                 checkpoints::TOOL_RESULT_FOLLOWUP,
-                checkpoints::REAL_JCODE_TOOL_SMOKE,
+                checkpoints::REAL_WVC_TOOL_SMOKE,
             ] {
                 checks.push(DoctorCheck::passed(
                     checkpoint,
@@ -2220,7 +2220,7 @@ async fn run_full_api_checks(
                 checkpoints::TOOL_CALL_PARSE,
                 checkpoints::TOOL_EXECUTION_LOOP,
                 checkpoints::TOOL_RESULT_FOLLOWUP,
-                checkpoints::REAL_JCODE_TOOL_SMOKE,
+                checkpoints::REAL_WVC_TOOL_SMOKE,
             ] {
                 checks.push(DoctorCheck::failed(
                     checkpoint,
@@ -2426,7 +2426,7 @@ mod tests {
             ("cursor", NativeProviderKind::Cursor),
             ("copilot", NativeProviderKind::Copilot),
             ("bedrock", NativeProviderKind::Bedrock),
-            ("wvc", NativeProviderKind::Jcode),
+            ("wvc", NativeProviderKind::Weavecoder),
             ("azure-openai", NativeProviderKind::Azure),
         ] {
             assert_eq!(NativeProviderKind::from_normalized(id), Some(expected));
@@ -2447,13 +2447,13 @@ mod tests {
             NativeProviderKind::Cursor,
             NativeProviderKind::Copilot,
             NativeProviderKind::Bedrock,
-            NativeProviderKind::Jcode,
+            NativeProviderKind::Weavecoder,
             NativeProviderKind::Azure,
         ] {
             let spec = kind.spec();
             assert!(!spec.provider_id.is_empty(), "{kind:?} has empty id");
             assert!(!spec.label.is_empty(), "{kind:?} has empty label");
-            if kind == NativeProviderKind::Jcode {
+            if kind == NativeProviderKind::Weavecoder {
                 assert!(
                     spec.contract.switch_prefix.is_empty(),
                     "Weavecoder switches must use bare managed model ids"
@@ -2552,7 +2552,7 @@ mod tests {
             NativeProviderKind::Cursor,
             NativeProviderKind::Copilot,
             NativeProviderKind::Bedrock,
-            NativeProviderKind::Jcode,
+            NativeProviderKind::Weavecoder,
             NativeProviderKind::Azure,
         ] {
             let id = kind.spec().provider_id;
@@ -2581,14 +2581,14 @@ mod tests {
 
     #[test]
     fn native_wvc_contract_uses_managed_subscription_identity() {
-        let contract = NativeProviderKind::Jcode.spec().contract;
+        let contract = NativeProviderKind::Weavecoder.spec().contract;
         assert_eq!(
             contract.api_method,
-            wvc_base::subscription_catalog::JCODE_ROUTE_API_METHOD
+            wvc_base::subscription_catalog::WVC_ROUTE_API_METHOD
         );
         assert_eq!(
             contract.route_provider,
-            wvc_base::subscription_catalog::JCODE_PROVIDER_DISPLAY_NAME
+            wvc_base::subscription_catalog::WVC_PROVIDER_DISPLAY_NAME
         );
         assert_eq!(contract.expected_runtime, "wvc");
         assert!(contract.expected_namespace.is_none());

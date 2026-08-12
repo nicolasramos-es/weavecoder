@@ -136,17 +136,17 @@ pub use render_support::extract_copy_targets_from_rendered_lines;
 
 /// Reasoning-line markdown formatters and the zero-width sentinel they use.
 ///
-/// These pure-string helpers were moved to `jcode-render-core` so the
+/// These pure-string helpers were moved to `wvc-render-core` so the
 /// foundation/streaming layer can format reasoning without depending on any
-/// `jcode-tui-*` crate. Re-exported here so existing
+/// `wvc-tui-*` crate. Re-exported here so existing
 /// `wvc_tui_markdown::{reasoning_line_markup, reasoning_partial_markup,
 /// REASONING_SENTINEL}` paths keep working.
 pub use wvc_render_core::{REASONING_SENTINEL, reasoning_line_markup, reasoning_partial_markup};
 
 /// One-line collapsed reasoning summary markup (e.g. `▸ thought (3 lines)`).
 ///
-/// Moved to `jcode-render-core` (pure/backend-neutral) so the foundation/
-/// streaming layer can format it without depending on any `jcode-tui-*` crate.
+/// Moved to `wvc-render-core` (pure/backend-neutral) so the foundation/
+/// streaming layer can format it without depending on any `wvc-tui-*` crate.
 /// Re-exported here so the existing
 /// `wvc_tui_markdown::reasoning_summary_line_markup` path keeps working.
 pub use wvc_render_core::reasoning_summary_line_markup;

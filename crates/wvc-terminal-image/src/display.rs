@@ -130,12 +130,12 @@ fn in_tmux() -> bool {
         || std::env::var("TERM").is_ok_and(|t| t.starts_with("tmux"))
 }
 
-/// iTerm2's inline-image protocol corrupts jcode's TUI output in real iTerm2,
+/// iTerm2's inline-image protocol corrupts wvc's TUI output in real iTerm2,
 /// so image display is disabled there unless the user opts back in with
-/// `JCODE_ITERM2_IMAGES=1`.
+/// `WVC_ITERM2_IMAGES=1`.
 fn iterm2_images_enabled() -> bool {
     matches!(
-        std::env::var("JCODE_ITERM2_IMAGES")
+        std::env::var("WVC_ITERM2_IMAGES")
             .unwrap_or_default()
             .trim()
             .to_ascii_lowercase()

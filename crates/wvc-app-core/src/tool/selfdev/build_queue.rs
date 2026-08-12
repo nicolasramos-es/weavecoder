@@ -6,10 +6,10 @@ impl SelfDevTool {
             r#"cargo() {{
   case "${{1:-}}" in
     test|check|build|clippy|bench)
-      if [[ "${{JCODE_IN_DEV_CARGO:-0}}" == "1" || -z "${{JCODE_DEV_CARGO_SCRIPT:-}}" ]]; then
+      if [[ "${{WVC_IN_DEV_CARGO:-0}}" == "1" || -z "${{WVC_DEV_CARGO_SCRIPT:-}}" ]]; then
         command cargo "$@"
       else
-        JCODE_IN_DEV_CARGO=1 "${{JCODE_DEV_CARGO_SCRIPT}}" "$@"
+        WVC_IN_DEV_CARGO=1 "${{WVC_DEV_CARGO_SCRIPT}}" "$@"
       fi
       ;;
     *) command cargo "$@" ;;
@@ -94,7 +94,7 @@ export -f cargo
         cmd.args(&command.args)
             .current_dir(&repo_dir)
             .env(
-                "JCODE_DEV_CARGO_SCRIPT",
+                "WVC_DEV_CARGO_SCRIPT",
                 repo_dir.join("scripts").join("dev_cargo.sh"),
             )
             .kill_on_drop(true)
@@ -384,7 +384,7 @@ export -f cargo
                             &source_after_build,
                         )?;
                         let desktop_binary = Self::desktop_binary_name(&command);
-                        let builds_desktop2 = command.display.contains("-p jcode-desktop2");
+                        let builds_desktop2 = command.display.contains("-p wvc-desktop2");
                         let published = if let Some(binary_name) = desktop_binary {
                             Self::validate_desktop_selfdev_binary(
                                 &repo_dir,
@@ -482,10 +482,10 @@ export -f cargo
     /// build against another package's binary reads a stale artefact from some earlier
     /// build and fails a build that actually succeeded.
     fn desktop_binary_name(command: &SelfDevBuildCommand) -> Option<&'static str> {
-        if command.display.contains("-p jcode ") {
+        if command.display.contains("-p wvc ") {
             return None;
         }
-        if command.display.contains("-p jcode-desktop2") {
+        if command.display.contains("-p wvc-desktop2") {
             return Some(if cfg!(windows) {
                 "wvc-desktop2.exe"
             } else {
@@ -510,7 +510,7 @@ export -f cargo
 
         let output = std::process::Command::new(&binary)
             .arg("--version")
-            .env("JCODE_NON_INTERACTIVE", "1")
+            .env("WVC_NON_INTERACTIVE", "1")
             .output()?;
         if !output.status.success() {
             anyhow::bail!(
@@ -544,7 +544,7 @@ export -f cargo
         let home = std::env::var_os("HOME")
             .map(PathBuf::from)
             .ok_or_else(|| anyhow::anyhow!("HOME is not set; cannot activate desktop2 build"))?;
-        let dir = home.join(".jcode").join("selfdev");
+        let dir = home.join(".wvc").join("selfdev");
         std::fs::create_dir_all(&dir)?;
         let temporary = dir.join(format!(".desktop2-current-{}", std::process::id()));
         {
@@ -601,7 +601,7 @@ export -f cargo
             })?;
         let repo_dir =
             SelfDevTool::resolve_repo_dir(ctx.working_dir.as_deref()).ok_or_else(|| {
-                anyhow::anyhow!("Could not find the jcode repository directory for selfdev build")
+                anyhow::anyhow!("Could not find the wvc repository directory for selfdev build")
             })?;
 
         let requested_source = SelfDevTool::requested_source_state(&repo_dir)?;
@@ -950,10 +950,10 @@ export -f cargo
 
         // Desktop-only builds are activated and broadcast by the build worker.
         // There is no server binary to publish or hand off, so running the TUI
-        // reload path here would validate a stale `jcode` artefact and fail an
+        // reload path here would validate a stale `wvc` artefact and fail an
         // otherwise successful desktop build-reload.
         let desktop_only = build_request.as_ref().is_some_and(|request| {
-            request.command.contains("-p jcode-desktop2") && !request.command.contains("-p jcode ")
+            request.command.contains("-p wvc-desktop2") && !request.command.contains("-p wvc ")
         });
         if desktop_only {
             let published_version = build_request
@@ -1034,7 +1034,7 @@ export -f cargo
             .unwrap_or_else(|| command.clone());
         let repo_dir =
             SelfDevTool::resolve_repo_dir(ctx.working_dir.as_deref()).ok_or_else(|| {
-                anyhow::anyhow!("Could not find the jcode repository directory for selfdev test")
+                anyhow::anyhow!("Could not find the wvc repository directory for selfdev test")
             })?;
         let requested_source = SelfDevTool::requested_source_state(&repo_dir)?;
         let shell_command = SelfDevBuildCommand {
@@ -1238,7 +1238,7 @@ mod desktop_binary_tests {
     #[test]
     fn each_desktop_build_validates_its_own_binary() {
         let desktop2 = SelfDevTool::desktop_binary_name(&command(
-            "scripts/dev_cargo.sh build --profile selfdev -p jcode-desktop2 --bin jcode-desktop2",
+            "scripts/dev_cargo.sh build --profile selfdev -p wvc-desktop2 --bin wvc-desktop2",
         ));
         assert!(
             desktop2.is_some_and(|name| name.starts_with("wvc-desktop2")),
@@ -1251,8 +1251,8 @@ mod desktop_binary_tests {
     #[test]
     fn tui_and_combined_builds_are_not_desktop_only() {
         for display in [
-            "scripts/dev_cargo.sh build --profile selfdev -p jcode --bin jcode",
-            "scripts/dev_cargo.sh build --profile selfdev -p jcode --bin jcode -p jcode-desktop2",
+            "scripts/dev_cargo.sh build --profile selfdev -p wvc --bin wvc",
+            "scripts/dev_cargo.sh build --profile selfdev -p wvc --bin wvc -p wvc-desktop2",
         ] {
             assert_eq!(
                 SelfDevTool::desktop_binary_name(&command(display)),

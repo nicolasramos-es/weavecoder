@@ -1,5 +1,5 @@
 // Pins how `[image N]` placeholders in the input buffer interact with
-// slash-command parsing in submit_input (crates/jcode-tui/src/tui/app/input.rs).
+// slash-command parsing in submit_input (crates/wvc-tui/src/tui/app/input.rs).
 //
 // Placeholders are plain text: expand_paste_placeholders only expands
 // `[pasted N lines]` markers, never `[image N]`. Command routing therefore

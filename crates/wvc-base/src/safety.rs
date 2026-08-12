@@ -331,7 +331,7 @@ impl SafetySystem {
         lines.join("\n")
     }
 
-    /// Persist a transcript to ~/.jcode/ambient/transcripts/{timestamp}.json
+    /// Persist a transcript to ~/.wvc/ambient/transcripts/{timestamp}.json
     pub fn save_transcript(&self, transcript: &AmbientTranscript) -> Result<()> {
         let dir = storage::wvc_dir()?.join("ambient").join("transcripts");
         storage::ensure_dir(&dir)?;
@@ -530,15 +530,15 @@ mod tests {
         F: FnOnce() -> T,
     {
         let _guard = crate::storage::lock_test_env();
-        let prev_home = std::env::var_os("JCODE_HOME");
+        let prev_home = std::env::var_os("WVC_HOME");
         let temp = tempfile::TempDir::new().expect("create temp dir");
-        crate::env::set_var("JCODE_HOME", temp.path());
+        crate::env::set_var("WVC_HOME", temp.path());
 
         let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(f));
 
         match prev_home {
-            Some(value) => crate::env::set_var("JCODE_HOME", value),
-            None => crate::env::remove_var("JCODE_HOME"),
+            Some(value) => crate::env::set_var("WVC_HOME", value),
+            None => crate::env::remove_var("WVC_HOME"),
         }
 
         result.unwrap_or_else(|payload| std::panic::resume_unwind(payload))

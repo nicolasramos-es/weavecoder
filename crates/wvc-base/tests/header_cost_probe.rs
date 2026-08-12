@@ -1,7 +1,7 @@
 // Measurement harness for the disk-backed work the TUI header performs on
 // every rebuild. Run explicitly:
 //
-//   cargo test -p jcode-base --test header_cost_probe -- --nocapture --ignored
+//   cargo test -p wvc-base --test header_cost_probe -- --nocapture --ignored
 //
 // This exists to keep the header cache's TTL-vs-signature tradeoff grounded in
 // measured numbers on the target hardware rather than assumption.
@@ -49,9 +49,9 @@ fn measure_auth_status_probe_cost() {
 /// change repaints the auth inventory on the next frame instead of waiting out
 /// the header TTL. That only works if the real invalidation path bumps it.
 ///
-/// This lives in `jcode-base` (its own test binary) rather than beside the
+/// This lives in `wvc-base` (its own test binary) rather than beside the
 /// header tests because `invalidate_cached_status()` clears a process-global
-/// cache that sibling tests in the `jcode-tui` binary share.
+/// cache that sibling tests in the `wvc-tui` binary share.
 #[test]
 fn invalidate_cached_status_bumps_the_auth_generation() {
     let before = wvc_base::auth::auth_status_generation();

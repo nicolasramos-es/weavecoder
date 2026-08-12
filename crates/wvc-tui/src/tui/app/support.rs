@@ -8,7 +8,7 @@
 
 use super::{App, DisplayMessage};
 
-pub(super) const SUPPORT_EMAIL: &str = "support@jcode.sh";
+pub(super) const SUPPORT_EMAIL: &str = "support@weavecoder.sh";
 pub(super) const SUPPORT_SUBJECT: &str = "wvc support";
 
 /// Everything the support email body needs. Pure data so the body builder is
@@ -99,13 +99,13 @@ fn gather_diagnostics(app: &App) -> SupportDiagnostics {
     use crate::provider_catalog::load_env_value_from_env_or_config;
     use crate::subscription_catalog as cat;
 
-    // Account identity is only present when a jcode subscription is
+    // Account identity is only present when a wvc subscription is
     // configured; skip gracefully otherwise.
     let has_subscription = cat::has_credentials();
     let (account_id, account_email, tier) = if has_subscription {
         (
-            load_env_value_from_env_or_config(cat::JCODE_ACCOUNT_ID_ENV, cat::JCODE_ENV_FILE),
-            load_env_value_from_env_or_config(cat::JCODE_ACCOUNT_EMAIL_ENV, cat::JCODE_ENV_FILE),
+            load_env_value_from_env_or_config(cat::WVC_ACCOUNT_ID_ENV, cat::WVC_ENV_FILE),
+            load_env_value_from_env_or_config(cat::WVC_ACCOUNT_EMAIL_ENV, cat::WVC_ENV_FILE),
             cat::cached_tier().map(|t| t.display_name().to_string()),
         )
     } else {
@@ -233,7 +233,7 @@ mod tests {
     #[test]
     fn support_mailto_url_is_correctly_encoded() {
         let url = build_mailto_url("Describe your issue:\n\nVersion: v1 (abc)");
-        assert!(url.starts_with("mailto:support@jcode.sh?subject=jcode%20support&body="));
+        assert!(url.starts_with("mailto:support@weavecoder.sh?subject=wvc%20support&body="));
         // Newlines, spaces, colons, and parens must be percent-encoded.
         assert!(url.contains("Describe%20your%20issue%3A%0A%0AVersion%3A%20v1%20%28abc%29"));
         assert!(!url.contains(' '));

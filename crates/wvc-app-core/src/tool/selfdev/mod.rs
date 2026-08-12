@@ -1,6 +1,6 @@
 #![cfg_attr(test, allow(clippy::await_holding_lock))]
 
-//! Self-development tool - manage canary builds when working on jcode itself
+//! Self-development tool - manage canary builds when working on wvc itself
 
 use crate::background::{self, TaskResult};
 use crate::build;
@@ -32,8 +32,8 @@ pub use launch::{enter_selfdev_session, schedule_selfdev_prompt_delivery};
 pub use reload::{ReloadRecoveryDirective, persisted_background_tasks_note};
 pub use status::selfdev_status_output;
 
-/// Public GitHub source used when cloning the jcode repository for self-dev.
-pub const JCODE_REPO_URL: &str = "https://github.com/1jehuang/jcode.git";
+/// Public GitHub source used when cloning the wvc repository for self-dev.
+pub const WVC_REPO_URL: &str = "https://github.com/nicolasramos/weavecoder.git";
 
 #[derive(Debug, Deserialize)]
 struct SelfDevInput {
@@ -186,7 +186,7 @@ impl BuildRequest {
     }
 
     fn terminal_history_limit() -> usize {
-        std::env::var("JCODE_SELFDEV_REQUEST_HISTORY_LIMIT")
+        std::env::var("WVC_SELFDEV_REQUEST_HISTORY_LIMIT")
             .ok()
             .and_then(|value| value.trim().parse::<usize>().ok())
             .filter(|limit| *limit > 0)
@@ -487,9 +487,9 @@ impl SelfDevTool {
     /// reload/find-config); inside self-dev it manages builds and reloads.
     pub fn description_for(is_selfdev: bool) -> &'static str {
         if is_selfdev {
-            "Manage self-dev builds, tests, and reloads while working on jcode itself."
+            "Manage self-dev builds, tests, and reloads while working on wvc itself."
         } else {
-            "Enter self-dev mode to work on jcode itself: setup, reload, find config/paths."
+            "Enter self-dev mode to work on wvc itself: setup, reload, find config/paths."
         }
     }
 
@@ -527,7 +527,7 @@ impl SelfDevTool {
                     "target": {
                         "type": "string",
                         "enum": ["auto", "tui", "desktop2", "all"],
-                        "description": "Build target for action=build. auto chooses from changed paths; tui builds jcode; desktop2 builds jcode-desktop2; all builds every binary."
+                        "description": "Build target for action=build. auto chooses from changed paths; tui builds wvc; desktop2 builds wvc-desktop2; all builds every binary."
                     },
                     "command": {
                         "type": "string",
@@ -552,7 +552,7 @@ impl SelfDevTool {
                             "status",
                             "find-config"
                         ],
-                        "description": "Action. `enter` starts a self-dev session; `setup` installs prerequisites; `reload` restarts jcode."
+                        "description": "Action. `enter` starts a self-dev session; `setup` installs prerequisites; `reload` restarts wvc."
                     },
                     "prompt": {
                         "type": "string",
@@ -613,7 +613,7 @@ impl Tool for SelfDevTool {
             }
 
             // Self-dev-only actions: building, testing, and low-level socket
-            // access only make sense once you are working on jcode itself.
+            // access only make sense once you are working on wvc itself.
             "build" => {
                 self.do_build(
                     params.reason,
@@ -681,7 +681,7 @@ impl Tool for SelfDevTool {
 
 impl SelfDevTool {
     fn is_test_session() -> bool {
-        std::env::var("JCODE_TEST_SESSION")
+        std::env::var("WVC_TEST_SESSION")
             .map(|value| {
                 let trimmed = value.trim();
                 !trimmed.is_empty() && trimmed != "0" && !trimmed.eq_ignore_ascii_case("false")
@@ -690,7 +690,7 @@ impl SelfDevTool {
     }
 
     fn reload_timeout_secs() -> u64 {
-        std::env::var("JCODE_SELFDEV_RELOAD_TIMEOUT_SECS")
+        std::env::var("WVC_SELFDEV_RELOAD_TIMEOUT_SECS")
             .ok()
             .and_then(|raw| raw.trim().parse::<u64>().ok())
             .filter(|secs| *secs > 0)
@@ -701,7 +701,7 @@ impl SelfDevTool {
     /// builds ahead of it in the queue) to finish before giving up and telling
     /// the agent to reload manually.
     fn build_reload_wait_secs() -> u64 {
-        std::env::var("JCODE_SELFDEV_BUILD_WAIT_SECS")
+        std::env::var("WVC_SELFDEV_BUILD_WAIT_SECS")
             .ok()
             .and_then(|raw| raw.trim().parse::<u64>().ok())
             .filter(|secs| *secs > 0)
@@ -741,7 +741,7 @@ impl SelfDevTool {
         build::client_update_candidate(true)
             .map(|(path, _label)| path)
             .or_else(|| std::env::current_exe().ok())
-            .ok_or_else(|| anyhow::anyhow!("Could not resolve jcode executable to launch"))
+            .ok_or_else(|| anyhow::anyhow!("Could not resolve wvc executable to launch"))
     }
 
     fn build_command(repo_dir: &Path, target: build::SelfDevBuildTarget) -> SelfDevBuildCommand {

@@ -2,7 +2,7 @@
 name = "wvc-provider-copilot-runtime"
 version = "0.1.0"
 edition = "2024"
-description = "GitHub Copilot provider runtime (direct API, tier detection, premium modes) for jcode, kept downstream of wvc-base so provider edits do not rebuild the app spine"
+description = "GitHub Copilot provider runtime (direct API, tier detection, premium modes) for wvc, kept downstream of wvc-base so provider edits do not rebuild the app spine"
 
 [lib]
 name = "wvc_provider_copilot_runtime"

@@ -52,10 +52,10 @@ pub use wvc_agent_runtime::{
     SoftInterruptQueue, SoftInterruptSource, StreamError,
 };
 
-const JCODE_NATIVE_TOOLS: &[&str] = &["selfdev", "communicate"];
+const WVC_NATIVE_TOOLS: &[&str] = &["selfdev", "communicate"];
 static RECOVERED_TEXT_WRAPPED_TOOL_CALLS: std::sync::atomic::AtomicU64 =
     std::sync::atomic::AtomicU64::new(0);
-static JCODE_REPO_SOURCE_STATE: LazyLock<(Option<String>, Option<bool>)> = LazyLock::new(|| {
+static WVC_REPO_SOURCE_STATE: LazyLock<(Option<String>, Option<bool>)> = LazyLock::new(|| {
     crate::build::get_repo_dir()
         .map(|repo_dir| {
             (
@@ -253,7 +253,7 @@ pub struct Agent {
 
 impl Agent {
     fn should_track_client_cache(&self) -> bool {
-        match std::env::var("JCODE_TRACK_CLIENT_CACHE") {
+        match std::env::var("WVC_TRACK_CLIENT_CACHE") {
             Ok(value) => {
                 let value = value.trim();
                 !value.is_empty() && value != "0" && !value.eq_ignore_ascii_case("false")

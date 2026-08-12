@@ -6,7 +6,7 @@ use wvc_storage as storage;
 /// Get path to builds directory
 pub fn builds_dir() -> Result<PathBuf> {
     let dir = resolve_builds_dir(
-        std::env::var_os("JCODE_HOME").map(PathBuf::from),
+        std::env::var_os("WVC_HOME").map(PathBuf::from),
         std::env::var_os("LOCALAPPDATA").map(PathBuf::from),
         storage::wvc_dir()?,
         cfg!(windows),
@@ -27,8 +27,8 @@ fn resolve_builds_dir(
 
     if is_windows && let Some(local_app_data) = local_app_data {
         // Keep runtime channel discovery aligned with scripts/install.ps1 and
-        // the supported Windows layout under %LOCALAPPDATA%\jcode\builds.
-        // Durable user state and logs still live under ~/.jcode.
+        // the supported Windows layout under %LOCALAPPDATA%\wvc\builds.
+        // Durable user state and logs still live under ~/.wvc.
         return local_app_data.join("wvc").join("builds");
     }
 
@@ -73,23 +73,23 @@ mod tests {
         let resolved = resolve_builds_dir(
             None,
             Some(PathBuf::from("/local-app-data")),
-            PathBuf::from("/home/test/.jcode"),
+            PathBuf::from("/home/test/.wvc"),
             true,
         );
 
-        assert_eq!(resolved, PathBuf::from("/local-app-data/jcode/builds"));
+        assert_eq!(resolved, PathBuf::from("/local-app-data/wvc/builds"));
     }
 
     #[test]
     fn wvc_home_override_wins_on_windows() {
         let resolved = resolve_builds_dir(
-            Some(PathBuf::from("/isolated-jcode")),
+            Some(PathBuf::from("/isolated-wvc")),
             Some(PathBuf::from("/local-app-data")),
-            PathBuf::from("/home/test/.jcode"),
+            PathBuf::from("/home/test/.wvc"),
             true,
         );
 
-        assert_eq!(resolved, PathBuf::from("/isolated-jcode/builds"));
+        assert_eq!(resolved, PathBuf::from("/isolated-wvc/builds"));
     }
 
     #[test]
@@ -97,11 +97,11 @@ mod tests {
         let resolved = resolve_builds_dir(
             None,
             Some(PathBuf::from("/ignored/local-app-data")),
-            PathBuf::from("/home/test/.jcode"),
+            PathBuf::from("/home/test/.wvc"),
             false,
         );
 
-        assert_eq!(resolved, PathBuf::from("/home/test/.jcode/builds"));
+        assert_eq!(resolved, PathBuf::from("/home/test/.wvc/builds"));
     }
 }
 

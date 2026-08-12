@@ -290,7 +290,7 @@ impl BridgeState {
                     "id": id,
                     "working_dir": working_dir,
                 });
-                // Sessions rooted inside a jcode checkout are self-dev
+                // Sessions rooted inside a wvc checkout are self-dev
                 // sessions: the daemon only enables the self-dev tools and
                 // prompt when the subscribe says so, and a client that opens
                 // the repo without saying so gets an agent that cannot build
@@ -503,7 +503,7 @@ impl BridgeState {
                     return Self::error_reply(
                         api_id,
                         ErrorCode::InvalidRequest,
-                        "unsupported API-key provider; supported: claude-api, openai-api, openrouter, cursor, gemini, jcode",
+                        "unsupported API-key provider; supported: claude-api, openai-api, openrouter, cursor, gemini, wvc",
                     );
                 };
                 let configured = req == "set_api_key";
@@ -1117,14 +1117,14 @@ impl BridgeState {
         }
     }
 
-    /// True when `path`, or any ancestor, looks like a jcode source checkout.
+    /// True when `path`, or any ancestor, looks like a wvc source checkout.
     ///
     /// Matched by content (a workspace manifest next to the crates directory)
     /// rather than by name, so a clone in any directory is recognised.
     fn path_is_inside_wvc_repo(path: &str) -> bool {
         let mut current = Some(std::path::Path::new(path));
         while let Some(dir) = current {
-            if dir.join("Cargo.toml").is_file() && dir.join("crates/jcode-base").is_dir() {
+            if dir.join("Cargo.toml").is_file() && dir.join("crates/wvc-base").is_dir() {
                 return true;
             }
             current = dir.parent();
@@ -1135,9 +1135,9 @@ impl BridgeState {
     /// Path of a session's persisted record, or `None` if the id is not a
     /// plain session id.
     ///
-    /// One funnel for three reasons. It honours `JCODE_HOME`, without which a
+    /// One funnel for three reasons. It honours `WVC_HOME`, without which a
     /// launched instance reads the *user's* sessions: `peek_session` served
-    /// the real transcripts of the jcode the user runs interactively, which
+    /// the real transcripts of the wvc the user runs interactively, which
     /// defeats the isolation an embedded instance exists to provide. It
     /// rejects ids that are not bare session ids, since the id comes straight
     /// off the wire and is interpolated into a path, so `../../.ssh/id_rsa`
@@ -1155,9 +1155,9 @@ impl BridgeState {
         {
             return None;
         }
-        let home = match std::env::var_os("JCODE_HOME") {
+        let home = match std::env::var_os("WVC_HOME") {
             Some(home) => std::path::PathBuf::from(home),
-            None => std::path::Path::new(&std::env::var_os("HOME")?).join(".jcode"),
+            None => std::path::Path::new(&std::env::var_os("HOME")?).join(".wvc"),
         };
         Some(home.join("sessions").join(format!("{session_id}.json")))
     }
@@ -1210,10 +1210,10 @@ impl BridgeState {
     }
 
     fn wvc_home() -> Option<std::path::PathBuf> {
-        std::env::var_os("JCODE_HOME")
+        std::env::var_os("WVC_HOME")
             .map(std::path::PathBuf::from)
             .or_else(|| {
-                std::env::var_os("HOME").map(|home| std::path::Path::new(&home).join(".jcode"))
+                std::env::var_os("HOME").map(|home| std::path::Path::new(&home).join(".wvc"))
             })
     }
 
@@ -1281,7 +1281,7 @@ impl BridgeState {
 
     fn save_archive_state(state: &ArchiveState) -> Result<(), String> {
         let path =
-            Self::archive_state_path().ok_or_else(|| "could not resolve jcode home".to_string())?;
+            Self::archive_state_path().ok_or_else(|| "could not resolve wvc home".to_string())?;
         let parent = path
             .parent()
             .ok_or_else(|| "invalid archive path".to_string())?;
@@ -1299,13 +1299,13 @@ impl BridgeState {
     }
 
     fn app_config_dir() -> Option<std::path::PathBuf> {
-        if let Some(home) = std::env::var_os("JCODE_HOME") {
-            return Some(std::path::Path::new(&home).join("config/jcode"));
+        if let Some(home) = std::env::var_os("WVC_HOME") {
+            return Some(std::path::Path::new(&home).join("config/wvc"));
         }
         #[cfg(target_os = "macos")]
         return Some(
             std::path::Path::new(&std::env::var_os("HOME")?)
-                .join("Library/Application Support/jcode"),
+                .join("Library/Application Support/wvc"),
         );
         #[cfg(target_os = "windows")]
         return Some(std::path::Path::new(&std::env::var_os("APPDATA")?).join("wvc"));
@@ -1339,7 +1339,7 @@ impl BridgeState {
                 "gemini.env",
             )),
             "wvc" | "subscription" | "wvc-subscription" => {
-                Some(("wvc", &["JCODE_API_KEY"], "wvc-subscription.env"))
+                Some(("wvc", &["WVC_API_KEY"], "wvc-subscription.env"))
             }
             _ => None,
         }
@@ -1352,7 +1352,7 @@ impl BridgeState {
     ) -> Result<(), String> {
         let _write_guard = Self::state_write_guard();
         let dir = Self::app_config_dir()
-            .ok_or_else(|| "could not resolve jcode config directory".to_string())?;
+            .ok_or_else(|| "could not resolve wvc config directory".to_string())?;
         Self::ensure_owner_only_dir(&dir)?;
         let path = dir.join(file_name);
         Self::validate_owner_file_if_exists(&path)?;

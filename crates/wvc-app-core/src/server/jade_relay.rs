@@ -78,7 +78,7 @@ impl RelayListenerConfig {
         Some(Self {
             api,
             session_id: session_id.to_string(),
-            process_existing_prompts: env_flag("JCODE_JADE_RELAY_PROCESS_EXISTING_PROMPTS"),
+            process_existing_prompts: env_flag("WVC_JADE_RELAY_PROCESS_EXISTING_PROMPTS"),
         })
     }
 }
@@ -130,7 +130,7 @@ fn session_command_event_types_param() -> String {
 }
 
 fn default_device_id() -> String {
-    if let Ok(value) = std::env::var("JCODE_JADE_RELAY_DEVICE_ID")
+    if let Ok(value) = std::env::var("WVC_JADE_RELAY_DEVICE_ID")
         && !value.trim().is_empty()
     {
         return value.trim().to_string();
@@ -807,7 +807,7 @@ impl RelayLauncherClient {
             request.provider_key.as_deref(),
         )?;
         if !launched {
-            anyhow::bail!("no supported terminal found for headed Jcode launch")
+            anyhow::bail!("no supported terminal found for headed Weavecoder launch")
         }
 
         let launched_data = serde_json::json!({
@@ -818,7 +818,7 @@ impl RelayLauncherClient {
         let _ = self
             .post_device_event(
                 "launch_status",
-                &format!("Launched headed Jcode session {session_id}"),
+                &format!("Launched headed Weavecoder session {session_id}"),
                 event.seq,
                 Some(launched_data),
             )
@@ -1195,7 +1195,7 @@ async fn deliver_to_session(
         guard.get(session_id).cloned()
     };
     let Some(agent) = agent else {
-        anyhow::bail!("session '{session_id}' is not live in this Jcode server")
+        anyhow::bail!("session '{session_id}' is not live in this Weavecoder server")
     };
 
     if agent.try_lock().is_err() {
@@ -1238,7 +1238,7 @@ async fn deliver_to_launched_session(
         guard.get(session_id).cloned()
     };
     let Some(agent) = agent else {
-        anyhow::bail!("session '{session_id}' is not live in this Jcode server")
+        anyhow::bail!("session '{session_id}' is not live in this Weavecoder server")
     };
 
     // A just-spawned headed TUI briefly owns the agent lock while it subscribes

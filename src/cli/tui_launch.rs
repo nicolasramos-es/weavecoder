@@ -443,7 +443,7 @@ pub fn list_sessions() -> Result<()> {
         target: &wvc_tui_session_picker::ResumeTarget,
     ) -> (std::path::PathBuf, Vec<String>) {
         match target {
-            wvc_tui_session_picker::ResumeTarget::JcodeSession { session_id } => (
+            wvc_tui_session_picker::ResumeTarget::WeavecoderSession { session_id } => (
                 exe.to_path_buf(),
                 vec!["--resume".to_string(), session_id.clone()],
             ),
@@ -499,7 +499,7 @@ pub fn list_sessions() -> Result<()> {
     ) -> Result<bool> {
         let (program, args) = build_resume_target_command(exe, target);
         let title = match target {
-            wvc_tui_session_picker::ResumeTarget::JcodeSession { session_id } => {
+            wvc_tui_session_picker::ResumeTarget::WeavecoderSession { session_id } => {
                 resumed_window_title(session_id)
             }
             wvc_tui_session_picker::ResumeTarget::ClaudeCodeSession { session_id, .. } => {
@@ -532,10 +532,10 @@ pub fn list_sessions() -> Result<()> {
     match tui::session_picker::pick_session()? {
         Some(tui::session_picker::PickerResult::TakeOverClaude(target)) => {
             let resolved_target = crate::import::take_over_live_claude_session(&target)?;
-            let wvc_tui_session_picker::ResumeTarget::JcodeSession { session_id } =
+            let wvc_tui_session_picker::ResumeTarget::WeavecoderSession { session_id } =
                 &resolved_target
             else {
-                anyhow::bail!("Claude takeover did not produce a Jcode session");
+                anyhow::bail!("Claude takeover did not produce a Weavecoder session");
             };
             let exe = std::env::current_exe()?;
             let mut session_cwd = std::env::current_dir()?;
@@ -562,9 +562,9 @@ pub fn list_sessions() -> Result<()> {
 
             if targets.len() == 1 {
                 let target = &targets[0];
-                let resolved_target = crate::import::resolve_resume_target_to_jcode(target)?;
+                let resolved_target = crate::import::resolve_resume_target_to_wvc(target)?;
                 let mut session_cwd = cwd.clone();
-                if let wvc_tui_session_picker::ResumeTarget::JcodeSession { session_id } =
+                if let wvc_tui_session_picker::ResumeTarget::WeavecoderSession { session_id } =
                     &resolved_target
                     && let Ok(sess) = session::Session::load(session_id)
                     && let Some(dir) = sess.working_dir.as_deref()
@@ -586,7 +586,7 @@ pub fn list_sessions() -> Result<()> {
 
                 for target in targets {
                     let resolved_target =
-                        match crate::import::resolve_resume_target_to_jcode(&target) {
+                        match crate::import::resolve_resume_target_to_wvc(&target) {
                             Ok(target) => target,
                             Err(e) => {
                                 eprintln!("Failed to import selected session: {}", e);
@@ -594,7 +594,7 @@ pub fn list_sessions() -> Result<()> {
                             }
                         };
                     let mut session_cwd = cwd.clone();
-                    if let wvc_tui_session_picker::ResumeTarget::JcodeSession { session_id } =
+                    if let wvc_tui_session_picker::ResumeTarget::WeavecoderSession { session_id } =
                         &resolved_target
                         && let Ok(sess) = session::Session::load(session_id)
                         && let Some(dir) = sess.working_dir.as_deref()
@@ -640,7 +640,7 @@ pub fn list_sessions() -> Result<()> {
             let mut warned_no_terminal = false;
 
             for target in targets {
-                let resolved_target = match crate::import::resolve_resume_target_to_jcode(&target) {
+                let resolved_target = match crate::import::resolve_resume_target_to_wvc(&target) {
                     Ok(target) => target,
                     Err(e) => {
                         eprintln!("Failed to import selected session: {}", e);
@@ -648,7 +648,7 @@ pub fn list_sessions() -> Result<()> {
                     }
                 };
                 let mut session_cwd = cwd.clone();
-                if let wvc_tui_session_picker::ResumeTarget::JcodeSession { session_id } =
+                if let wvc_tui_session_picker::ResumeTarget::WeavecoderSession { session_id } =
                     &resolved_target
                     && let Ok(sess) = session::Session::load(session_id)
                     && let Some(dir) = sess.working_dir.as_deref()
@@ -722,7 +722,7 @@ pub fn list_sessions() -> Result<()> {
                             );
                             warned_no_terminal = true;
                         }
-                        eprintln!("  jcode --resume {}", session_id);
+                        eprintln!("  wvc --resume {}", session_id);
                     }
                     Err(e) => {
                         eprintln!("Failed to spawn session {}: {}", session_id, e);

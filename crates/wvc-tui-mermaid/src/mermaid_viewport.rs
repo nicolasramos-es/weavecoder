@@ -114,7 +114,7 @@ fn kitty_viewport_unique_id(hash: u64) -> u32 {
     loop {
         let sequence = NEXT_KITTY_IMAGE_ID.fetch_add(1, Ordering::Relaxed) & 0x00FF_FFFF;
         if sequence != 0 {
-            // Reserve the 0x4Axxxxxx namespace ('J') for jcode's custom virtual
+            // Reserve the 0x4Axxxxxx namespace ('J') for wvc's custom virtual
             // placements so these ids do not collide with ratatui-image's Kitty
             // protocol states in the same terminal process.
             return 0x4A00_0000 | sequence;

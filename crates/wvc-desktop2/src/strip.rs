@@ -355,9 +355,9 @@ mod tests {
     fn strip() -> Strip {
         Strip::build(
             vec![
-                Entry::new("a1", Some("/home/j/jcode")),
-                Entry::new("a2", Some("/home/j/jcode")),
-                Entry::new("a3", Some("/home/j/jcode")),
+                Entry::new("a1", Some("/home/j/wvc")),
+                Entry::new("a2", Some("/home/j/wvc")),
+                Entry::new("a3", Some("/home/j/wvc")),
                 Entry::new("b1", Some("/home/j/site")),
             ],
             Some("a1"),
@@ -446,8 +446,8 @@ mod tests {
     #[test]
     fn rebuilding_keeps_focus_on_the_same_session() {
         let entries = vec![
-            Entry::new("a1", Some("/home/j/jcode")),
-            Entry::new("a2", Some("/home/j/jcode")),
+            Entry::new("a1", Some("/home/j/wvc")),
+            Entry::new("a2", Some("/home/j/wvc")),
         ];
         let strip = Strip::build(entries, Some("a2"));
         assert_eq!(strip.focused_session(), Some("a2"));
@@ -486,8 +486,8 @@ mod tests {
 
     #[test]
     fn label_uses_the_leaf_directory() {
-        assert_eq!(label_for(Some("/home/j/jcode")), "wvc");
-        assert_eq!(label_for(Some("/home/j/jcode/")), "wvc");
+        assert_eq!(label_for(Some("/home/j/wvc")), "wvc");
+        assert_eq!(label_for(Some("/home/j/wvc/")), "wvc");
         assert_eq!(label_for(Some("/")), "/");
         assert_eq!(label_for(None), "-");
     }
@@ -500,8 +500,8 @@ mod layout_tests {
     fn strip() -> Strip {
         Strip::build(
             vec![
-                Entry::new("a1", Some("/home/j/jcode")),
-                Entry::new("a2", Some("/home/j/jcode")),
+                Entry::new("a1", Some("/home/j/wvc")),
+                Entry::new("a2", Some("/home/j/wvc")),
                 Entry::new("b1", Some("/home/j/site")),
             ],
             Some("a2"),

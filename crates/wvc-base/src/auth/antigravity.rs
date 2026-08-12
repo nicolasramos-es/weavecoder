@@ -15,9 +15,9 @@ const REDIRECT_PATH: &str = "/oauth-callback";
 const ANTIGRAVITY_CLIENT_ID: &str =
     "1071006060591-tmhssin2h21lcre235vtolojh4g403ep.apps.googleusercontent.com"; // gitleaks:allow
 const ANTIGRAVITY_CLIENT_SECRET: &str = "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"; // gitleaks:allow
-const CLIENT_ID_ENV: &str = "JCODE_ANTIGRAVITY_CLIENT_ID";
-const CLIENT_SECRET_ENV: &str = "JCODE_ANTIGRAVITY_CLIENT_SECRET";
-const VERSION_ENV: &str = "JCODE_ANTIGRAVITY_VERSION";
+const CLIENT_ID_ENV: &str = "WVC_ANTIGRAVITY_CLIENT_ID";
+const CLIENT_SECRET_ENV: &str = "WVC_ANTIGRAVITY_CLIENT_SECRET";
+const VERSION_ENV: &str = "WVC_ANTIGRAVITY_VERSION";
 const ANTIGRAVITY_VERSION: &str = "1.18.3";
 const ANTIGRAVITY_SCOPES: &[&str] = &[
     "https://www.googleapis.com/auth/cloud-platform",
@@ -129,7 +129,7 @@ pub fn load_tokens() -> Result<AntigravityTokens> {
         crate::storage::harden_secret_file_permissions(&path);
         return crate::storage::read_json(&path).map_err(|_| {
             anyhow::anyhow!(
-                "No Antigravity tokens found. Run `jcode login --provider antigravity`."
+                "No Antigravity tokens found. Run `wvc login --provider antigravity`."
             )
         });
     }
@@ -144,7 +144,7 @@ pub fn load_tokens() -> Result<AntigravityTokens> {
         });
     }
 
-    anyhow::bail!("No Antigravity tokens found. Run `jcode login --provider antigravity`.");
+    anyhow::bail!("No Antigravity tokens found. Run `wvc login --provider antigravity`.");
 }
 
 pub fn save_tokens(tokens: &AntigravityTokens) -> Result<()> {
@@ -251,7 +251,7 @@ pub async fn login(no_browser: bool) -> Result<AntigravityTokens> {
                 redirect_uri
             );
             eprintln!(
-                "If the browser lands on a loopback error page instead of returning to jcode, copy the full URL from the address bar and re-run with `--no-browser` to paste it manually."
+                "If the browser lands on a loopback error page instead of returning to wvc, copy the full URL from the address bar and re-run with `--no-browser` to paste it manually."
             );
             match tokio::time::timeout(
                 std::time::Duration::from_secs(300),
@@ -309,7 +309,7 @@ async fn manual_login(
         let _ = open::that(auth_url);
     }
     eprintln!(
-        "After approving access, paste the full callback URL (or query string) here so jcode can verify the login state.\n"
+        "After approving access, paste the full callback URL (or query string) here so wvc can verify the login state.\n"
     );
     eprintln!(
         "If the browser shows a local callback error, copy the full URL from the address bar before closing the tab.\n"

@@ -1,6 +1,6 @@
 //! Bench harness: score light-background palette candidates with the harmony
 //! analyzer. Run with:
-//!   cargo run -p jcode-tui-style --example light_bench
+//!   cargo run -p wvc-tui-style --example light_bench
 
 use wvc_tui_style::palette::{ALL_ROLES, Palette, Role, parse_hex, to_hex};
 use wvc_tui_style::{HarmonyReport, Oklab, analyze_harmony};
@@ -223,7 +223,7 @@ fn main() {
 
     report("derived (runtime flip of dark defaults)", &derived);
     println!();
-    report("generated (generate_from_seed, jcode blue)", &generated);
+    report("generated (generate_from_seed, wvc blue)", &generated);
     println!();
     report("hand-tuned start", &hand_tuned());
     println!();

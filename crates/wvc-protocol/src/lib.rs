@@ -1,4 +1,4 @@
-//! Client-server protocol for jcode
+//! Client-server protocol for wvc
 //!
 //! Uses newline-delimited JSON over Unix socket.
 //! Server streams events back to clients during message processing.

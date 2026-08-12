@@ -184,13 +184,13 @@ fn detected_resume_terminal_recognizes_handterm_term_program() {
 #[test]
 fn shell_command_quotes_single_quotes_for_handterm_exec() {
     let command = shell_command(&[
-        "/tmp/jcode binary".to_string(),
+        "/tmp/wvc binary".to_string(),
         "--resume".to_string(),
         "session'quote".to_string(),
     ]);
     assert_eq!(
         command,
-        "'/tmp/jcode binary' '--resume' 'session'\"'\"'quote'"
+        "'/tmp/wvc binary' '--resume' 'session'\"'\"'quote'"
     );
 }
 
@@ -272,7 +272,7 @@ fn resume_invocation_reaches_the_launcher_and_reports_success() {
 
 #[test]
 fn resume_invocation_args_includes_socket_when_present() {
-    let args = resume_invocation_args("ses_123", Some("/tmp/jcode-test.sock"));
+    let args = resume_invocation_args("ses_123", Some("/tmp/wvc-test.sock"));
     assert_eq!(
         args,
         vec![
@@ -280,7 +280,7 @@ fn resume_invocation_args_includes_socket_when_present() {
             "--resume".to_string(),
             "ses_123".to_string(),
             "--socket".to_string(),
-            "/tmp/jcode-test.sock".to_string()
+            "/tmp/wvc-test.sock".to_string()
         ]
     );
 }
@@ -298,10 +298,10 @@ fn resume_invocation_args_omits_blank_socket() {
     );
 }
 
-/// Pin JCODE_HOME to a tempdir containing a `builds/current/jcode` binary so
+/// Pin WVC_HOME to a tempdir containing a `builds/current/wvc` binary so
 /// `launch_client_executable()` resolves deterministically, independent of
 /// whether the developer machine has a published local build channel and of
-/// other tests mutating JCODE_HOME in parallel. Returns the guards that keep
+/// other tests mutating WVC_HOME in parallel. Returns the guards that keep
 /// the environment pinned for the duration of the test.
 fn pinned_resume_test_home() -> (
     std::sync::MutexGuard<'static, ()>,
@@ -312,8 +312,8 @@ fn pinned_resume_test_home() -> (
     let temp = tempfile::tempdir().expect("tempdir");
     let current = temp.path().join("builds").join("current");
     std::fs::create_dir_all(&current).expect("create builds/current");
-    std::fs::write(current.join("wvc"), b"#!/bin/sh\n").expect("write fake jcode binary");
-    let home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    std::fs::write(current.join("wvc"), b"#!/bin/sh\n").expect("write fake wvc binary");
+    let home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     (env_lock, temp, home)
 }
 
@@ -387,7 +387,7 @@ fn format_countdown_until_handles_subminute_and_minutes() {
 fn gather_ambient_info_filters_to_session_reminders_when_ambient_disabled() {
     let _env_lock = crate::storage::lock_test_env();
     let temp = tempfile::tempdir().expect("tempdir");
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
 
     let mut manager = AmbientManager::new().expect("ambient manager");
     let first_due = Utc::now() + ChronoDuration::minutes(5);
@@ -444,9 +444,9 @@ fn gather_ambient_info_filters_to_session_reminders_when_ambient_disabled() {
         .expect("schedule second reminder");
 
     // This test exercises queue filtering, not the stale-while-revalidate cache.
-    // Read synchronously while the temporary JCODE_HOME and its files are pinned:
+    // Read synchronously while the temporary WVC_HOME and its files are pinned:
     // an unrelated in-flight cache refresh can otherwise overwrite the cleared
-    // process-global cache with data loaded under another test's JCODE_HOME.
+    // process-global cache with data loaded under another test's WVC_HOME.
     let info = gather_ambient_info_inner(false).expect("ambient info");
     assert!(info.show_widget);
     assert_eq!(info.queue_count, 3);
@@ -471,7 +471,7 @@ fn invalidate_todos_cache_backdates_entry_so_next_gather_refetches() {
 
     let _env_lock = crate::storage::lock_test_env();
     let temp = tempfile::tempdir().expect("tempdir");
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     clear_todos_cache_for_tests();
 
     let session_id = "freshness-test-session";

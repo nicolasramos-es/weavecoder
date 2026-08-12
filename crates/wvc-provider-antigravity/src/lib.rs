@@ -22,7 +22,7 @@ pub const FETCH_MODELS_API_URL: &str =
     "https://cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels";
 pub const GENERATE_CONTENT_API_URL: &str =
     "https://cloudcode-pa.googleapis.com/v1internal:generateContent";
-const VERSION_ENV: &str = "JCODE_ANTIGRAVITY_VERSION";
+const VERSION_ENV: &str = "WVC_ANTIGRAVITY_VERSION";
 pub const ANTIGRAVITY_VERSION: &str = "1.18.3";
 pub const X_GOOG_API_CLIENT: &str = "google-cloud-sdk vscode_cloudshelleditor/0.1";
 const CATALOG_REFRESH_TTL_HOURS: i64 = 6;
@@ -441,7 +441,7 @@ pub fn remap_unsupported_model(model: &str) -> &str {
 /// Whether a resolved Antigravity model id targets a Gemini model.
 ///
 /// Gemini is the backend's native path and accepts every JSON Schema construct
-/// jcode emits, so no schema rewriting is needed for these models.
+/// wvc emits, so no schema rewriting is needed for these models.
 pub fn model_is_gemini(model: &str) -> bool {
     model.trim().to_ascii_lowercase().starts_with("gemini")
 }
@@ -451,7 +451,7 @@ pub fn model_is_gemini(model: &str) -> bool {
 ///
 /// The Antigravity Cloud Code backend multiplexes several upstreams behind one
 /// `generateContent` endpoint, and each upstream validates tool schemas
-/// differently. jcode's emitted schemas are valid JSON Schema draft 2020-12
+/// differently. wvc's emitted schemas are valid JSON Schema draft 2020-12
 /// (verified against the metaschema), but two upstreams reject specific
 /// constructs after their own re-translation:
 ///

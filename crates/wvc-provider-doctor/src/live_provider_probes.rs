@@ -21,12 +21,12 @@ use wvc_provider_antigravity_runtime::AntigravityProvider;
 /// Resolve the per-request timeout for an OpenAI-compatible smoke probe.
 ///
 /// Defaults to `default_secs` (the historical hard-coded values), but callers can
-/// raise it via `JCODE_LIVE_SMOKE_TIMEOUT_SECS` for slow reasoning models (e.g.
+/// raise it via `WVC_LIVE_SMOKE_TIMEOUT_SECS` for slow reasoning models (e.g.
 /// NVIDIA's 550B Nemotron Ultra, which emits long hidden reasoning and can take
 /// well over a minute to return a single completion). The override applies a floor
 /// so it can only extend, never shorten, the built-in deadline.
 fn smoke_timeout(default_secs: u64) -> std::time::Duration {
-    let secs = std::env::var("JCODE_LIVE_SMOKE_TIMEOUT_SECS")
+    let secs = std::env::var("WVC_LIVE_SMOKE_TIMEOUT_SECS")
         .ok()
         .and_then(|raw| raw.trim().parse::<u64>().ok())
         .map(|override_secs| override_secs.max(default_secs))
@@ -140,7 +140,7 @@ pub async fn fetch_live_openai_compatible_models(
 }
 
 /// Normalize a model id returned by a provider's `/models` endpoint into the
-/// bare id jcode uses for routing and coverage keys.
+/// bare id wvc uses for routing and coverage keys.
 ///
 /// Google's OpenAI-compatible Gemini surface returns ids prefixed with
 /// `models/` (e.g. `models/gemini-2.5-flash`); chat/stream/tool calls accept
@@ -1235,7 +1235,7 @@ pub async fn run_live_antigravity_native_smoke(
 /// Stage: streaming chat completion.
 ///
 /// The Antigravity runtime delivers `generateContent` as a single response that
-/// jcode re-emits as text deltas, so we assert the runtime produced streamed
+/// wvc re-emits as text deltas, so we assert the runtime produced streamed
 /// text and reached a clean end-of-message rather than requiring many deltas.
 pub async fn run_live_antigravity_native_stream_smoke(
     model: &str,
@@ -1425,7 +1425,7 @@ pub async fn run_live_native_provider_smoke(
 
 /// Stage: streaming chat completion against an arbitrary native provider.
 ///
-/// Some native runtimes deliver a single coalesced response that jcode re-emits
+/// Some native runtimes deliver a single coalesced response that wvc re-emits
 /// as one or more text deltas, so we assert the runtime produced streamed text
 /// and a clean end-of-message rather than requiring a high delta count.
 pub async fn run_live_native_provider_stream_smoke(

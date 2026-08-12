@@ -44,11 +44,11 @@ pub fn home() -> Option<String> {
 /// Window title for a session in `working_dir`.
 ///
 /// The directory leads: a taskbar or an alt-tab list truncates the tail, and
-/// which checkout this window is for is what distinguishes two jcode windows
+/// which checkout this window is for is what distinguishes two wvc windows
 /// from each other.
 pub fn window_title(working_dir: Option<&str>) -> String {
     match working_dir {
-        Some(dir) => format!("{} - jcode", display_path(dir, home().as_deref())),
+        Some(dir) => format!("{} - wvc", display_path(dir, home().as_deref())),
         None => "wvc desktop2".to_string(),
     }
 }
@@ -60,8 +60,8 @@ mod tests {
     #[test]
     fn home_collapses_to_tilde() {
         assert_eq!(
-            display_path("/home/j/jcode/crates/x", Some("/home/j")),
-            "~/jcode/crates/x"
+            display_path("/home/j/wvc/crates/x", Some("/home/j")),
+            "~/wvc/crates/x"
         );
         assert_eq!(display_path("/home/j", Some("/home/j")), "~");
         assert_eq!(display_path("/home/j/", Some("/home/j/")), "~");

@@ -37,9 +37,9 @@ fn harden_secret_file_permissions_sets_owner_only_modes() {
 #[test]
 fn user_home_path_uses_external_dir_under_wvc_home() {
     let _guard = lock_test_env();
-    let prev_home = std::env::var_os("JCODE_HOME");
+    let prev_home = std::env::var_os("WVC_HOME");
     let temp = tempfile::TempDir::new().expect("create temp dir");
-    crate::env::set_var("JCODE_HOME", temp.path());
+    crate::env::set_var("WVC_HOME", temp.path());
 
     let resolved = user_home_path(".codex/auth.json").expect("resolve user home path");
     assert_eq!(
@@ -51,9 +51,9 @@ fn user_home_path_uses_external_dir_under_wvc_home() {
     );
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -75,17 +75,17 @@ fn validate_external_auth_file_rejects_symlink() {
 #[test]
 fn app_config_dir_uses_wvc_home_when_set() {
     let _guard = lock_test_env();
-    let prev_home = std::env::var_os("JCODE_HOME");
+    let prev_home = std::env::var_os("WVC_HOME");
     let temp = tempfile::TempDir::new().expect("create temp dir");
-    crate::env::set_var("JCODE_HOME", temp.path());
+    crate::env::set_var("WVC_HOME", temp.path());
 
     let resolved = app_config_dir().expect("resolve app config dir");
     assert_eq!(resolved, temp.path().join("config").join("wvc"));
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 

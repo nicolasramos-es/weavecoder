@@ -161,7 +161,7 @@ pub(super) fn progress_wait_reason(
     }
 }
 
-// Progress-display formatting now lives in `jcode-background-types` (pure
+// Progress-display formatting now lives in `wvc-background-types` (pure
 // functions over BackgroundTaskProgress); re-export for existing callers.
 pub use wvc_background_types::{
     format_progress_display, format_progress_summary, render_progress_bar,

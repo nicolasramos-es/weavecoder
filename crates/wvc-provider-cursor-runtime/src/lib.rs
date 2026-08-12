@@ -1,5 +1,5 @@
 //! Cursor provider runtime (direct ChatService HTTP/2 streaming), moved out
-//! of `jcode-base` so provider edits compile only this crate plus a binary
+//! of `wvc-base` so provider edits compile only this crate plus a binary
 //! relink instead of rebuilding the base -> app-core -> tui spine. The
 //! binary's composition root registers [`CursorCliProvider`] with
 //! `wvc_base::provider::external` at startup.
@@ -224,7 +224,7 @@ impl CursorCliProvider {
     }
 
     pub fn new() -> Self {
-        let model = std::env::var("JCODE_CURSOR_MODEL").unwrap_or_else(|_| DEFAULT_MODEL.into());
+        let model = std::env::var("WVC_CURSOR_MODEL").unwrap_or_else(|_| DEFAULT_MODEL.into());
         let provider = Self {
             client: wvc_provider_core::shared_http_client(),
             model: Arc::new(RwLock::new(model)),

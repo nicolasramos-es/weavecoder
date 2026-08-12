@@ -2,7 +2,7 @@
 //!
 //! The daemon's only channel for background work is a `notification` carrying
 //! the markdown its own UI renders (`format_background_task_progress_markdown`
-//! and `format_background_task_notification_markdown` in `jcode-base`). This
+//! and `format_background_task_notification_markdown` in `wvc-base`). This
 //! module reads the two facts an API client actually needs out of that prose:
 //! which task, and how far along.
 //!

@@ -235,7 +235,7 @@ impl Provider for OpenRouterProvider {
         // Merge user-configured extra request-body fields last so they can
         // satisfy non-standard backend requirements (e.g. NVIDIA NIM
         // DeepSeek-V4 `chat_template_kwargs`) and intentionally override any
-        // jcode-generated field with the same key (issue #341).
+        // wvc-generated field with the same key (issue #341).
         if let Some(extra) = self.extra_body.as_ref()
             && let Some(request_obj) = request.as_object_mut()
         {
@@ -795,7 +795,7 @@ impl OpenRouterProvider {
     /// writes should use.
     ///
     /// Every `new_named_openai_compatible()` constructor sets the process-global
-    /// `JCODE_OPENROUTER_CACHE_NAMESPACE` env var, so with several named
+    /// `WVC_OPENROUTER_CACHE_NAMESPACE` env var, so with several named
     /// profiles in one process the last one constructed wins and all profiles
     /// collide on a single `<last-profile>_models.json`. The background refresh
     /// path already passes an explicit namespace; the foreground paths did not.

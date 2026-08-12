@@ -17,7 +17,7 @@ async fn maybe_run_auth_test_smoke(
             report.push_step(
                 kind.step_name(),
                 true,
-                "Skipped: the Cursor native agent transport is text-only in jcode (it does not \
+                "Skipped: the Cursor native agent transport is text-only in wvc (it does not \
                  expose tool calls over agent.v1.AgentService/Run). Basic provider smoke still \
                  validates chat."
                     .to_string(),
@@ -116,7 +116,7 @@ async fn run_post_login_validation_inner(
         );
         if verbose {
             eprintln!(
-                "\nSkipping automatic runtime validation for {}. Auto Import can add multiple providers; run `jcode auth-test --all-configured` to validate them.",
+                "\nSkipping automatic runtime validation for {}. Auto Import can add multiple providers; run `wvc auth-test --all-configured` to validate them.",
                 provider.display_name
             );
         }
@@ -184,13 +184,13 @@ async fn run_post_login_validation_inner(
         Ok(())
     } else if AuthTestTarget::from_provider_choice(&choice).is_some() {
         anyhow::bail!(
-            "Post-login validation failed for {}. Credentials were saved, but jcode could not verify runtime readiness. Re-run `jcode auth-test --provider {}` for details.",
+            "Post-login validation failed for {}. Credentials were saved, but wvc could not verify runtime readiness. Re-run `wvc auth-test --provider {}` for details.",
             provider.display_name,
             choice.as_arg_value()
         )
     } else {
         anyhow::bail!(
-            "Post-login validation failed for {}. Credentials were saved, but jcode could not verify runtime readiness. Re-test with `jcode --provider {} run \"Reply with exactly AUTH_TEST_OK and nothing else.\"` after fixing the provider/runtime.",
+            "Post-login validation failed for {}. Credentials were saved, but wvc could not verify runtime readiness. Re-test with `wvc --provider {} run \"Reply with exactly AUTH_TEST_OK and nothing else.\"` after fixing the provider/runtime.",
             provider.display_name,
             choice.as_arg_value()
         )
@@ -521,7 +521,7 @@ pub(crate) fn resolve_auth_test_targets(
         let targets = configured_auth_test_targets(&status);
         if targets.is_empty() {
             anyhow::bail!(
-                "No configured supported auth providers found. Run `jcode login --provider <provider>` first, or choose an explicit --provider."
+                "No configured supported auth providers found. Run `wvc login --provider <provider>` first, or choose an explicit --provider."
             );
         }
         return Ok(targets);
@@ -531,7 +531,7 @@ pub(crate) fn resolve_auth_test_targets(
         .map(|target| vec![target])
         .ok_or_else(|| {
             anyhow::anyhow!(
-                "Provider '{}' is not yet supported by `jcode auth-test`.",
+                "Provider '{}' is not yet supported by `wvc auth-test`.",
                 choice.as_arg_value()
             )
         })
@@ -741,9 +741,9 @@ fn persist_auth_test_live_verification_event(
                 expected.push(crate::live_tests::checkpoints::TOOL_CALL_PARSE);
                 expected.push(crate::live_tests::checkpoints::TOOL_EXECUTION_LOOP);
                 expected.push(crate::live_tests::checkpoints::TOOL_RESULT_FOLLOWUP);
-                expected.push(crate::live_tests::checkpoints::REAL_JCODE_TOOL_SMOKE);
+                expected.push(crate::live_tests::checkpoints::REAL_WVC_TOOL_SMOKE);
                 let stage = auth_test_step_stage(
-                    crate::live_tests::checkpoints::REAL_JCODE_TOOL_SMOKE,
+                    crate::live_tests::checkpoints::REAL_WVC_TOOL_SMOKE,
                     step,
                 )
                 .with_evidence("tool_name", serde_json::json!(AUTH_TEST_TOOL_NAME))
@@ -801,7 +801,7 @@ fn persist_auth_test_live_verification_event(
 
 fn auth_test_coverage_provider_identity(report: &AuthTestProviderReport) -> (String, String) {
     if report.provider == "openai-compatible"
-        && let Ok(profile_name) = std::env::var("JCODE_NAMED_PROVIDER_PROFILE")
+        && let Ok(profile_name) = std::env::var("WVC_NAMED_PROVIDER_PROFILE")
     {
         let profile_name = profile_name.trim();
         if !profile_name.is_empty() {
@@ -848,6 +848,6 @@ fn auth_test_tool_derived_stage(
 ) -> crate::live_tests::LiveVerificationStage {
     auth_test_step_stage(checkpoint, step).with_evidence(
         "derived_from",
-        serde_json::json!(crate::live_tests::checkpoints::REAL_JCODE_TOOL_SMOKE),
+        serde_json::json!(crate::live_tests::checkpoints::REAL_WVC_TOOL_SMOKE),
     )
 }

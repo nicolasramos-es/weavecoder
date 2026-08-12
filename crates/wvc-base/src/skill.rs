@@ -48,7 +48,7 @@ impl SkillRegistry {
     /// direct slash invocation paths. Keeping a single registry prevents slash
     /// commands from seeing a stale startup-only skill snapshot after reloads.
     ///
-    /// Holds GLOBAL skills only (plugins, `~/.jcode/skills/`,
+    /// Holds GLOBAL skills only (plugins, `~/.wvc/skills/`,
     /// `~/.agents/skills/`). Project-local skills are a per-session overlay
     /// composed at read time from the session's workspace root (issue #457);
     /// they must never enter this shared registry, and the daemon's startup
@@ -91,7 +91,7 @@ impl SkillRegistry {
     }
 
     /// Import skills from Claude Code and Codex CLI on first run.
-    /// Only runs if ~/.jcode/skills/ doesn't exist yet.
+    /// Only runs if ~/.wvc/skills/ doesn't exist yet.
     fn import_from_external() {
         let wvc_skills = match crate::storage::wvc_dir() {
             Ok(dir) => dir.join("skills"),
@@ -224,7 +224,7 @@ impl SkillRegistry {
     }
 
     /// Load only the shared global skill sources: Claude Code plugin installs,
-    /// `~/.jcode/skills/`, and `~/.agents/skills/`.
+    /// `~/.wvc/skills/`, and `~/.agents/skills/`.
     ///
     /// This is what the process-wide shared registry holds. Project-local
     /// skills are intentionally excluded: they are a per-session overlay
@@ -237,12 +237,12 @@ impl SkillRegistry {
         let mut registry = Self::default();
 
         // Load skills provided by Claude Code plugins/marketplace installs
-        // first, so explicit jcode/agents skills with the same name win below.
+        // first, so explicit wvc/agents skills with the same name win below.
         if let Some(plugins_root) = Self::claude_plugins_root() {
             registry.load_plugin_skills_from_root(&plugins_root);
         }
 
-        // Load from ~/.jcode/skills/ (jcode's own global skills)
+        // Load from ~/.wvc/skills/ (wvc's own global skills)
         if let Ok(wvc_dir) = crate::storage::wvc_dir() {
             let wvc_skills = wvc_dir.join("skills");
             if wvc_skills.exists() {
@@ -261,7 +261,7 @@ impl SkillRegistry {
     }
 
     /// Load only the project-local skill overlay for a workspace root:
-    /// `./.jcode/skills/`, `./.agents/skills/`, and `./.claude/skills/`.
+    /// `./.wvc/skills/`, `./.agents/skills/`, and `./.claude/skills/`.
     ///
     /// Loaded fresh from disk on access so edits are visible without daemon
     /// restarts and two sessions in different repositories never see each
@@ -304,10 +304,10 @@ impl SkillRegistry {
     }
 
     fn load_project_local_dirs(&mut self, working_dir: Option<&Path>) -> Result<()> {
-        // Load from ./.jcode/skills/ (project-local jcode skills)
-        let local_jcode = Self::project_local_dir(working_dir, ".jcode");
-        if local_jcode.exists() {
-            self.load_from_dir(&local_jcode)?;
+        // Load from ./.wvc/skills/ (project-local wvc skills)
+        let local_wvc = Self::project_local_dir(working_dir, ".wvc");
+        if local_wvc.exists() {
+            self.load_from_dir(&local_wvc)?;
         }
 
         // Load from ./.agents/skills/ (shared cross-tool `.agents` convention)
@@ -334,7 +334,7 @@ impl SkillRegistry {
 
     /// Load skills provided by Claude Code plugins under `plugins_root`.
     /// Returns the number of skills loaded. Errors are skipped so a broken
-    /// plugin never prevents jcode's own skills from loading.
+    /// plugin never prevents wvc's own skills from loading.
     fn load_plugin_skills_from_root(&mut self, plugins_root: &Path) -> usize {
         let mut count = 0;
         for dir in Self::plugin_skill_dirs_under(plugins_root) {
@@ -568,7 +568,7 @@ impl SkillRegistry {
         self.reload_global()
     }
 
-    /// Reload the shared global skill sources (plugins, `~/.jcode/skills/`,
+    /// Reload the shared global skill sources (plugins, `~/.wvc/skills/`,
     /// `~/.agents/skills/`) into this registry.
     ///
     /// Project-local skills are intentionally NOT loaded here: they are a
@@ -589,12 +589,12 @@ impl SkillRegistry {
         let mut count = 0;
 
         // Load skills provided by Claude Code plugins/marketplace installs
-        // first, so explicit jcode/agents skills with the same name win below.
+        // first, so explicit wvc/agents skills with the same name win below.
         if let Some(plugins_root) = Self::claude_plugins_root() {
             count += self.load_plugin_skills_from_root(&plugins_root);
         }
 
-        // Load from ~/.jcode/skills/ (jcode's own global skills)
+        // Load from ~/.wvc/skills/ (wvc's own global skills)
         if let Ok(wvc_dir) = crate::storage::wvc_dir() {
             let wvc_skills = wvc_dir.join("skills");
             if wvc_skills.exists() {
@@ -679,7 +679,7 @@ impl SkillRegistry {
     }
 }
 
-/// A skill recommended/curated by jcode that the user may want to install.
+/// A skill recommended/curated by wvc that the user may want to install.
 #[derive(Debug, Clone, Copy)]
 pub struct EndorsedSkill {
     /// Skill name (matches the `name` field in SKILL.md and the slash command).
@@ -695,7 +695,7 @@ pub struct EndorsedSkill {
     pub install: Option<&'static str>,
 }
 
-/// Curated list of skills endorsed by jcode. Used by the `/skills` command to
+/// Curated list of skills endorsed by wvc. Used by the `/skills` command to
 /// show users which recommended skills they have installed and which they are
 /// missing. This is the single source of truth for endorsed skills.
 ///
@@ -707,21 +707,21 @@ pub const ENDORSED_SKILLS: &[EndorsedSkill] = &[
         name: "optimization",
         description: "Improve performance, latency, throughput, memory usage, or general efficiency by defining metrics, measuring, attributing bottlenecks, and prioritizing macro-optimizations.",
         category: "wvc",
-        source: "bundled in jcode repo (.jcode/skills/optimization)",
+        source: "bundled in wvc repo (.wvc/skills/optimization)",
         install: None,
     },
     EndorsedSkill {
         name: "todo-planning-skill",
         description: "Create thorough, well-structured todo lists for long tasks, including reflection, static analysis, verification, and next-step updates.",
         category: "wvc",
-        source: "bundled with jcode / Claude Code skills",
+        source: "bundled with wvc / Claude Code skills",
         install: None,
     },
     EndorsedSkill {
         name: "firefox-browser",
         description: "Control the user's Firefox browser with their logins and cookies intact to browse, fill forms, click, screenshot, and read authenticated pages.",
         category: "wvc",
-        source: "bundled with jcode / Claude Code skills",
+        source: "bundled with wvc / Claude Code skills",
         install: None,
     },
     // Anthropic official skills (github.com/anthropics/skills, Apache-2.0).
@@ -872,7 +872,7 @@ pub const ENDORSED_SKILLS: &[EndorsedSkill] = &[
     },
 ];
 
-/// Return the curated list of skills endorsed by jcode.
+/// Return the curated list of skills endorsed by wvc.
 pub fn endorsed_skills() -> &'static [EndorsedSkill] {
     ENDORSED_SKILLS
 }
@@ -1076,7 +1076,7 @@ mod tests {
     #[test]
     fn load_for_working_dir_reads_project_local_wvc_skills() {
         let temp = tempfile::tempdir().expect("tempdir");
-        write_test_skill(temp.path(), ".jcode", "wd-only");
+        write_test_skill(temp.path(), ".wvc", "wd-only");
 
         let registry = SkillRegistry::load_for_working_dir(Some(temp.path())).expect("load skills");
 
@@ -1104,7 +1104,7 @@ mod tests {
     #[test]
     fn project_overlay_is_session_scoped_and_composes_over_globals() {
         let temp = tempfile::tempdir().expect("tempdir");
-        write_test_skill(temp.path(), ".jcode", "session-skill");
+        write_test_skill(temp.path(), ".wvc", "session-skill");
 
         // The overlay resolves against the given workspace root, not the
         // process cwd or a shared registry (issue #457).
@@ -1138,7 +1138,7 @@ mod tests {
         // chdir is process-global; serialize with other env-sensitive tests.
         let _env_guard = crate::storage::lock_test_env();
         let temp = tempfile::tempdir().expect("tempdir");
-        write_test_skill(temp.path(), ".jcode", "session-skill");
+        write_test_skill(temp.path(), ".wvc", "session-skill");
 
         let prev_cwd = std::env::current_dir().expect("cwd");
         // reload_global must not pick up project-local skills even when the
@@ -1245,7 +1245,7 @@ mod tests {
     #[test]
     fn registry_contains_reports_loaded_skills() {
         let temp = tempfile::tempdir().expect("tempdir");
-        write_test_skill(temp.path(), ".jcode", "present-skill");
+        write_test_skill(temp.path(), ".wvc", "present-skill");
 
         let registry = SkillRegistry::load_for_working_dir(Some(temp.path())).expect("load skills");
         assert!(registry.contains("present-skill"));
@@ -1399,21 +1399,21 @@ mod tests {
         let install = plugins_root.join("cache/test-marketplace/my-plugin/1.0.0");
         write_plugin_skill_with_description(&install, "shared-name", "plugin version");
 
-        // Explicit jcode skill with the same name.
-        write_test_skill(temp.path(), ".jcode", "shared-name");
+        // Explicit wvc skill with the same name.
+        write_test_skill(temp.path(), ".wvc", "shared-name");
 
         // Mirror load ordering: plugins first, then explicit skill dirs, so
         // the later (explicit) insert wins in the registry map.
         let mut registry = SkillRegistry::default();
         registry.load_plugin_skills_from_root(&plugins_root);
         registry
-            .load_from_dir(&temp.path().join(".jcode/skills"))
+            .load_from_dir(&temp.path().join(".wvc/skills"))
             .expect("load explicit skills");
 
         let skill = registry.get("shared-name").expect("skill present");
         assert_eq!(
             skill.description, "Test skill shared-name",
-            "explicit jcode skill must override the plugin-provided one"
+            "explicit wvc skill must override the plugin-provided one"
         );
     }
 

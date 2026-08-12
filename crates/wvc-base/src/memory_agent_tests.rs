@@ -53,7 +53,7 @@ fn apply_cluster_assignment_links_members() {
 #[test]
 fn apply_confidence_updates_batches_boost_and_decay() {
     let _guard = crate::storage::lock_test_env();
-    let old = std::env::var("JCODE_HOME").ok();
+    let old = std::env::var("WVC_HOME").ok();
     let dir = std::env::temp_dir().join(format!(
         "wvc-conf-test-{}",
         std::time::SystemTime::now()
@@ -62,10 +62,10 @@ fn apply_confidence_updates_batches_boost_and_decay() {
             .as_nanos()
     ));
     std::fs::create_dir_all(&dir).unwrap();
-    crate::env::set_var("JCODE_HOME", &dir);
+    crate::env::set_var("WVC_HOME", &dir);
 
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        let manager = crate::memory::MemoryManager::new().with_project_dir("/tmp/jcode-conf-batch");
+        let manager = crate::memory::MemoryManager::new().with_project_dir("/tmp/wvc-conf-batch");
 
         let mut keep_entry = MemoryEntry::new(MemoryCategory::Fact, "verified memory")
             .with_embedding(vec![1.0, 0.0]);
@@ -107,8 +107,8 @@ fn apply_confidence_updates_batches_boost_and_decay() {
     }));
 
     match old {
-        Some(v) => crate::env::set_var("JCODE_HOME", v),
-        None => crate::env::remove_var("JCODE_HOME"),
+        Some(v) => crate::env::set_var("WVC_HOME", v),
+        None => crate::env::remove_var("WVC_HOME"),
     }
     let _ = std::fs::remove_dir_all(&dir);
     if let Err(p) = result {

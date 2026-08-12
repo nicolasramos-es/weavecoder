@@ -814,8 +814,8 @@ fn test_handle_server_event_history_session_change_clears_pending_interleaves() 
 fn test_handle_post_connect_marker_without_reload_context_does_not_queue_selfdev_continuation() {
     let _guard = crate::storage::lock_test_env();
     let temp_home = tempfile::TempDir::new().expect("create temp home");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp_home.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp_home.path());
 
     let mut app = create_test_app();
     let rt = tokio::runtime::Runtime::new().unwrap();
@@ -863,9 +863,9 @@ fn test_handle_post_connect_marker_without_reload_context_does_not_queue_selfdev
     );
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -873,8 +873,8 @@ fn test_handle_post_connect_marker_without_reload_context_does_not_queue_selfdev
 fn test_handle_post_connect_defers_reload_followup_to_server_history_payload() {
     let _guard = crate::storage::lock_test_env();
     let temp_home = tempfile::TempDir::new().expect("create temp home");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp_home.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp_home.path());
 
     let session_id = "session_hidden_reload_followup";
     crate::tool::selfdev::ReloadContext {
@@ -919,9 +919,9 @@ fn test_handle_post_connect_defers_reload_followup_to_server_history_payload() {
 
     cleanup_reload_context_file(session_id);
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -929,8 +929,8 @@ fn test_handle_post_connect_defers_reload_followup_to_server_history_payload() {
 fn test_handle_post_connect_clears_deferred_dispatch_before_reload_followup() {
     let _guard = crate::storage::lock_test_env();
     let temp_home = tempfile::TempDir::new().expect("create temp home");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp_home.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp_home.path());
 
     let session_id = "session_reload_deferred_dispatch";
     crate::tool::selfdev::ReloadContext {
@@ -984,9 +984,9 @@ fn test_handle_post_connect_clears_deferred_dispatch_before_reload_followup() {
 
     cleanup_reload_context_file(session_id);
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -996,8 +996,8 @@ fn test_handle_post_connect_requests_client_reload_after_server_reload_even_with
 
     let _guard = crate::storage::lock_test_env();
     let temp_home = tempfile::TempDir::new().expect("create temp home");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp_home.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp_home.path());
 
     let mut app = create_test_app();
     app.client_binary_mtime = Some(SystemTime::now() + Duration::from_secs(3600));
@@ -1033,9 +1033,9 @@ fn test_handle_post_connect_requests_client_reload_after_server_reload_even_with
     assert!(app.should_quit);
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 

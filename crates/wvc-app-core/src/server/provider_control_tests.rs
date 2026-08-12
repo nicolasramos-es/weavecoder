@@ -243,11 +243,11 @@ struct EnvGuard {
 }
 
 impl EnvGuard {
-    /// Save and clear the given env vars, and redirect `JCODE_HOME` to a fresh
+    /// Save and clear the given env vars, and redirect `WVC_HOME` to a fresh
     /// empty temp dir for the lifetime of the guard.
     ///
     /// The temp home keeps these tests hermetic: provider activation reads
-    /// on-disk model catalog caches (`~/.jcode/cache/<profile>_models.json`) to
+    /// on-disk model catalog caches (`~/.wvc/cache/<profile>_models.json`) to
     /// pick a profile's newest default model, so without an isolated home the
     /// host's real caches leak in and a stale or non-chat model (e.g. Groq's
     /// `canopylabs/orpheus-*` TTS) can be auto-selected, breaking the test on
@@ -255,8 +255,8 @@ impl EnvGuard {
     fn save(keys: &[&'static str]) -> Self {
         let lock = lock_env();
         let mut all_keys: Vec<&'static str> = keys.to_vec();
-        if !all_keys.contains(&"JCODE_HOME") {
-            all_keys.push("JCODE_HOME");
+        if !all_keys.contains(&"WVC_HOME") {
+            all_keys.push("WVC_HOME");
         }
         let saved = all_keys
             .iter()
@@ -265,8 +265,8 @@ impl EnvGuard {
         for key in &all_keys {
             crate::env::remove_var(key);
         }
-        let temp_home = tempfile::tempdir().expect("create temp JCODE_HOME");
-        crate::env::set_var("JCODE_HOME", temp_home.path());
+        let temp_home = tempfile::tempdir().expect("create temp WVC_HOME");
+        crate::env::set_var("WVC_HOME", temp_home.path());
         Self {
             saved,
             _temp_home: temp_home,
@@ -550,19 +550,19 @@ async fn notify_auth_changed_with_azure_hint_applies_runtime_model_without_compl
         "AZURE_OPENAI_MODEL",
         "AZURE_OPENAI_API_KEY",
         "AZURE_OPENAI_USE_ENTRA",
-        "JCODE_OPENROUTER_API_BASE",
-        "JCODE_OPENROUTER_API_KEY_NAME",
-        "JCODE_OPENROUTER_ENV_FILE",
-        "JCODE_OPENROUTER_CACHE_NAMESPACE",
-        "JCODE_OPENROUTER_PROVIDER_FEATURES",
-        "JCODE_OPENROUTER_TRANSPORT_STATE",
-        "JCODE_OPENROUTER_MODEL_CATALOG",
-        "JCODE_OPENROUTER_AUTH_HEADER",
-        "JCODE_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
-        "JCODE_OPENROUTER_MODEL",
-        "JCODE_RUNTIME_PROVIDER",
-        "JCODE_ACTIVE_PROVIDER",
-        "JCODE_INITIAL_PROVIDER_EXPLICIT",
+        "WVC_OPENROUTER_API_BASE",
+        "WVC_OPENROUTER_API_KEY_NAME",
+        "WVC_OPENROUTER_ENV_FILE",
+        "WVC_OPENROUTER_CACHE_NAMESPACE",
+        "WVC_OPENROUTER_PROVIDER_FEATURES",
+        "WVC_OPENROUTER_TRANSPORT_STATE",
+        "WVC_OPENROUTER_MODEL_CATALOG",
+        "WVC_OPENROUTER_AUTH_HEADER",
+        "WVC_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
+        "WVC_OPENROUTER_MODEL",
+        "WVC_RUNTIME_PROVIDER",
+        "WVC_ACTIVE_PROVIDER",
+        "WVC_INITIAL_PROVIDER_EXPLICIT",
     ]);
     crate::env::set_var("AZURE_OPENAI_ENDPOINT", "https://example.openai.azure.com");
     crate::env::set_var("AZURE_OPENAI_MODEL", "azure-deployment");
@@ -630,11 +630,11 @@ async fn notify_auth_changed_with_azure_hint_applies_runtime_model_without_compl
             .any(|model| model == "azure-deployment")
     );
     assert_eq!(
-        std::env::var("JCODE_RUNTIME_PROVIDER").as_deref(),
+        std::env::var("WVC_RUNTIME_PROVIDER").as_deref(),
         Ok("azure-openai")
     );
     assert_eq!(
-        std::env::var("JCODE_ACTIVE_PROVIDER").as_deref(),
+        std::env::var("WVC_ACTIVE_PROVIDER").as_deref(),
         Ok("openrouter")
     );
     assert_eq!(
@@ -647,19 +647,19 @@ async fn notify_auth_changed_with_azure_hint_applies_runtime_model_without_compl
 #[test]
 fn cerebras_auth_hint_applies_openai_compatible_runtime_profile() {
     let _guard = EnvGuard::save(&[
-        "JCODE_OPENROUTER_API_BASE",
-        "JCODE_OPENROUTER_API_KEY_NAME",
-        "JCODE_OPENROUTER_ENV_FILE",
-        "JCODE_OPENROUTER_CACHE_NAMESPACE",
-        "JCODE_OPENROUTER_PROVIDER_FEATURES",
-        "JCODE_OPENROUTER_TRANSPORT_STATE",
-        "JCODE_OPENROUTER_MODEL_CATALOG",
-        "JCODE_OPENROUTER_AUTH_HEADER",
-        "JCODE_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
-        "JCODE_OPENROUTER_MODEL",
-        "JCODE_RUNTIME_PROVIDER",
-        "JCODE_ACTIVE_PROVIDER",
-        "JCODE_INITIAL_PROVIDER_EXPLICIT",
+        "WVC_OPENROUTER_API_BASE",
+        "WVC_OPENROUTER_API_KEY_NAME",
+        "WVC_OPENROUTER_ENV_FILE",
+        "WVC_OPENROUTER_CACHE_NAMESPACE",
+        "WVC_OPENROUTER_PROVIDER_FEATURES",
+        "WVC_OPENROUTER_TRANSPORT_STATE",
+        "WVC_OPENROUTER_MODEL_CATALOG",
+        "WVC_OPENROUTER_AUTH_HEADER",
+        "WVC_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
+        "WVC_OPENROUTER_MODEL",
+        "WVC_RUNTIME_PROVIDER",
+        "WVC_ACTIVE_PROVIDER",
+        "WVC_INITIAL_PROVIDER_EXPLICIT",
     ]);
 
     let request =
@@ -670,27 +670,27 @@ fn cerebras_auth_hint_applies_openai_compatible_runtime_profile() {
     let default_model = activation.activated_model.as_deref();
     assert_eq!(default_model, Some("gpt-oss-120b"));
     assert_eq!(
-        std::env::var("JCODE_RUNTIME_PROVIDER").as_deref(),
+        std::env::var("WVC_RUNTIME_PROVIDER").as_deref(),
         Ok("openai-compatible")
     );
     assert_eq!(
-        std::env::var("JCODE_ACTIVE_PROVIDER").as_deref(),
+        std::env::var("WVC_ACTIVE_PROVIDER").as_deref(),
         Ok("openrouter")
     );
     assert_eq!(
-        std::env::var("JCODE_OPENROUTER_API_BASE").as_deref(),
+        std::env::var("WVC_OPENROUTER_API_BASE").as_deref(),
         Ok("https://api.cerebras.ai/v1")
     );
     assert_eq!(
-        std::env::var("JCODE_OPENROUTER_API_KEY_NAME").as_deref(),
+        std::env::var("WVC_OPENROUTER_API_KEY_NAME").as_deref(),
         Ok("CEREBRAS_API_KEY")
     );
     assert_eq!(
-        std::env::var("JCODE_OPENROUTER_ENV_FILE").as_deref(),
+        std::env::var("WVC_OPENROUTER_ENV_FILE").as_deref(),
         Ok("cerebras.env")
     );
     assert_eq!(
-        std::env::var("JCODE_OPENROUTER_CACHE_NAMESPACE").as_deref(),
+        std::env::var("WVC_OPENROUTER_CACHE_NAMESPACE").as_deref(),
         Ok("cerebras")
     );
     assert_eq!(
@@ -702,19 +702,19 @@ fn cerebras_auth_hint_applies_openai_compatible_runtime_profile() {
 #[tokio::test]
 async fn notify_auth_changed_typed_cerebras_event_controls_user_visible_catalog_identity() {
     let _guard = EnvGuard::save(&[
-        "JCODE_OPENROUTER_API_BASE",
-        "JCODE_OPENROUTER_API_KEY_NAME",
-        "JCODE_OPENROUTER_ENV_FILE",
-        "JCODE_OPENROUTER_CACHE_NAMESPACE",
-        "JCODE_OPENROUTER_PROVIDER_FEATURES",
-        "JCODE_OPENROUTER_TRANSPORT_STATE",
-        "JCODE_OPENROUTER_MODEL_CATALOG",
-        "JCODE_OPENROUTER_AUTH_HEADER",
-        "JCODE_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
-        "JCODE_OPENROUTER_MODEL",
-        "JCODE_RUNTIME_PROVIDER",
-        "JCODE_ACTIVE_PROVIDER",
-        "JCODE_INITIAL_PROVIDER_EXPLICIT",
+        "WVC_OPENROUTER_API_BASE",
+        "WVC_OPENROUTER_API_KEY_NAME",
+        "WVC_OPENROUTER_ENV_FILE",
+        "WVC_OPENROUTER_CACHE_NAMESPACE",
+        "WVC_OPENROUTER_PROVIDER_FEATURES",
+        "WVC_OPENROUTER_TRANSPORT_STATE",
+        "WVC_OPENROUTER_MODEL_CATALOG",
+        "WVC_OPENROUTER_AUTH_HEADER",
+        "WVC_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
+        "WVC_OPENROUTER_MODEL",
+        "WVC_RUNTIME_PROVIDER",
+        "WVC_ACTIVE_PROVIDER",
+        "WVC_INITIAL_PROVIDER_EXPLICIT",
     ]);
 
     crate::bus::reset_models_updated_publish_state_for_tests();
@@ -775,7 +775,7 @@ async fn notify_auth_changed_typed_cerebras_event_controls_user_visible_catalog_
     );
     assert_eq!(final_message.lines().count(), 2);
     assert_eq!(
-        std::env::var("JCODE_OPENROUTER_CACHE_NAMESPACE").as_deref(),
+        std::env::var("WVC_OPENROUTER_CACHE_NAMESPACE").as_deref(),
         Ok("cerebras")
     );
 }
@@ -783,19 +783,19 @@ async fn notify_auth_changed_typed_cerebras_event_controls_user_visible_catalog_
 #[tokio::test]
 async fn notify_auth_changed_switches_from_stale_model_to_matching_provider_route() {
     let _guard = EnvGuard::save(&[
-        "JCODE_OPENROUTER_API_BASE",
-        "JCODE_OPENROUTER_API_KEY_NAME",
-        "JCODE_OPENROUTER_ENV_FILE",
-        "JCODE_OPENROUTER_CACHE_NAMESPACE",
-        "JCODE_OPENROUTER_PROVIDER_FEATURES",
-        "JCODE_OPENROUTER_TRANSPORT_STATE",
-        "JCODE_OPENROUTER_MODEL_CATALOG",
-        "JCODE_OPENROUTER_AUTH_HEADER",
-        "JCODE_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
-        "JCODE_OPENROUTER_MODEL",
-        "JCODE_RUNTIME_PROVIDER",
-        "JCODE_ACTIVE_PROVIDER",
-        "JCODE_INITIAL_PROVIDER_EXPLICIT",
+        "WVC_OPENROUTER_API_BASE",
+        "WVC_OPENROUTER_API_KEY_NAME",
+        "WVC_OPENROUTER_ENV_FILE",
+        "WVC_OPENROUTER_CACHE_NAMESPACE",
+        "WVC_OPENROUTER_PROVIDER_FEATURES",
+        "WVC_OPENROUTER_TRANSPORT_STATE",
+        "WVC_OPENROUTER_MODEL_CATALOG",
+        "WVC_OPENROUTER_AUTH_HEADER",
+        "WVC_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
+        "WVC_OPENROUTER_MODEL",
+        "WVC_RUNTIME_PROVIDER",
+        "WVC_ACTIVE_PROVIDER",
+        "WVC_INITIAL_PROVIDER_EXPLICIT",
     ]);
 
     crate::bus::reset_models_updated_publish_state_for_tests();
@@ -862,9 +862,9 @@ async fn notify_auth_changed_switches_from_stale_model_to_matching_provider_rout
 #[tokio::test]
 async fn onboarding_auth_refresh_prefers_global_gpt_5_6_route_over_fable() {
     let _guard = EnvGuard::save(&[
-        "JCODE_RUNTIME_PROVIDER",
-        "JCODE_ACTIVE_PROVIDER",
-        "JCODE_INITIAL_PROVIDER_EXPLICIT",
+        "WVC_RUNTIME_PROVIDER",
+        "WVC_ACTIVE_PROVIDER",
+        "WVC_INITIAL_PROVIDER_EXPLICIT",
     ]);
     crate::bus::reset_models_updated_publish_state_for_tests();
 
@@ -923,19 +923,19 @@ async fn onboarding_auth_refresh_prefers_global_gpt_5_6_route_over_fable() {
 #[tokio::test]
 async fn notify_auth_changed_does_not_override_manual_model_selected_during_refresh() {
     let _guard = EnvGuard::save(&[
-        "JCODE_OPENROUTER_API_BASE",
-        "JCODE_OPENROUTER_API_KEY_NAME",
-        "JCODE_OPENROUTER_ENV_FILE",
-        "JCODE_OPENROUTER_CACHE_NAMESPACE",
-        "JCODE_OPENROUTER_PROVIDER_FEATURES",
-        "JCODE_OPENROUTER_TRANSPORT_STATE",
-        "JCODE_OPENROUTER_MODEL_CATALOG",
-        "JCODE_OPENROUTER_AUTH_HEADER",
-        "JCODE_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
-        "JCODE_OPENROUTER_MODEL",
-        "JCODE_RUNTIME_PROVIDER",
-        "JCODE_ACTIVE_PROVIDER",
-        "JCODE_INITIAL_PROVIDER_EXPLICIT",
+        "WVC_OPENROUTER_API_BASE",
+        "WVC_OPENROUTER_API_KEY_NAME",
+        "WVC_OPENROUTER_ENV_FILE",
+        "WVC_OPENROUTER_CACHE_NAMESPACE",
+        "WVC_OPENROUTER_PROVIDER_FEATURES",
+        "WVC_OPENROUTER_TRANSPORT_STATE",
+        "WVC_OPENROUTER_MODEL_CATALOG",
+        "WVC_OPENROUTER_AUTH_HEADER",
+        "WVC_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
+        "WVC_OPENROUTER_MODEL",
+        "WVC_RUNTIME_PROVIDER",
+        "WVC_ACTIVE_PROVIDER",
+        "WVC_INITIAL_PROVIDER_EXPLICIT",
     ]);
 
     crate::bus::reset_models_updated_publish_state_for_tests();
@@ -1050,19 +1050,19 @@ async fn auth_model_first_prompt_e2e_state_space_is_bounded_by_selection_source(
 
     for scenario in scenarios {
         let _guard = EnvGuard::save(&[
-            "JCODE_OPENROUTER_API_BASE",
-            "JCODE_OPENROUTER_API_KEY_NAME",
-            "JCODE_OPENROUTER_ENV_FILE",
-            "JCODE_OPENROUTER_CACHE_NAMESPACE",
-            "JCODE_OPENROUTER_PROVIDER_FEATURES",
-            "JCODE_OPENROUTER_TRANSPORT_STATE",
-            "JCODE_OPENROUTER_MODEL_CATALOG",
-            "JCODE_OPENROUTER_AUTH_HEADER",
-            "JCODE_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
-            "JCODE_OPENROUTER_MODEL",
-            "JCODE_RUNTIME_PROVIDER",
-            "JCODE_ACTIVE_PROVIDER",
-            "JCODE_INITIAL_PROVIDER_EXPLICIT",
+            "WVC_OPENROUTER_API_BASE",
+            "WVC_OPENROUTER_API_KEY_NAME",
+            "WVC_OPENROUTER_ENV_FILE",
+            "WVC_OPENROUTER_CACHE_NAMESPACE",
+            "WVC_OPENROUTER_PROVIDER_FEATURES",
+            "WVC_OPENROUTER_TRANSPORT_STATE",
+            "WVC_OPENROUTER_MODEL_CATALOG",
+            "WVC_OPENROUTER_AUTH_HEADER",
+            "WVC_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
+            "WVC_OPENROUTER_MODEL",
+            "WVC_RUNTIME_PROVIDER",
+            "WVC_ACTIVE_PROVIDER",
+            "WVC_INITIAL_PROVIDER_EXPLICIT",
         ]);
 
         crate::bus::reset_models_updated_publish_state_for_tests();
@@ -1222,19 +1222,19 @@ async fn auth_model_first_prompt_e2e_state_space_is_bounded_by_selection_source(
 #[tokio::test]
 async fn notify_auth_changed_switches_only_current_session_model() {
     let _guard = EnvGuard::save(&[
-        "JCODE_OPENROUTER_API_BASE",
-        "JCODE_OPENROUTER_API_KEY_NAME",
-        "JCODE_OPENROUTER_ENV_FILE",
-        "JCODE_OPENROUTER_CACHE_NAMESPACE",
-        "JCODE_OPENROUTER_PROVIDER_FEATURES",
-        "JCODE_OPENROUTER_TRANSPORT_STATE",
-        "JCODE_OPENROUTER_MODEL_CATALOG",
-        "JCODE_OPENROUTER_AUTH_HEADER",
-        "JCODE_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
-        "JCODE_OPENROUTER_MODEL",
-        "JCODE_RUNTIME_PROVIDER",
-        "JCODE_ACTIVE_PROVIDER",
-        "JCODE_INITIAL_PROVIDER_EXPLICIT",
+        "WVC_OPENROUTER_API_BASE",
+        "WVC_OPENROUTER_API_KEY_NAME",
+        "WVC_OPENROUTER_ENV_FILE",
+        "WVC_OPENROUTER_CACHE_NAMESPACE",
+        "WVC_OPENROUTER_PROVIDER_FEATURES",
+        "WVC_OPENROUTER_TRANSPORT_STATE",
+        "WVC_OPENROUTER_MODEL_CATALOG",
+        "WVC_OPENROUTER_AUTH_HEADER",
+        "WVC_OPENROUTER_DYNAMIC_BEARER_PROVIDER",
+        "WVC_OPENROUTER_MODEL",
+        "WVC_RUNTIME_PROVIDER",
+        "WVC_ACTIVE_PROVIDER",
+        "WVC_INITIAL_PROVIDER_EXPLICIT",
     ]);
 
     crate::bus::reset_models_updated_publish_state_for_tests();

@@ -5,7 +5,7 @@ use crate::storage;
 use wvc_gateway_types::{PairedDevice, PairingCode};
 
 // ---------------------------------------------------------------------------
-// Device registry (persisted to ~/.jcode/devices.json)
+// Device registry (persisted to ~/.wvc/devices.json)
 // ---------------------------------------------------------------------------
 
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
@@ -16,7 +16,7 @@ pub struct DeviceRegistry {
 }
 
 impl DeviceRegistry {
-    /// Load from ~/.jcode/devices.json
+    /// Load from ~/.wvc/devices.json
     pub fn load() -> Self {
         let path = match storage::wvc_dir() {
             Ok(d) => d.join("devices.json"),
@@ -31,7 +31,7 @@ impl DeviceRegistry {
         }
     }
 
-    /// Save to ~/.jcode/devices.json
+    /// Save to ~/.wvc/devices.json
     pub fn save(&self) -> Result<()> {
         let path = storage::wvc_dir()?.join("devices.json");
         let contents = serde_json::to_string_pretty(self)?;

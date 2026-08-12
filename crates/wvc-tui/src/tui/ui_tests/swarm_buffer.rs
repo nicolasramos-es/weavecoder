@@ -77,7 +77,7 @@ fn fact_test_state(input: String, scheduled: bool) -> TestState {
         input,
         provider_name: Some("openai".to_string()),
         provider_model: Some("gpt-5.6-sol".to_string()),
-        working_dir: Some(format!("{home}/jcode")),
+        working_dir: Some(format!("{home}/wvc")),
         info_widget_data,
         suppress_info_widgets: true,
         display_messages: vec![DisplayMessage::assistant("last transcript line")],
@@ -96,7 +96,7 @@ fn fact_stack_rows(rows: &[String]) -> [usize; 4] {
     [
         row_containing(rows, "OpenAI · OAuth"),
         row_containing(rows, "GPT-5.6 Sol high"),
-        row_containing(rows, "~/jcode"),
+        row_containing(rows, "~/wvc"),
         row_containing(rows, "74k/256k"),
     ]
 }
@@ -154,7 +154,7 @@ fn right_fact_stack_uses_neutral_gray_except_for_context_usage() {
     let rows = buffer_rows(&terminal);
     let buffer = terminal.backend().buffer();
     let neutral = Color::Rgb(140, 140, 150);
-    for needle in ["OpenAI · OAuth", "GPT-5.6 Sol high", "~/jcode"] {
+    for needle in ["OpenAI · OAuth", "GPT-5.6 Sol high", "~/wvc"] {
         let y = row_containing(&rows, needle);
         let byte_x = rows[y].find(needle).expect("fact text start");
         let x = UnicodeWidthStr::width(&rows[y][..byte_x]) as u16;
@@ -215,7 +215,7 @@ fn right_fact_stack_leaves_fully_used_input_rows_untouched_and_moves_up() {
     let input_area = layout.input_area.expect("input area");
     let input_rows = &rows[input_area.y as usize..input_area.bottom() as usize];
     assert!(input_rows.iter().all(|row| !row.contains("74k/256k")));
-    assert!(input_rows.iter().all(|row| !row.contains("~/jcode")));
+    assert!(input_rows.iter().all(|row| !row.contains("~/wvc")));
     assert!(input_rows.iter().all(|row| !row.contains("OAuth")));
     assert!(
         input_rows

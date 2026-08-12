@@ -122,7 +122,7 @@ fn available_models_display_prefers_discovered_models_and_current_model() {
 fn available_models_display_without_discovery_uses_current_model_only() {
     let _guard = wvc_base::storage::lock_test_env();
     let temp = tempfile::TempDir::new().expect("tempdir");
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
 
     let provider = GeminiProvider::new();
     provider.set_model("gemini-4-pro-preview").unwrap();
@@ -137,7 +137,7 @@ fn available_models_display_without_discovery_uses_current_model_only() {
 fn available_models_display_seeds_from_persisted_catalog() {
     let _guard = wvc_base::storage::lock_test_env();
     let temp = tempfile::TempDir::new().expect("tempdir");
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
 
     let path = GeminiProvider::persisted_catalog_path().expect("catalog path");
     wvc_base::storage::write_json(
@@ -593,9 +593,9 @@ fn parses_candidate_finish_message() {
 fn auth_mode_prefers_api_key_when_present() {
     let _guard = wvc_base::storage::lock_test_env();
     let temp = tempfile::TempDir::new().expect("tempdir");
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     let _google = EnvVarGuard::unset("GOOGLE_API_KEY");
-    let _force = EnvVarGuard::unset("JCODE_GEMINI_FORCE_OAUTH");
+    let _force = EnvVarGuard::unset("WVC_GEMINI_FORCE_OAUTH");
     let _key = EnvVarGuard::set_value("GEMINI_API_KEY", "test-developer-key");
 
     match GeminiProvider::auth_mode() {
@@ -608,10 +608,10 @@ fn auth_mode_prefers_api_key_when_present() {
 fn auth_mode_force_oauth_overrides_api_key() {
     let _guard = wvc_base::storage::lock_test_env();
     let temp = tempfile::TempDir::new().expect("tempdir");
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     let _google = EnvVarGuard::unset("GOOGLE_API_KEY");
     let _key = EnvVarGuard::set_value("GEMINI_API_KEY", "test-developer-key");
-    let _force = EnvVarGuard::set_value("JCODE_GEMINI_FORCE_OAUTH", "1");
+    let _force = EnvVarGuard::set_value("WVC_GEMINI_FORCE_OAUTH", "1");
 
     assert!(matches!(GeminiProvider::auth_mode(), GeminiAuthMode::Oauth));
 }
@@ -620,10 +620,10 @@ fn auth_mode_force_oauth_overrides_api_key() {
 fn auth_mode_defaults_to_oauth_without_api_key() {
     let _guard = wvc_base::storage::lock_test_env();
     let temp = tempfile::TempDir::new().expect("tempdir");
-    let _home = EnvVarGuard::set_path("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set_path("WVC_HOME", temp.path());
     let _key = EnvVarGuard::unset("GEMINI_API_KEY");
     let _google = EnvVarGuard::unset("GOOGLE_API_KEY");
-    let _force = EnvVarGuard::unset("JCODE_GEMINI_FORCE_OAUTH");
+    let _force = EnvVarGuard::unset("WVC_GEMINI_FORCE_OAUTH");
 
     assert!(matches!(GeminiProvider::auth_mode(), GeminiAuthMode::Oauth));
 }

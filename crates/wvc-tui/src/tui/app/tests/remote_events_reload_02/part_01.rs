@@ -813,7 +813,7 @@ fn test_swarm_completion_notification_inserts_agent_snapshot_without_report_pros
                 channel: None,
                 tldr: Some("Demo completed".to_string()),
             },
-            message: "Demo completed; README first heading is jcode.".to_string(),
+            message: "Demo completed; README first heading is wvc.".to_string(),
         },
         &mut remote,
     );
@@ -886,7 +886,7 @@ fn test_background_task_markdown_renders_card_even_if_role_was_lost() {
     app.set_centered(true);
 
     app.push_display_message(DisplayMessage::user(
-        "**Background task** `594967sj63` · `Run jcode library tests afte` (`bash`) · ✗ failed · 1.0s · exit 124\n\n```text\n\n--- Command timed out after 1000ms ---\n```\n\n_Full output:_ `bg action=\"output\" task_id=\"594967sj63\"`",
+        "**Background task** `594967sj63` · `Run wvc library tests afte` (`bash`) · ✗ failed · 1.0s · exit 124\n\n```text\n\n--- Command timed out after 1000ms ---\n```\n\n_Full output:_ `bg action=\"output\" task_id=\"594967sj63\"`",
     ));
 
     let backend = ratatui::backend::TestBackend::new(80, 16);
@@ -899,7 +899,7 @@ fn test_background_task_markdown_renders_card_even_if_role_was_lost() {
         text
     );
     assert!(
-        text.contains("✗ bg Run jcode library tests afte failed · 594967sj63"),
+        text.contains("✗ bg Run wvc library tests afte failed · 594967sj63"),
         "expected background-task card title, got:\n{}",
         text
     );

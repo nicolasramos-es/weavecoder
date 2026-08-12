@@ -1,8 +1,8 @@
-//! Embedding facade for jcode.
+//! Embedding facade for wvc.
 //!
-//! The heavy ONNX/tokenizer implementation lives in the `jcode-embedding`
+//! The heavy ONNX/tokenizer implementation lives in the `wvc-embedding`
 //! workspace crate so unchanged embedding code can stay cached across self-dev
-//! builds. This module keeps jcode's process-wide cache, stats, and local path /
+//! builds. This module keeps wvc's process-wide cache, stats, and local path /
 //! logging integration stable.
 
 use anyhow::Result;

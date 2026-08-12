@@ -12,7 +12,7 @@
 //! cache-tier contribution attributable).
 //!
 //! `#[ignore]`-d: run explicitly with
-//! `cargo test -p jcode-tui-mermaid --test layout_cache_memory_probe -- --ignored --nocapture`
+//! `cargo test -p wvc-tui-mermaid --test layout_cache_memory_probe -- --ignored --nocapture`
 
 #![cfg(feature = "renderer")]
 

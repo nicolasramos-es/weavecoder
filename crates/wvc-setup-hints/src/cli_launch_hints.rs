@@ -1,9 +1,9 @@
-//! Native SessionStart integrations for reminding users about Jcode's global
+//! Native SessionStart integrations for reminding users about Weavecoder's global
 //! launch shortcut when they open another coding CLI.
 //!
 //! Claude Code and Codex both expose lifecycle hooks. Using those hooks is more
 //! reliable and substantially less invasive than polling the process table or
-//! intercepting shell commands. The hook invokes a hidden, fast Jcode command;
+//! intercepting shell commands. The hook invokes a hidden, fast Weavecoder command;
 //! this module then applies a cooldown and sends a local desktop notification.
 
 use super::{LAUNCH_HOTKEY_LEARNED_USES, SetupHintsState, active_primary_launch_hotkey};
@@ -106,7 +106,7 @@ pub(super) fn maybe_notify(source: &str) -> Result<()> {
     state.save()?;
 
     let body = format!(
-        "{} is open. Press {} anytime to launch Jcode.",
+        "{} is open. Press {} anytime to launch Weavecoder.",
         source.label(),
         display
     );
@@ -273,7 +273,7 @@ fn hook_command(source: CliSource) -> Result<String> {
 }
 
 /// Prefer the stable launcher path so upgrades keep working, while avoiding a
-/// bare `jcode` lookup in the external CLI's project-scoped PATH. Falling back
+/// bare `wvc` lookup in the external CLI's project-scoped PATH. Falling back
 /// to the current absolute executable is still safer than shell resolution and
 /// remains valid for immutable release/self-dev build channels.
 fn trusted_wvc_executable() -> Result<PathBuf> {
@@ -300,7 +300,7 @@ fn trusted_wvc_executable() -> Result<PathBuf> {
         }
     }
 
-    std::env::current_exe().context("resolving the Jcode executable for lifecycle hooks")
+    std::env::current_exe().context("resolving the Weavecoder executable for lifecycle hooks")
 }
 
 fn quote_hook_executable(path: &Path) -> String {
@@ -337,7 +337,7 @@ fn send_desktop_notification(title: &str, body: &str) {
     #[cfg(target_os = "linux")]
     {
         let _ = std::process::Command::new("notify-send")
-            .arg("--app-name=jcode")
+            .arg("--app-name=wvc")
             .arg(title)
             .arg(body)
             .stdin(std::process::Stdio::null())
@@ -359,7 +359,7 @@ fn send_desktop_notification(title: &str, body: &str) {
              [Windows.Data.Xml.Dom.XmlDocument,Windows.Data.Xml.Dom,ContentType=WindowsRuntime]>$null;\
              $xml=New-Object Windows.Data.Xml.Dom.XmlDocument;\
              $xml.LoadXml(\"<toast><visual><binding template='ToastGeneric'><text>$title</text><text>$body</text></binding></visual></toast>\");\
-             [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('Jcode').Show([Windows.UI.Notifications.ToastNotification]::new($xml))",
+             [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('Weavecoder').Show([Windows.UI.Notifications.ToastNotification]::new($xml))",
             ps_quote(title),
             ps_quote(body)
         );
@@ -391,7 +391,7 @@ mod tests {
                 "Stop": [{"hooks": [{"type": "command", "command": "echo stop"}]}]
             }
         });
-        let command = "'/trusted/jcode' setup-hotkey --notify-cli-launch claude";
+        let command = "'/trusted/wvc' setup-hotkey --notify-cli-launch claude";
         assert!(upsert_hook(&mut value, command).unwrap());
         assert_eq!(value["hooks"]["SessionStart"].as_array().unwrap().len(), 2);
         assert_eq!(value["hooks"]["Stop"].as_array().unwrap().len(), 1);
@@ -404,7 +404,7 @@ mod tests {
     #[test]
     fn managed_hook_update_is_idempotent() {
         let mut value = json!({});
-        let command = "'/trusted/jcode' setup-hotkey --notify-cli-launch codex";
+        let command = "'/trusted/wvc' setup-hotkey --notify-cli-launch codex";
         assert!(upsert_hook(&mut value, command).unwrap());
         assert!(!upsert_hook(&mut value, command).unwrap());
         assert_eq!(value["hooks"]["SessionStart"].as_array().unwrap().len(), 1);
@@ -427,7 +427,7 @@ mod tests {
                 }]
             }
         });
-        let command = "'/trusted/jcode' setup-hotkey --notify-cli-launch codex";
+        let command = "'/trusted/wvc' setup-hotkey --notify-cli-launch codex";
         assert!(upsert_hook(&mut value, command).unwrap());
         let group = &value["hooks"]["SessionStart"][0];
         assert_eq!(group["matcher"], "startup|resume|clear");
@@ -478,7 +478,7 @@ mod tests {
         assert!(
             upsert_hook(
                 &mut value,
-                "'/trusted/jcode' setup-hotkey --notify-cli-launch claude"
+                "'/trusted/wvc' setup-hotkey --notify-cli-launch claude"
             )
             .is_err()
         );
@@ -517,8 +517,8 @@ mod tests {
     #[test]
     fn unix_hook_executable_quoting_handles_spaces_and_single_quotes() {
         assert_eq!(
-            quote_hook_executable(Path::new("/tmp/Jcode's bin/jcode")),
-            "'/tmp/Jcode'\\''s bin/jcode'"
+            quote_hook_executable(Path::new("/tmp/Weavecoder's bin/wvc")),
+            "'/tmp/Weavecoder'\\''s bin/wvc'"
         );
     }
 }

@@ -7,7 +7,7 @@ use crate::gateway::control::{
 const REMOTE_HELP: &str = "\
 **`/remote`** - reach this session from another machine
 
-The gateway lets another computer or phone drive this jcode server over the
+The gateway lets another computer or phone drive this wvc server over the
 network, using the same protocol the local UI speaks.
 
 - `/remote` or `/remote status` - gateway state, dial address, paired devices
@@ -65,7 +65,7 @@ fn toggle(app: &mut App, enabled: bool) {
                 format!(
                     "Remote access **enabled** on port `{}`.\n\n\
                      Restart the server to open the port:\n\n\
-                     ```\njcode server reload\n```\n\n\
+                     ```\nwvc server reload\n```\n\n\
                      Then run `/remote pair` to authorize a device.\n\n\
                      Other machines will dial `{}`.\n",
                     status.port,
@@ -74,7 +74,7 @@ fn toggle(app: &mut App, enabled: bool) {
             } else {
                 "Remote access **disabled**.\n\n\
                  Restart the server to close the port:\n\n\
-                 ```\njcode server reload\n```\n\n\
+                 ```\nwvc server reload\n```\n\n\
                  Paired devices are kept; use `/remote revoke <device>` to remove them.\n"
                     .to_string()
             };

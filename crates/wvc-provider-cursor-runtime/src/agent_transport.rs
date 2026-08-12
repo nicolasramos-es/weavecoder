@@ -44,11 +44,11 @@ const AGENT_PATH: &str = "/agent.v1.AgentService/Run";
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 /// Client version advertised to Cursor's agent service. Must track a currently
 /// served `cursor-agent` CLI build; override at runtime with
-/// `JCODE_CURSOR_CLI_VERSION` if Cursor moves the floor.
+/// `WVC_CURSOR_CLI_VERSION` if Cursor moves the floor.
 const CLI_CLIENT_VERSION_DEFAULT: &str = "cli-2026.07.08-0c04a8a";
 
 fn cli_client_version() -> String {
-    std::env::var("JCODE_CURSOR_CLI_VERSION")
+    std::env::var("WVC_CURSOR_CLI_VERSION")
         .ok()
         .map(|raw| raw.trim().to_string())
         .filter(|raw| !raw.is_empty())
@@ -156,11 +156,11 @@ fn agent_host_from_cursor_cli_config() -> Option<String> {
 }
 
 /// Resolve the Cursor agent host, in precedence order:
-/// 1. `JCODE_CURSOR_AGENT_HOST` / `CURSOR_AGENT_HOST` (explicit override)
+/// 1. `WVC_CURSOR_AGENT_HOST` / `CURSOR_AGENT_HOST` (explicit override)
 /// 2. `~/.cursor/cli-config.json` regional endpoint cached by `cursor-agent`
 /// 3. the `global` host, as a last-resort fallback
 fn agent_host() -> String {
-    for var in ["JCODE_CURSOR_AGENT_HOST", "CURSOR_AGENT_HOST"] {
+    for var in ["WVC_CURSOR_AGENT_HOST", "CURSOR_AGENT_HOST"] {
         if let Ok(raw) = std::env::var(var) {
             // Normalize overrides too. These get copied straight out of
             // `cli-config.json` or a browser, so `https://host/path` and
@@ -668,26 +668,26 @@ mod tests {
     #[test]
     fn agent_host_normalizes_env_overrides() {
         // Serialized against other env-mutating tests in this module by the
-        // shared lock in jcode-base.
+        // shared lock in wvc-base.
         let _guard = wvc_base::storage::lock_test_env();
-        let prev = std::env::var_os("JCODE_CURSOR_AGENT_HOST");
+        let prev = std::env::var_os("WVC_CURSOR_AGENT_HOST");
 
         wvc_base::env::set_var(
-            "JCODE_CURSOR_AGENT_HOST",
+            "WVC_CURSOR_AGENT_HOST",
             "https://agentn.us.api5.cursor.sh/agent.v1.AgentService/Run",
         );
         assert_eq!(agent_host(), "agentn.us.api5.cursor.sh");
 
-        wvc_base::env::set_var("JCODE_CURSOR_AGENT_HOST", "agentn.eu.api5.cursor.sh:443");
+        wvc_base::env::set_var("WVC_CURSOR_AGENT_HOST", "agentn.eu.api5.cursor.sh:443");
         assert_eq!(agent_host(), "agentn.eu.api5.cursor.sh");
 
         // A blank override must not win; it falls through to the next source.
-        wvc_base::env::set_var("JCODE_CURSOR_AGENT_HOST", "   ");
+        wvc_base::env::set_var("WVC_CURSOR_AGENT_HOST", "   ");
         assert_ne!(agent_host(), "   ");
 
         match prev {
-            Some(value) => wvc_base::env::set_var("JCODE_CURSOR_AGENT_HOST", value),
-            None => wvc_base::env::remove_var("JCODE_CURSOR_AGENT_HOST"),
+            Some(value) => wvc_base::env::set_var("WVC_CURSOR_AGENT_HOST", value),
+            None => wvc_base::env::remove_var("WVC_CURSOR_AGENT_HOST"),
         }
     }
 

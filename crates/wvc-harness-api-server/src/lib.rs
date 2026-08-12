@@ -1,10 +1,10 @@
 //! Harness API bridge: exposes the stable versioned harness API on its own
-//! Unix socket and translates to the internal (legacy) jcode protocol.
+//! Unix socket and translates to the internal (legacy) wvc protocol.
 //!
 //! Architecture (milestone 2 of docs/HARNESS_API_AND_DESKTOP_REWRITE.md):
-//! - Listens on `~/.jcode/jcode-api.sock` (or `JCODE_API_SOCKET`).
-//! - For each API client, dials the legacy daemon socket (`JCODE_SOCKET` or
-//!   `~/.jcode/jcode.sock`) and speaks `subscribe`/`message`/... on its
+//! - Listens on `~/.wvc/wvc-api.sock` (or `WVC_API_SOCKET`).
+//! - For each API client, dials the legacy daemon socket (`WVC_SOCKET` or
+//!   `~/.wvc/wvc.sock`) and speaks `subscribe`/`message`/... on its
 //!   behalf.
 //! - Translation is JSON-to-JSON so this crate does not depend on the heavy
 //!   internal protocol types and cannot be broken by additive internal
@@ -27,7 +27,7 @@ use wvc_harness_api::{API_VERSION_MAJOR, ApiEvent, ErrorCode, ServerFrame};
 // all.
 use wvc_transport::{Listener, Stream};
 
-// Socket paths live in `jcode-harness-api` so clients and the bridge can never
+// Socket paths live in `wvc-harness-api` so clients and the bridge can never
 // resolve different directories (they once did, and the desktop app could not
 // connect as a result).
 pub use wvc_harness_api::{api_socket_path, legacy_socket_path};

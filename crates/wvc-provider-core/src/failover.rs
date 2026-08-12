@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-const PROVIDER_FAILOVER_PROMPT_PREFIX: &str = "[jcode-provider-failover]";
+const PROVIDER_FAILOVER_PROMPT_PREFIX: &str = "[wvc-provider-failover]";
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ProviderFailoverPrompt {

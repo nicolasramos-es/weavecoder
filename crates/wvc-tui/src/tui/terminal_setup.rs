@@ -9,7 +9,7 @@
 //!
 //! The modern fix is the kitty keyboard protocol: the app asks for
 //! disambiguation and the terminal then sends `ESC[13;2u` for Shift+Enter.
-//! jcode already requests it at startup, and crossterm decodes it, so on any
+//! wvc already requests it at startup, and crossterm decodes it, so on any
 //! terminal that implements the protocol (kitty, Ghostty, WezTerm, Alacritty,
 //! foot, iTerm2 3.5+, Warp, recent VS Code) Shift+Enter works with no setup.
 //!
@@ -39,7 +39,7 @@ pub enum Applied {
     Manual { message: String },
 }
 
-/// A terminal whose Shift+Enter behavior jcode can configure.
+/// A terminal whose Shift+Enter behavior wvc can configure.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SetupTarget {
     /// macOS Terminal.app: remap Shift+Enter to the CSI u sequence.
@@ -63,7 +63,7 @@ impl SetupTarget {
     pub fn activation_note(self) -> &'static str {
         match self {
             Self::AppleTerminal => "Quit and reopen Terminal.app to pick up the key mapping.",
-            Self::Tmux => "Run `tmux source ~/.tmux.conf`, then restart jcode.",
+            Self::Tmux => "Run `tmux source ~/.tmux.conf`, then restart wvc.",
             Self::WezTerm => "Restart WezTerm to pick up the config change.",
         }
     }
@@ -92,12 +92,12 @@ pub const APPLE_TERMINAL_SHIFT_RETURN_KEY: &str = "$\\015";
 /// The tmux settings that make a capable outer terminal's modified keys reach
 /// the inner application.
 ///
-/// `extended-keys on` only forwards when the app asks (jcode does), which is
+/// `extended-keys on` only forwards when the app asks (wvc does), which is
 /// safer than `always` for other panes. `extended-keys-format csi-u` picks the
 /// encoding crossterm understands, and `terminal-features` is required for tmux
 /// to request extended keys from the outer terminal in the first place.
 pub const TMUX_CONFIG_BLOCK: &str = "\
-# jcode: let Shift+Enter reach the application instead of collapsing to Enter.
+# wvc: let Shift+Enter reach the application instead of collapsing to Enter.
 set -s extended-keys on
 set -s extended-keys-format csi-u
 set -as terminal-features 'xterm*:extkeys'
@@ -108,9 +108,9 @@ pub const WEZTERM_CONFIG_LINE: &str = "config.enable_kitty_keyboard = true";
 
 /// Marker used to detect a block this command already wrote, so re-running is
 /// idempotent instead of appending duplicates.
-pub const MANAGED_MARKER: &str = "# jcode: let Shift+Enter reach the application";
+pub const MANAGED_MARKER: &str = "# wvc: let Shift+Enter reach the application";
 
-/// Whether `config` already contains jcode's managed tmux block.
+/// Whether `config` already contains wvc's managed tmux block.
 pub fn tmux_config_is_configured(config: &str) -> bool {
     config.contains(MANAGED_MARKER)
         || (config.contains("extended-keys on") && config.contains("csi-u"))
@@ -230,7 +230,7 @@ pub fn supports_modified_enter_reporting() -> Option<bool> {
     }
 }
 
-/// Configure tmux so a capable outer terminal's Shift+Enter reaches jcode.
+/// Configure tmux so a capable outer terminal's Shift+Enter reaches wvc.
 pub fn apply_tmux(home: &Path) -> std::io::Result<Applied> {
     let path = tmux_config_path(home);
     let existing = std::fs::read_to_string(&path).unwrap_or_default();
@@ -265,7 +265,7 @@ pub fn apply_wezterm(home: &Path) -> std::io::Result<Applied> {
             format!(
                 "local wezterm = require 'wezterm'\n\
                  local config = wezterm.config_builder()\n\
-                 -- jcode: report Shift+Enter distinctly from Enter.\n\
+                 -- wvc: report Shift+Enter distinctly from Enter.\n\
                  {WEZTERM_CONFIG_LINE}\n\
                  return config\n"
             ),

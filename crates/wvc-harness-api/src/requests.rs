@@ -113,7 +113,7 @@ pub enum ApiRequest {
     /// Provider routes and active runtime identity for the attached session.
     GetRuntimeInfo { session_id: String },
 
-    /// Persist an API-key credential in jcode's owner-only provider store and
+    /// Persist an API-key credential in wvc's owner-only provider store and
     /// notify the daemon to reload it. OAuth tokens are intentionally excluded.
     SetApiKey { provider: String, api_key: String },
 

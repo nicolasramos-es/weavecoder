@@ -5,7 +5,7 @@
 //! is the only chrome allowed above the transcript.
 //!
 //! Requires a GPU, so these are `#[ignore]`d; run with
-//! `cargo test -p jcode-desktop2 -- --ignored`.
+//! `cargo test -p wvc-desktop2 -- --ignored`.
 
 use super::visual::Rendered;
 use crate::states;

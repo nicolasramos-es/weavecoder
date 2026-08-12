@@ -4,9 +4,9 @@
 //! the agent through the `discover_tools` tool, backed by a hosted manifest.
 //! All agent-facing guidance lives in that tool's schema rather than the
 //! system prompt.
-//! Some providers may share revenue with Jcode when users choose their tools.
+//! Some providers may share revenue with Weavecoder when users choose their tools.
 //! Partnership status never influences recommendations. The relationship is
-//! disclosed in the UI with a link to <https://jcode.sh/discovery-tools>.
+//! disclosed in the UI with a link to <https://weavecoder.sh/discovery-tools>.
 //!
 //! Design constraints (see the discovery-tools page for the public
 //! version of this policy):
@@ -22,8 +22,8 @@
 //! - Requests carry only discovery fields (category, query, tool, and reason),
 //!   never session content.
 
-/// Public URL explaining Jcode's tool-provider partnerships.
-pub const DISCOVERY_PARTNERS_URL: &str = "https://jcode.sh/discovery-tools";
+/// Public URL explaining Weavecoder's tool-provider partnerships.
+pub const DISCOVERY_PARTNERS_URL: &str = "https://weavecoder.sh/discovery-tools";
 
 /// Provenance tagging and coarse usage metering for MCP servers connected
 /// as a result of a discovery listing.

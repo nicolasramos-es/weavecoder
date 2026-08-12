@@ -72,4 +72,4 @@ wvc code-search "parseConfig" --db ckg.db
 
 MIT — ver [LICENSE](LICENSE).
 
-Este proyecto parte del trabajo excepcional de [Jeremy Huang](https://github.com/1jehuang) (jcode, MIT), sobre el que hemos construido, añadido funcionalidades nuevas y mejorado el producto. El aviso de copyright del original se conserva íntegro en LICENSE.
+Este proyecto parte del trabajo excepcional de [Jeremy Huang](https://github.com/1jehuang) (wvc, MIT), sobre el que hemos construido, añadido funcionalidades nuevas y mejorado el producto. El aviso de copyright del original se conserva íntegro en LICENSE.

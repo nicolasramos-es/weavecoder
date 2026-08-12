@@ -94,7 +94,7 @@ fn load_session_todos(session_id: &str) -> Vec<TodoItem> {
 /// Build the compact notification. Kept free of `App` for testability.
 ///
 /// Layout (macOS):
-///   title:    jcode · <session> · done in <dur>
+///   title:    wvc · <session> · done in <dur>
 ///   subtitle: <todo progress, e.g. "3/5 todos · 1 blocked">
 ///   body:     names the work — "✓ <just done> · → <in progress>" or a
 ///             blocker ("⊘ <todo> needs <dep>"), falling back to the

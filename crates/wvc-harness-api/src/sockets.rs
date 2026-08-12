@@ -1,20 +1,20 @@
 //! Socket path resolution shared by every harness API client and the bridge.
 //!
 //! This lives in the API crate on purpose. It used to be duplicated in the
-//! bridge and in `jcode-desktop2`, and the two copies disagreed: the bridge
+//! bridge and in `wvc-desktop2`, and the two copies disagreed: the bridge
 //! resolved `$XDG_RUNTIME_DIR` while the desktop always looked in
-//! `~/.jcode`. The result was a desktop app that could never connect even
+//! `~/.wvc`. The result was a desktop app that could never connect even
 //! with a healthy bridge running. One definition, used by both sides, makes
 //! that class of bug impossible.
 //!
-//! The rules match `jcode-storage::runtime_dir` so the API socket always lands
+//! The rules match `wvc-storage::runtime_dir` so the API socket always lands
 //! beside the daemon socket it bridges to.
 
 use std::path::PathBuf;
 
 /// Runtime directory holding the daemon and API sockets.
 pub fn runtime_dir() -> PathBuf {
-    if let Ok(dir) = std::env::var("JCODE_RUNTIME_DIR") {
+    if let Ok(dir) = std::env::var("WVC_RUNTIME_DIR") {
         return PathBuf::from(dir);
     }
     if let Ok(dir) = std::env::var("XDG_RUNTIME_DIR") {
@@ -63,18 +63,18 @@ fn sanitize(raw: String) -> String {
     }
 }
 
-/// Path of the versioned harness API socket. `JCODE_API_SOCKET` overrides it.
+/// Path of the versioned harness API socket. `WVC_API_SOCKET` overrides it.
 pub fn api_socket_path() -> PathBuf {
-    if let Ok(custom) = std::env::var("JCODE_API_SOCKET") {
+    if let Ok(custom) = std::env::var("WVC_API_SOCKET") {
         return PathBuf::from(custom);
     }
     runtime_dir().join("wvc-api.sock")
 }
 
 /// Path of the internal daemon socket the bridge translates onto.
-/// `JCODE_SOCKET` overrides it.
+/// `WVC_SOCKET` overrides it.
 pub fn legacy_socket_path() -> PathBuf {
-    if let Ok(custom) = std::env::var("JCODE_SOCKET") {
+    if let Ok(custom) = std::env::var("WVC_SOCKET") {
         return PathBuf::from(custom);
     }
     runtime_dir().join("wvc.sock")

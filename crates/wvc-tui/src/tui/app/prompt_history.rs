@@ -1,7 +1,7 @@
 //! Persistent cross-session prompt history plus the Ctrl+R reverse search
 //! overlay.
 //!
-//! Every submitted prompt is recorded to `~/.jcode/prompt-history.jsonl`
+//! Every submitted prompt is recorded to `~/.wvc/prompt-history.jsonl`
 //! (JSONL, one JSON-encoded string per line, append-only with periodic
 //! compaction). Recording dedupes: resubmitting an existing prompt moves it to
 //! the most-recent slot instead of storing a second copy. Up/Down prompt
@@ -70,7 +70,7 @@ pub(crate) fn load_from_path(path: &Path) -> Vec<String> {
 
 /// Append one prompt to the history file, compacting when the append-only
 /// file grows past [`COMPACT_THRESHOLD_LINES`]. Appends (rather than
-/// rewriting) so concurrent jcode processes do not clobber each other;
+/// rewriting) so concurrent wvc processes do not clobber each other;
 /// dedupe happens at load and compaction time.
 pub(crate) fn append_to_path(path: &Path, text: &str) {
     let trimmed = text.trim();
@@ -170,7 +170,7 @@ fn single_line_preview(text: &str) -> String {
 impl App {
     /// Lazily load the persisted prompt history. Under `cfg(test)` the load is
     /// skipped (tests inject `persisted_prompt_history` directly) so unit tests
-    /// sharing one `JCODE_HOME` stay deterministic.
+    /// sharing one `WVC_HOME` stay deterministic.
     fn ensure_persisted_prompt_history_loaded(&mut self) {
         if self.persisted_prompt_history.is_some() {
             return;
@@ -238,7 +238,7 @@ impl App {
             let overflow = history.len() - MAX_PERSISTED_PROMPTS;
             history.drain(..overflow);
         }
-        // Disk writes are skipped in unit tests (shared JCODE_HOME) and when
+        // Disk writes are skipped in unit tests (shared WVC_HOME) and when
         // the prompt is already the newest entry (no state change to persist).
         if !already_most_recent
             && !cfg!(test)

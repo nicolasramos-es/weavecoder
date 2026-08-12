@@ -8,7 +8,7 @@
 //!
 //! Two halves, kept apart on purpose:
 //!
-//! - [`scan`] reads `~/.jcode/sessions` and is the only part that touches the
+//! - [`scan`] reads `~/.wvc/sessions` and is the only part that touches the
 //!   filesystem. It is called on a worker thread, so a directory with fifty
 //!   thousand records in it can never stall a frame.
 //! - [`Picker`] is pure state: the grouped rows, where the highlight sits, and
@@ -63,14 +63,14 @@ impl Record {
     }
 }
 
-/// `~/.jcode/sessions`, or `$JCODE_HOME/sessions` when the home is overridden.
+/// `~/.wvc/sessions`, or `$WVC_HOME/sessions` when the home is overridden.
 ///
 /// Resolved the same way the bridge resolves it, so the picker and the daemon
 /// can never disagree about which directory holds the sessions.
 pub fn sessions_dir() -> Option<PathBuf> {
-    let home = match std::env::var_os("JCODE_HOME") {
+    let home = match std::env::var_os("WVC_HOME") {
         Some(home) => PathBuf::from(home),
-        None => PathBuf::from(std::env::var_os("HOME")?).join(".jcode"),
+        None => PathBuf::from(std::env::var_os("HOME")?).join(".wvc"),
     };
     Some(home.join("sessions"))
 }
@@ -528,9 +528,9 @@ mod tests {
         let mut picker = Picker::default();
         picker.open(false);
         picker.set_records(vec![
-            record("session_fox_1_a", Some("/home/j/jcode"), 400, 30),
+            record("session_fox_1_a", Some("/home/j/wvc"), 400, 30),
             record("session_owl_2_b", Some("/home/j/site"), 200, 20),
-            record("session_bat_3_c", Some("/home/j/jcode"), 100, 10),
+            record("session_bat_3_c", Some("/home/j/wvc"), 100, 10),
         ]);
         picker
     }
@@ -618,9 +618,9 @@ mod tests {
         picker.move_cursor(2);
         let held = picker.selected().unwrap().session_id.clone();
         picker.set_records(vec![
-            record("session_new_9_z", Some("/home/j/jcode"), 10, 90),
-            record("session_fox_1_a", Some("/home/j/jcode"), 400, 30),
-            record("session_bat_3_c", Some("/home/j/jcode"), 100, 10),
+            record("session_new_9_z", Some("/home/j/wvc"), 10, 90),
+            record("session_fox_1_a", Some("/home/j/wvc"), 400, 30),
+            record("session_bat_3_c", Some("/home/j/wvc"), 100, 10),
         ]);
         assert_eq!(picker.selected().map(|r| r.session_id.clone()), Some(held));
     }
@@ -663,7 +663,7 @@ mod tests {
         std::fs::write(
             dir.join("session_fox_1_a.json"),
             format!(
-                r#"{{"id":"session_fox_1_a","title":"a name","messages":["{filler}"],"working_dir":"/home/j/jcode"}}"#
+                r#"{{"id":"session_fox_1_a","title":"a name","messages":["{filler}"],"working_dir":"/home/j/wvc"}}"#
             ),
         )
         .unwrap();
@@ -677,14 +677,14 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
         assert_eq!(records.len(), 1, "{records:?}");
         assert_eq!(records[0].session_id, "session_fox_1_a");
-        assert_eq!(records[0].working_dir.as_deref(), Some("/home/j/jcode"));
+        assert_eq!(records[0].working_dir.as_deref(), Some("/home/j/wvc"));
         assert_eq!(records[0].label(), "a name");
     }
 
     /// A missing directory is a first run, not a crash.
     #[test]
     fn scanning_a_missing_directory_is_empty() {
-        assert!(scan(Path::new("/nonexistent/jcode/sessions"), SCAN_LIMIT).is_empty());
+        assert!(scan(Path::new("/nonexistent/wvc/sessions"), SCAN_LIMIT).is_empty());
     }
 
     /// A record with no title falls back to the generated session name, which

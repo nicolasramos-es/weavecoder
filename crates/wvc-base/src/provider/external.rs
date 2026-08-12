@@ -1,7 +1,7 @@
 //! Composition-root registry for externally-implemented provider runtimes.
 //!
-//! Provider runtime implementations are being moved out of `jcode-base` into
-//! downstream crates (e.g. `jcode-provider-gemini-runtime`) so that editing a
+//! Provider runtime implementations are being moved out of `wvc-base` into
+//! downstream crates (e.g. `wvc-provider-gemini-runtime`) so that editing a
 //! provider no longer rebuilds the base -> app-core -> tui -> root spine.
 //! Because those crates sit *downstream* of base, base cannot name their
 //! concrete types. Instead, the binary's composition root (`src/cli/startup.rs`)

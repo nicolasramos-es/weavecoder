@@ -31,8 +31,8 @@ fn session_picker_resume_action_keeps_overlay_open() {
                 search_index: "keep-open keep open".to_string(),
                 server_name: None,
                 server_icon: None,
-                source: crate::tui::session_picker::SessionSource::Jcode,
-                resume_target: crate::tui::session_picker::ResumeTarget::JcodeSession {
+                source: crate::tui::session_picker::SessionSource::Weavecoder,
+                resume_target: crate::tui::session_picker::ResumeTarget::WeavecoderSession {
                     session_id: "session_keep_open".to_string(),
                 },
                 external_path: None,
@@ -82,8 +82,8 @@ fn session_picker_enter_queues_current_terminal_resume_and_closes_overlay() {
                 search_index: "here".to_string(),
                 server_name: None,
                 server_icon: None,
-                source: crate::tui::session_picker::SessionSource::Jcode,
-                resume_target: crate::tui::session_picker::ResumeTarget::JcodeSession {
+                source: crate::tui::session_picker::SessionSource::Weavecoder,
+                resume_target: crate::tui::session_picker::ResumeTarget::WeavecoderSession {
                     session_id: "session_here_123".to_string(),
                 },
                 external_path: None,
@@ -258,7 +258,7 @@ fn test_help_topic_shows_log_command_details() {
         .expect("missing help response");
     assert_eq!(msg.role, "system");
     assert!(msg.content.contains("/log mark [note]"));
-    assert!(msg.content.contains("JCODE_LOG_MARK"));
+    assert!(msg.content.contains("WVC_LOG_MARK"));
 }
 
 #[test]
@@ -273,7 +273,7 @@ fn slash_log_mark_reports_marker_and_note() {
         .expect("missing log mark response");
     assert_eq!(msg.role, "system");
     assert!(msg.content.contains("Log mark written: logmark-"));
-    assert!(msg.content.contains("JCODE_LOG_MARK"));
+    assert!(msg.content.contains("WVC_LOG_MARK"));
     assert!(msg.content.contains("Note: before repro"));
 }
 
@@ -408,8 +408,8 @@ fn session_picker_preview_wheel_uses_shared_scroll_momentum() {
         search_index: "scroll".to_string(),
         server_name: None,
         server_icon: None,
-        source: SessionSource::Jcode,
-        resume_target: crate::tui::session_picker::ResumeTarget::JcodeSession {
+        source: SessionSource::Weavecoder,
+        resume_target: crate::tui::session_picker::ResumeTarget::WeavecoderSession {
             session_id: "session_scroll".to_string(),
         },
         external_path: None,
@@ -929,8 +929,8 @@ fn test_help_topic_shows_refactor_command_details() {
 fn test_save_command_bookmarks_session_with_memory_enabled() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::tempdir().expect("tempdir");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp.path());
 
     let mut app = create_test_app();
     app.memory_enabled = true;
@@ -954,9 +954,9 @@ fn test_save_command_bookmarks_session_with_memory_enabled() {
     assert!(msg.content.contains("quick-label"));
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -966,8 +966,8 @@ fn test_goals_command_opens_overview_in_side_panel() {
     let temp = tempfile::tempdir().expect("tempdir");
     let project = temp.path().join("repo");
     std::fs::create_dir_all(&project).expect("project dir");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp.path());
 
     crate::goal::create_goal(
         crate::goal::GoalCreateInput {
@@ -992,9 +992,9 @@ fn test_goals_command_opens_overview_in_side_panel() {
     assert!(msg.content.contains("Opened initiatives overview"));
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -1002,8 +1002,8 @@ fn test_goals_command_opens_overview_in_side_panel() {
 fn test_mission_and_goal_commands_are_disabled() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::tempdir().expect("tempdir");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp.path());
 
     let mut app = create_test_app();
     app.input = "/mission make browser control reliable".to_string();
@@ -1043,9 +1043,9 @@ fn test_mission_and_goal_commands_are_disabled() {
     );
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -1055,8 +1055,8 @@ fn test_goals_legacy_alias_is_not_captured_by_goal_mission_alias() {
     let temp = tempfile::tempdir().expect("tempdir");
     let project = temp.path().join("repo");
     std::fs::create_dir_all(&project).expect("project dir");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp.path());
 
     let mut app = create_test_app();
     app.session.working_dir = Some(project.display().to_string());
@@ -1071,9 +1071,9 @@ fn test_goals_legacy_alias_is_not_captured_by_goal_mission_alias() {
     );
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -1109,8 +1109,8 @@ fn test_btw_command_requires_question() {
 fn test_btw_command_forks_session_with_question() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::tempdir().expect("tempdir");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp.path());
 
     let mut app = create_test_app();
     app.input = "/btw what did we decide about config?".to_string();
@@ -1138,9 +1138,9 @@ fn test_btw_command_forks_session_with_question() {
     assert!(restored.pending_images.is_empty());
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -1148,8 +1148,8 @@ fn test_btw_command_forks_session_with_question() {
 fn test_fork_command_with_prompt_forks_session() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::tempdir().expect("tempdir");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp.path());
 
     let mut app = create_test_app();
     app.input = "/fork try the other approach".to_string();
@@ -1174,9 +1174,9 @@ fn test_fork_command_with_prompt_forks_session() {
     assert!(restored.submit_on_restore);
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -1184,8 +1184,8 @@ fn test_fork_command_with_prompt_forks_session() {
 fn test_fork_command_without_prompt_forks_idle_session() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::tempdir().expect("tempdir");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp.path());
 
     let mut app = create_test_app();
     app.input = "/fork".to_string();
@@ -1210,9 +1210,9 @@ fn test_fork_command_without_prompt_forks_idle_session() {
     );
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -1220,8 +1220,8 @@ fn test_fork_command_without_prompt_forks_idle_session() {
 fn test_split_command_local_is_alias_for_fork() {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::tempdir().expect("tempdir");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp.path());
 
     let mut app = create_test_app();
     app.input = "/split".to_string();
@@ -1235,9 +1235,9 @@ fn test_split_command_local_is_alias_for_fork() {
     assert!(msg.content.contains("✂ Fork →"));
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -1273,7 +1273,7 @@ fn test_git_command_works_in_remote_mode_with_accessible_working_directory() {
     assert!(msg.content.contains("tracked.txt"));
     assert!(
         !msg.content
-            .contains("currently only available in a local jcode TUI session")
+            .contains("currently only available in a local wvc TUI session")
     );
 }
 
@@ -1546,8 +1546,8 @@ fn test_goals_show_command_focuses_goal_page() {
     let temp = tempfile::tempdir().expect("tempdir");
     let project = temp.path().join("repo");
     std::fs::create_dir_all(&project).expect("project dir");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp.path());
 
     let goal = crate::goal::create_goal(
         crate::goal::GoalCreateInput {
@@ -1570,9 +1570,9 @@ fn test_goals_show_command_focuses_goal_page() {
     );
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 

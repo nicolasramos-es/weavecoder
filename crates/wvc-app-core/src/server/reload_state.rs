@@ -597,7 +597,7 @@ mod tests {
 
     impl EnvGuard {
         fn set_runtime_dir(path: &std::path::Path) -> Self {
-            let key = "JCODE_RUNTIME_DIR";
+            let key = "WVC_RUNTIME_DIR";
             let old = std::env::var_os(key);
             crate::env::set_var(key, path);
             Self { key, old }

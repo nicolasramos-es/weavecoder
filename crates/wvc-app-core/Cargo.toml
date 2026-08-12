@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2024"
 publish = false
 
-# Application core for jcode: all non-presentation modules (server, agent,
+# Application core for wvc: all non-presentation modules (server, agent,
 # provider, auth, session, tool, config, etc.) extracted out of the monolithic
-# root `jcode` crate so they compile as a separate rustc unit. The root `jcode`
+# root `wvc` crate so they compile as a separate rustc unit. The root `wvc`
 # crate (cli + tui + bin) re-exports this crate's modules via `pub use
 # wvc_app_core::*`, preserving every existing `crate::<module>` path.
 

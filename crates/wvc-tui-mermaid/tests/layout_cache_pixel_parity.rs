@@ -27,7 +27,7 @@
 //! this binary contains exactly one test.
 //!
 //! `#[ignore]`-d: run explicitly with
-//! `cargo test -p jcode-tui-mermaid --test layout_cache_pixel_parity -- --ignored --nocapture`
+//! `cargo test -p wvc-tui-mermaid --test layout_cache_pixel_parity -- --ignored --nocapture`
 
 #![cfg(feature = "renderer")]
 

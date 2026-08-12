@@ -23,7 +23,7 @@
 //!
 //! # Where the graph comes from
 //!
-//! Node weights and edges are *measured*, not declared: `jcode-tui` renders real
+//! Node weights and edges are *measured*, not declared: `wvc-tui` renders real
 //! frames and records which roles occupy neighbouring cells, and the resulting
 //! counts are checked in as [`DEFAULT_TOPOLOGY`]. Declaring adjacency by hand
 //! would encode what someone thinks the UI looks like; measuring it encodes what
@@ -110,10 +110,10 @@ impl Topology {
     }
 }
 
-/// The topology measured from jcode's own rendered frames.
+/// The topology measured from wvc's own rendered frames.
 ///
 /// Regenerate with
-/// `cargo test -p jcode-tui --lib print_measured_palette_topology -- --ignored --nocapture`
+/// `cargo test -p wvc-tui --lib print_measured_palette_topology -- --ignored --nocapture`
 /// after UI changes that shift how much area each role paints.
 ///
 /// The distribution is the point: `dim` covers 77% of painted cells while every
@@ -147,7 +147,7 @@ pub fn default_topology() -> Topology {
 /// screen area: 1.0 means every colored pixel shares one hue (a monotone wash),
 /// 0.0 means hues are spread evenly around the wheel.
 ///
-/// Area weighting is the entire point. jcode's default palette measures 0.10
+/// Area weighting is the entire point. wvc's default palette measures 0.10
 /// here while a generated palette that scored *higher* on every existing
 /// criterion measured 0.36, because its high-area roles had collapsed onto one
 /// hue. Unweighted hue analysis cannot see that difference.

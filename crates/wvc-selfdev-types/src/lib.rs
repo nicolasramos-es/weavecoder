@@ -7,7 +7,7 @@ use std::path::PathBuf;
 /// mode. Defined here (a low-level crate) so cross-cutting consumers (telemetry,
 /// process title, server tester spawning) can reference it without depending on
 /// the `cli` subsystem.
-pub const CLIENT_SELFDEV_ENV: &str = "JCODE_CLIENT_SELFDEV_MODE";
+pub const CLIENT_SELFDEV_ENV: &str = "WVC_CLIENT_SELFDEV_MODE";
 
 /// Returns true if the current process was launched in self-dev client mode
 /// (i.e. `CLIENT_SELFDEV_ENV` is set). Defined in this low-level crate so any
@@ -34,7 +34,7 @@ pub struct SelfDevBuildCommand {
 pub enum SelfDevBuildTarget {
     Auto,
     Tui,
-    /// The desktop app (`jcode-desktop2`).
+    /// The desktop app (`wvc-desktop2`).
     Desktop2,
     All,
 }

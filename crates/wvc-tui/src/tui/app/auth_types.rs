@@ -122,9 +122,9 @@ pub(crate) enum AccountCommand {
     Login {
         provider_id: String,
     },
-    JcodeStatus,
-    JcodeManage,
-    JcodeLogout,
+    WeavecoderStatus,
+    WeavecoderManage,
+    WeavecoderLogout,
     Add {
         provider_id: String,
         label: Option<String>,

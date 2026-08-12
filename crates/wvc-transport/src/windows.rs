@@ -8,8 +8,8 @@ use tokio::net::windows::named_pipe::{
 
 /// Convert a filesystem path to a Windows named pipe path.
 ///
-/// e.g. `/run/user/1000/jcode.sock` -> `\\.\pipe\jcode`
-/// e.g. `/run/user/1000/jcode/myserver.sock` -> `\\.\pipe\jcode-myserver`
+/// e.g. `/run/user/1000/wvc.sock` -> `\\.\pipe\wvc`
+/// e.g. `/run/user/1000/wvc/myserver.sock` -> `\\.\pipe\wvc-myserver`
 fn path_to_pipe_name(path: &Path) -> String {
     let stem: String = path
         .file_stem()
@@ -119,7 +119,7 @@ impl Stream {
         use std::sync::atomic::{AtomicU64, Ordering};
         static PAIR_COUNTER: AtomicU64 = AtomicU64::new(0);
         let counter = PAIR_COUNTER.fetch_add(1, Ordering::Relaxed);
-        let pipe_name = format!(r"\\.\pipe\jcode-pair-{}-{}", std::process::id(), counter);
+        let pipe_name = format!(r"\\.\pipe\wvc-pair-{}-{}", std::process::id(), counter);
         let server = ServerOptions::new()
             .first_pipe_instance(true)
             .create(&pipe_name)?;
@@ -380,10 +380,10 @@ mod tests {
     fn pipe_name_matches_the_typescript_sdk() {
         for (path, expected) in [
             (
-                r"C:\Users\jeremy\AppData\Local\jcode\run\jcode-api.sock",
-                r"\\.\pipe\jcode-api-5e00c01702e8cfe4",
+                r"C:\Users\jeremy\AppData\Local\wvc\run\wvc-api.sock",
+                r"\\.\pipe\wvc-api-5e00c01702e8cfe4",
             ),
-            (r"C:\a\b\jcode.sock", r"\\.\pipe\jcode-52dfdb00b2f35a71"),
+            (r"C:\a\b\wvc.sock", r"\\.\pipe\wvc-52dfdb00b2f35a71"),
         ] {
             assert_eq!(
                 path_to_pipe_name(Path::new(path)),
@@ -395,8 +395,8 @@ mod tests {
 
     #[test]
     fn pipe_name_is_stable_and_normalizes_case_and_separators() {
-        let a = path_to_pipe_name(Path::new(r"C:\Temp\Jcode\server.sock"));
-        let b = path_to_pipe_name(Path::new("c:/temp/jcode/server.sock"));
+        let a = path_to_pipe_name(Path::new(r"C:\Temp\Weavecoder\server.sock"));
+        let b = path_to_pipe_name(Path::new("c:/temp/wvc/server.sock"));
         assert_eq!(a, b, "pipe names should be normalized consistently");
         assert!(
             a.starts_with(r"\\.\pipe\server-"),
@@ -409,7 +409,7 @@ mod tests {
     fn pipe_name_falls_back_when_stem_is_empty() {
         let name = path_to_pipe_name(Path::new("..."));
         assert!(
-            name.starts_with(r"\\.\pipe\jcode-"),
+            name.starts_with(r"\\.\pipe\wvc-"),
             "unexpected pipe name: {}",
             name
         );

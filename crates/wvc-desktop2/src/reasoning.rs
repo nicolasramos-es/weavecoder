@@ -14,8 +14,8 @@
 //!
 //! Precedence mirrors the server's over the same inputs, because desktop2
 //! cannot depend on the config crates (dependency-boundary gate):
-//! `JCODE_REASONING_DISPLAY`, then `display.reasoning_display` in
-//! `~/.jcode/config.toml`, then the legacy `show_thinking` boolean, then the
+//! `WVC_REASONING_DISPLAY`, then `display.reasoning_display` in
+//! `~/.wvc/config.toml`, then the legacy `show_thinking` boolean, then the
 //! desktop default.
 
 /// What the transcript does with streamed reasoning.
@@ -61,7 +61,7 @@ impl ReasoningMode {
     /// The effective mode for this process.
     pub fn from_env() -> Self {
         Self::resolve(
-            std::env::var("JCODE_REASONING_DISPLAY").ok().as_deref(),
+            std::env::var("WVC_REASONING_DISPLAY").ok().as_deref(),
             read_config_text().as_deref(),
         )
     }
@@ -123,11 +123,11 @@ fn configured_mode(raw: &str) -> Option<ReasoningMode> {
 }
 
 fn wvc_home_dir() -> Option<std::path::PathBuf> {
-    match std::env::var_os("JCODE_HOME") {
+    match std::env::var_os("WVC_HOME") {
         Some(path) => Some(std::path::PathBuf::from(path)),
         None => std::env::var_os("HOME")
             .map(std::path::PathBuf::from)
-            .map(|home| home.join(".jcode")),
+            .map(|home| home.join(".wvc")),
     }
 }
 

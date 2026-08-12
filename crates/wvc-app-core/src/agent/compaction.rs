@@ -289,7 +289,7 @@ impl Agent {
         cache_read_input_tokens: Option<u64>,
         cache_creation_input_tokens: Option<u64>,
     ) -> u64 {
-        // Shared heuristic (jcode-compaction-core): keeps the compaction
+        // Shared heuristic (wvc-compaction-core): keeps the compaction
         // manager's observed-token feed consistent with the client-side
         // context display.
         crate::compaction::effective_context_tokens_from_usage(

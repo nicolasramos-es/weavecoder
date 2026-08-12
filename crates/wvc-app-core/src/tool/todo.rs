@@ -1439,9 +1439,9 @@ mod tests {
     #[tokio::test]
     async fn a_moderate_first_write_returns_no_continuation_and_records_instead() {
         let _guard = crate::storage::lock_test_env();
-        let previous_home = std::env::var_os("JCODE_HOME");
+        let previous_home = std::env::var_os("WVC_HOME");
         let dir = tempfile::TempDir::new().expect("tempdir");
-        crate::env::set_var("JCODE_HOME", dir.path());
+        crate::env::set_var("WVC_HOME", dir.path());
         let session = "gate-deferral-execute";
 
         let output = TodoTool::new()
@@ -1537,17 +1537,17 @@ mod tests {
         assert!(digest.contains("feedback loop"));
 
         match previous_home {
-            Some(value) => crate::env::set_var("JCODE_HOME", value),
-            None => crate::env::remove_var("JCODE_HOME"),
+            Some(value) => crate::env::set_var("WVC_HOME", value),
+            None => crate::env::remove_var("WVC_HOME"),
         }
     }
 
     #[tokio::test]
     async fn low_ownership_completion_is_saved_without_mid_write_rejection() {
         let _guard = crate::storage::lock_test_env();
-        let previous_home = std::env::var_os("JCODE_HOME");
+        let previous_home = std::env::var_os("WVC_HOME");
         let dir = tempfile::TempDir::new().expect("tempdir");
-        crate::env::set_var("JCODE_HOME", dir.path());
+        crate::env::set_var("WVC_HOME", dir.path());
         let session = "ownership-save-before-turn-gate";
 
         let output = TodoTool::new()
@@ -1590,8 +1590,8 @@ mod tests {
         );
 
         match previous_home {
-            Some(value) => crate::env::set_var("JCODE_HOME", value),
-            None => crate::env::remove_var("JCODE_HOME"),
+            Some(value) => crate::env::set_var("WVC_HOME", value),
+            None => crate::env::remove_var("WVC_HOME"),
         }
     }
 

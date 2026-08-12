@@ -1,11 +1,11 @@
-//! Resolve the global "launch a new jcode" hotkeys from config into a concrete
+//! Resolve the global "launch a new wvc" hotkeys from config into a concrete
 //! list of (chord, shell command, script file) tuples.
 //!
 //! There are two layers here:
 //!
 //! * The **pure** resolver ([`resolve_launch_hotkeys`]) turns a
 //!   [`LaunchHotkeysConfig`] plus the support-file paths into a list of
-//!   [`ResolvedLaunchHotkey`]s. An empty config reproduces jcode's historical
+//!   [`ResolvedLaunchHotkey`]s. An empty config reproduces wvc's historical
 //!   three built-in hotkeys (home / last project / self-dev), so existing
 //!   installs behave identically until auto-import bakes a richer per-repo
 //!   mapping. This layer is unit-tested without touching the machine.
@@ -30,7 +30,7 @@ fn escape_shell_single_quotes(input: &str) -> String {
     input.replace('\'', r#"'\''"#)
 }
 
-/// Build a jcode launch snippet that pauses on non-zero exit so the user can
+/// Build a wvc launch snippet that pauses on non-zero exit so the user can
 /// read the error before the terminal closes. Mirrors the macOS launcher's
 /// behavior; kept local so the resolver is platform-independent.
 #[cfg(any(test, target_os = "macos"))]
@@ -43,7 +43,7 @@ fn paused_wvc_shell_command_with_args(exe_path: &str, args: &[String]) -> String
         arg_str.push('\'');
     }
     format!(
-        r#"if [ ! -x '{exe}' ]; then printf 'jcode executable not found.\n'; exit 127; fi; '{exe}'{args}; status=$?; if [ "$status" -ne 0 ]; then printf '\nJcode exited with status %s.\n' "$status"; printf 'Press Enter to close... '; read -r _; fi; exit "$status""#,
+        r#"if [ ! -x '{exe}' ]; then printf 'wvc executable not found.\n'; exit 127; fi; '{exe}'{args}; status=$?; if [ "$status" -ne 0 ]; then printf '\nWeavecoder exited with status %s.\n' "$status"; printf 'Press Enter to close... '; read -r _; fi; exit "$status""#,
         exe = escaped_exe,
         args = arg_str,
     )
@@ -63,17 +63,17 @@ pub(crate) struct PlanEntry {
 /// registration.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct ResolvedLaunchHotkey {
-    /// jcode-style chord string, e.g. `cmd+;`.
+    /// wvc-style chord string, e.g. `cmd+;`.
     pub chord: String,
     /// Stable file name for this entry's launch script.
     pub script_file_name: String,
     /// Shell snippet that `cd`s into the target directory (with a `$HOME`
-    /// fallback) before launching jcode.
+    /// fallback) before launching wvc.
     pub cd_prefix: String,
     /// Original configured directory target. May be a sentinel such as `$HOME`,
     /// `$LAST_DIR`, or `$LAST_REPO`; direct launchers resolve it at fire time.
     pub dir: String,
-    /// Extra CLI args passed to jcode (e.g. `self-dev`).
+    /// Extra CLI args passed to wvc (e.g. `self-dev`).
     pub args: Vec<String>,
     /// Human label for notices.
     pub label: String,
@@ -133,7 +133,7 @@ fn script_name_for(chord: &str, index: usize) -> String {
     format!("launch_wvc_{index}_{slug}.sh")
 }
 
-/// The built-in default entries, used when config has none. Mirrors jcode's
+/// The built-in default entries, used when config has none. Mirrors wvc's
 /// historical `Cmd+;` / `Cmd+'` / `Cmd+Shift+'` layout.
 pub(crate) fn default_launch_entries() -> Vec<LaunchHotkeyEntry> {
     vec![
@@ -246,7 +246,7 @@ pub(crate) fn shell_command_for(entry: &ResolvedLaunchHotkey, exe_path: &str) ->
     )
 }
 
-/// Map a jcode key token onto a `global_hotkey` `Code`. Returns `None` for
+/// Map a wvc key token onto a `global_hotkey` `Code`. Returns `None` for
 /// tokens we cannot register (the caller logs and skips).
 #[cfg(target_os = "macos")]
 pub(crate) fn key_token_to_code(key: &str) -> Option<global_hotkey::hotkey::Code> {
@@ -341,7 +341,7 @@ mod tests {
     fn empty_config_reproduces_three_builtins() {
         let resolved = resolve_launch_hotkeys(
             &LaunchHotkeysConfig::default(),
-            "/bin/jcode",
+            "/bin/wvc",
             "/last_dir",
             "/last_repo",
         );
@@ -365,7 +365,7 @@ mod tests {
                 label: "proj".to_string(),
                 self_dev: false,
             }]),
-            "/bin/jcode",
+            "/bin/wvc",
             "/last_dir",
             "/last_repo",
         );
@@ -393,7 +393,7 @@ mod tests {
                     self_dev: false,
                 },
             ]),
-            "/bin/jcode",
+            "/bin/wvc",
             "/last_dir",
             "/last_repo",
         );
@@ -418,7 +418,7 @@ mod tests {
                     self_dev: false,
                 },
             ]),
-            "/bin/jcode",
+            "/bin/wvc",
             "/last_dir",
             "/last_repo",
         );
@@ -449,7 +449,7 @@ mod tests {
                     self_dev: false,
                 },
             ]),
-            "/bin/jcode",
+            "/bin/wvc",
             "/last_dir",
             "/last_repo",
         );
@@ -477,12 +477,12 @@ mod tests {
                 label: "proj".to_string(),
                 self_dev: false,
             }]),
-            "/bin/jcode",
+            "/bin/wvc",
             "/last_dir",
             "/last_repo",
         );
-        let cmd = shell_command_for(&resolved[0], "/bin/jcode");
+        let cmd = shell_command_for(&resolved[0], "/bin/wvc");
         assert!(cmd.contains("/Users/jeremy/proj"));
-        assert!(cmd.contains("/bin/jcode"));
+        assert!(cmd.contains("/bin/wvc"));
     }
 }

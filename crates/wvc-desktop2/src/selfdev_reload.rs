@@ -49,7 +49,7 @@ pub fn requested() -> bool {
 
 fn marker_path() -> Option<std::path::PathBuf> {
     Some(
-        std::path::PathBuf::from(std::env::var_os("HOME")?).join(".jcode/selfdev/desktop2-current"),
+        std::path::PathBuf::from(std::env::var_os("HOME")?).join(".wvc/selfdev/desktop2-current"),
     )
 }
 

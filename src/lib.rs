@@ -6,12 +6,12 @@
     clippy::useless_conversion
 )]
 
-//! Root `jcode` crate: the entrypoint + cli layer on top of the `jcode-tui`
-//! presentation crate (which in turn re-exports `jcode-app-core` and
-//! `jcode-base`).
+//! Root `wvc` crate: the entrypoint + cli layer on top of the `wvc-tui`
+//! presentation crate (which in turn re-exports `wvc-app-core` and
+//! `wvc-base`).
 //!
-//! The presentation modules (`tui`, `video_export`) live in `jcode-tui` and the
-//! non-presentation modules live in `jcode-app-core`; both are re-exported here
+//! The presentation modules (`tui`, `video_export`) live in `wvc-tui` and the
+//! non-presentation modules live in `wvc-app-core`; both are re-exported here
 //! via `pub use wvc_tui::*`, so existing `crate::<module>` paths (e.g.
 //! `crate::config`, `crate::server`, `crate::tui`) keep resolving unchanged
 //! across the cli code that was not moved.

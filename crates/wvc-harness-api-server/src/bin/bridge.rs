@@ -1,6 +1,6 @@
 //! Standalone harness API bridge daemon.
 //!
-//! Usage: jcode-harness-api-bridge [api_socket] [legacy_socket]
+//! Usage: wvc-harness-api-bridge [api_socket] [legacy_socket]
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> anyhow::Result<()> {

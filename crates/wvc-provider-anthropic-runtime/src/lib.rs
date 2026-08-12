@@ -1,6 +1,6 @@
 //! Direct Anthropic Messages API provider runtime (OAuth subscription + API
 //! key, SSE streaming, service tiers, reasoning efforts), moved out of
-//! `jcode-base` so provider edits compile only this crate plus a binary
+//! `wvc-base` so provider edits compile only this crate plus a binary
 //! relink instead of rebuilding the base -> app-core -> tui spine. The
 //! binary's composition root registers [`AnthropicProvider`] with
 //! `wvc_base::provider::external` at startup.
@@ -372,7 +372,7 @@ pub struct AnthropicProvider {
     /// Cached OAuth credentials (None if using API key)
     credentials: Arc<RwLock<Option<CachedCredentials>>>,
     credential_mode: Arc<RwLock<AnthropicCredentialMode>>,
-    /// Explicit `JCODE_ANTHROPIC_MAX_TOKENS` override. When unset, the output
+    /// Explicit `WVC_ANTHROPIC_MAX_TOKENS` override. When unset, the output
     /// budget is derived per model so newer generations are not clamped to the
     /// legacy 32K default.
     max_tokens_override: Option<u32>,
@@ -401,9 +401,9 @@ impl AnthropicProvider {
     /// The `claude` login provider is specifically the OAuth/subscription path,
     /// while `claude-api` is the API-key path. The doctor must test the path
     /// implied by the provider id under test, regardless of what
-    /// `JCODE_RUNTIME_PROVIDER` happens to be in the current process (e.g. a
+    /// `WVC_RUNTIME_PROVIDER` happens to be in the current process (e.g. a
     /// self-dev session may have it set to `claude-api`). This also updates
-    /// `JCODE_RUNTIME_PROVIDER` so any provider instances the probes build
+    /// `WVC_RUNTIME_PROVIDER` so any provider instances the probes build
     /// afterwards inherit the same mode. Errors if the requested credential is
     /// not available, so the doctor can record a clear AUTH failure.
     pub fn pin_credential_mode_for_doctor(&self, oauth: bool) -> Result<()> {
@@ -444,7 +444,7 @@ impl AnthropicProvider {
     }
 
     pub fn new() -> Self {
-        let model = std::env::var("JCODE_ANTHROPIC_MODEL").unwrap_or_else(|_| {
+        let model = std::env::var("WVC_ANTHROPIC_MODEL").unwrap_or_else(|_| {
             if Self::is_usage_exhausted() {
                 "claude-sonnet-4-6".to_string()
             } else {
@@ -459,7 +459,7 @@ impl AnthropicProvider {
             })
         });
 
-        let max_tokens_override = std::env::var("JCODE_ANTHROPIC_MAX_TOKENS")
+        let max_tokens_override = std::env::var("WVC_ANTHROPIC_MAX_TOKENS")
             .ok()
             .and_then(|v| v.trim().parse::<u32>().ok());
         let reasoning_effort = wvc_base::config::config()
@@ -766,7 +766,7 @@ impl AnthropicProvider {
 
         // Auto mode prefers OAuth (Claude subscription), but only while those
         // credentials can actually produce a usable access token. A stale
-        // jcode OAuth account may still deserialize successfully even after its
+        // wvc OAuth account may still deserialize successfully even after its
         // refresh token has been revoked. Treating that as "OAuth available"
         // prevented the configured API key from ever being tried and made
         // imported Claude Code sessions fail with a 401 on their first turn.
@@ -809,7 +809,7 @@ impl AnthropicProvider {
             && !oauth::claude_scopes_have_inference(&fresh_creds.scopes)
         {
             anyhow::bail!(
-                "Claude OAuth credentials are missing the required user:inference scope (scopes: {}). Run `jcode login --provider claude` to mint a fresh Claude.ai OAuth token, or import/use a fresh Claude Code login.",
+                "Claude OAuth credentials are missing the required user:inference scope (scopes: {}). Run `wvc login --provider claude` to mint a fresh Claude.ai OAuth token, or import/use a fresh Claude Code login.",
                 fresh_creds.scopes.join(" ")
             );
         }
@@ -827,7 +827,7 @@ impl AnthropicProvider {
                 &fresh_creds.refresh_token,
             ) {
                 anyhow::bail!(
-                    "Claude OAuth refresh token was previously rejected by Anthropic and cannot be refreshed. Run `jcode login --provider claude` to mint a fresh token."
+                    "Claude OAuth refresh token was previously rejected by Anthropic and cannot be refreshed. Run `wvc login --provider claude` to mint a fresh token."
                 );
             }
 
@@ -869,7 +869,7 @@ impl AnthropicProvider {
 
         if fresh_creds.expires_at <= now {
             anyhow::bail!(
-                "Claude OAuth token is expired and no usable refresh token is available. Run `jcode login --provider claude` to refresh OAuth credentials"
+                "Claude OAuth token is expired and no usable refresh token is available. Run `wvc login --provider claude` to refresh OAuth credentials"
             );
         }
 
@@ -909,7 +909,7 @@ impl AnthropicProvider {
         // method that requests will actually use, instead of inferring it from
         // credential presence. `Auto` leaves the existing identity untouched.
         if let Some(route) = mode.auth_route(wvc_provider_core::DualAuthProvider::Anthropic) {
-            wvc_base::env::set_var("JCODE_RUNTIME_PROVIDER", route.runtime_provider_key());
+            wvc_base::env::set_var("WVC_RUNTIME_PROVIDER", route.runtime_provider_key());
         }
         // Drop any cached auth snapshot so surfaces that still consult the cheap
         // cached probe (auto-mode resolution, usage availability, account labels)
@@ -1570,7 +1570,7 @@ async fn run_stream_with_retries(
                         Err(refresh_err) => {
                             let _ = tx
                                 .send(Err(anyhow::anyhow!(
-                                    "{}\n\nAutomatic Claude OAuth refresh failed: {}\nRun `jcode login --provider claude` (preferred) or `claude`, then retry.",
+                                    "{}\n\nAutomatic Claude OAuth refresh failed: {}\nRun `wvc login --provider claude` (preferred) or `claude`, then retry.",
                                     e,
                                     refresh_err
                                 )))
@@ -1672,7 +1672,7 @@ async fn run_stream_with_retries(
                 if is_oauth && is_oauth_auth_error(&error_str) {
                     let _ = tx
                         .send(Err(anyhow::anyhow!(
-                            "{}\n\nClaude OAuth authentication failed. Run `jcode login --provider claude` (preferred) or `claude`, then retry.",
+                            "{}\n\nClaude OAuth authentication failed. Run `wvc login --provider claude` (preferred) or `claude`, then retry.",
                             e
                         )))
                         .await;
@@ -1752,7 +1752,7 @@ async fn stream_response(
 ) -> Result<()> {
     use wvc_message_types::ConnectionPhase;
     let requested_model_base = strip_1m_suffix(&request.model).to_ascii_lowercase();
-    if std::env::var("JCODE_ANTHROPIC_DEBUG")
+    if std::env::var("WVC_ANTHROPIC_DEBUG")
         .map(|v| v == "1")
         .unwrap_or(false)
         && let Ok(json) = serde_json::to_string_pretty(&request)
@@ -1854,7 +1854,7 @@ async fn stream_response(
     };
 
     // Idle timeout between streamed chunks. Configurable via
-    // `[provider] stream_idle_timeout_secs` / `JCODE_STREAM_IDLE_TIMEOUT_SECS`
+    // `[provider] stream_idle_timeout_secs` / `WVC_STREAM_IDLE_TIMEOUT_SECS`
     // so slow reasoning models don't trip a premature timeout (issue #434).
     loop {
         let chunk = match tokio::time::timeout(stream_idle_timeout, stream.next()).await {
@@ -2188,10 +2188,10 @@ fn process_sse_event(
             if let Ok(parsed) = serde_json::from_str::<MessageStartEvent>(&event.data) {
                 // The server echoes the model that actually served the request.
                 // Log it so we can confirm there was no silent server-side
-                // substitution (and surface it under JCODE_LOG_SERVED_MODEL).
+                // substitution (and surface it under WVC_LOG_SERVED_MODEL).
                 if let Some(served) = parsed.message.model.as_deref() {
                     wvc_base::logging::info(&format!("Anthropic served model={}", served));
-                    if std::env::var("JCODE_LOG_SERVED_MODEL").is_ok() {
+                    if std::env::var("WVC_LOG_SERVED_MODEL").is_ok() {
                         eprintln!("[anthropic] served model={served}");
                     }
                     // Anthropic can silently alias an unavailable/retired model
@@ -2227,7 +2227,7 @@ fn process_sse_event(
                             "Anthropic granted service_tier={}",
                             tier
                         ));
-                        if std::env::var("JCODE_LOG_SERVICE_TIER").is_ok() {
+                        if std::env::var("WVC_LOG_SERVICE_TIER").is_ok() {
                             eprintln!("[anthropic] granted service_tier={tier}");
                         }
                     }

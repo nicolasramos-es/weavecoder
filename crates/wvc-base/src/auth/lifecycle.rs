@@ -243,7 +243,7 @@ fn globally_preferred_model_rank(model: &str) -> (u8, usize) {
     if normalized == openai_default {
         return (0, 0);
     }
-    // Some catalogs expose the clean release id instead of jcode's Sol route.
+    // Some catalogs expose the clean release id instead of wvc's Sol route.
     if normalized == "gpt-5.6" {
         return (1, 0);
     }
@@ -309,7 +309,7 @@ const ALL_GEMINI_MODELS: &[&str] = &[
 /// Copilot and Cursor proxy Claude/OpenAI models under their bare canonical ids
 /// (`copilot:claude-opus-4-8`), so they share the same "catalog lists the cheap
 /// model first" hazard as a direct login and get the combined Claude+OpenAI
-/// order. The Claude/OpenAI subscription default bias mirrors jcode's global
+/// order. The Claude/OpenAI subscription default bias mirrors wvc's global
 /// default model. Bedrock/Azure/Gemini/Antigravity are native hosted catalogs
 /// whose route lists are often ordered oldest-first, so they get an explicit
 /// curated order too.
@@ -767,11 +767,11 @@ fn route_matches_activation(route: &ModelRoute, activation: &AuthActivationResul
             );
         }
         "wvc" => {
-            // Jcode subscription routes deliberately keep their managed public
+            // Weavecoder subscription routes deliberately keep their managed public
             // identity even though the runtime reuses OpenRouter transport code.
             return matches!(
                 api_method,
-                crate::provider::ModelRouteApiMethod::JcodeSubscription
+                crate::provider::ModelRouteApiMethod::WeavecoderSubscription
             );
         }
         "azure-openai" => {
@@ -923,12 +923,12 @@ fn api_key_env_bindings_for_provider(provider_id: &str) -> Vec<(String, String)>
         )],
         "wvc" => vec![
             (
-                crate::subscription_catalog::JCODE_API_KEY_ENV.to_string(),
-                crate::subscription_catalog::JCODE_ENV_FILE.to_string(),
+                crate::subscription_catalog::WVC_API_KEY_ENV.to_string(),
+                crate::subscription_catalog::WVC_ENV_FILE.to_string(),
             ),
             (
-                crate::subscription_catalog::JCODE_API_BASE_ENV.to_string(),
-                crate::subscription_catalog::JCODE_ENV_FILE.to_string(),
+                crate::subscription_catalog::WVC_API_BASE_ENV.to_string(),
+                crate::subscription_catalog::WVC_ENV_FILE.to_string(),
             ),
         ],
         "bedrock" => vec![
@@ -977,7 +977,7 @@ fn api_key_env_bindings_for_provider(provider_id: &str) -> Vec<(String, String)>
 /// Make freshly saved credentials win over stale env vars inherited by this
 /// process (issue #453).
 ///
-/// `/login` persists API keys to the per-provider env file under the jcode
+/// `/login` persists API keys to the per-provider env file under the wvc
 /// config dir, but credential resolution
 /// ([`crate::provider_catalog::load_api_key_from_env_or_config`]) prefers the
 /// process env var. A long-lived server that inherited a stale
@@ -1120,7 +1120,7 @@ fn direct_provider_activation(provider_id: &str) -> Option<ProviderActivation> {
         "openai" => (RuntimeProviderId::OpenAi, ActiveProvider::OpenAI),
         "openai-api" => (RuntimeProviderId::OpenAiApiKey, ActiveProvider::OpenAI),
         "openrouter" => (RuntimeProviderId::OpenRouter, ActiveProvider::OpenRouter),
-        "wvc" => (RuntimeProviderId::Jcode, ActiveProvider::OpenRouter),
+        "wvc" => (RuntimeProviderId::Weavecoder, ActiveProvider::OpenRouter),
         "bedrock" => (RuntimeProviderId::Bedrock, ActiveProvider::Bedrock),
         "cursor" => (RuntimeProviderId::Cursor, ActiveProvider::Cursor),
         "copilot" => (RuntimeProviderId::Copilot, ActiveProvider::Copilot),
@@ -1403,8 +1403,8 @@ mod tests {
 
     #[test]
     fn direct_login_provider_activation_sets_runtime_identity_and_active_provider() {
-        // Sandbox JCODE_HOME so activation's env-file credential sync (#453)
-        // cannot read the developer's real ~/.config/jcode/*.env files and
+        // Sandbox WVC_HOME so activation's env-file credential sync (#453)
+        // cannot read the developer's real ~/.config/wvc/*.env files and
         // leak keys into this process during the matrix run.
         let _sandbox = crate::auth::test_sandbox::AuthTestSandbox::new().expect("sandbox");
 
@@ -1421,9 +1421,9 @@ mod tests {
             ("gemini", "gemini", "gemini"),
             ("antigravity", "antigravity", "antigravity"),
         ] {
-            crate::env::remove_var("JCODE_RUNTIME_PROVIDER");
-            crate::env::remove_var("JCODE_ACTIVE_PROVIDER");
-            crate::env::remove_var("JCODE_INITIAL_PROVIDER_EXPLICIT");
+            crate::env::remove_var("WVC_RUNTIME_PROVIDER");
+            crate::env::remove_var("WVC_ACTIVE_PROVIDER");
+            crate::env::remove_var("WVC_INITIAL_PROVIDER_EXPLICIT");
 
             let activation = activate_auth_change(&AuthActivationRequest::new(
                 None,
@@ -1432,15 +1432,15 @@ mod tests {
 
             assert_eq!(activation.provider_id.as_deref(), Some(provider));
             assert_eq!(
-                std::env::var("JCODE_RUNTIME_PROVIDER").as_deref(),
+                std::env::var("WVC_RUNTIME_PROVIDER").as_deref(),
                 Ok(runtime)
             );
             assert_eq!(
-                std::env::var("JCODE_ACTIVE_PROVIDER").as_deref(),
+                std::env::var("WVC_ACTIVE_PROVIDER").as_deref(),
                 Ok(active)
             );
             assert_eq!(
-                std::env::var("JCODE_INITIAL_PROVIDER_EXPLICIT").as_deref(),
+                std::env::var("WVC_INITIAL_PROVIDER_EXPLICIT").as_deref(),
                 Ok("1")
             );
         }
@@ -1448,14 +1448,14 @@ mod tests {
 
     #[test]
     fn direct_login_provider_descriptor_matrix_has_full_lifecycle_parity() {
-        // Sandbox JCODE_HOME for the same reason as the activation matrix
+        // Sandbox WVC_HOME for the same reason as the activation matrix
         // above: keep the #453 credential sync away from real env files.
         let _sandbox = crate::auth::test_sandbox::AuthTestSandbox::new().expect("sandbox");
 
         let mut covered = Vec::new();
         for provider in crate::provider_catalog::login_providers() {
             let Some((normalized, runtime, active, switch_prefix)) = (match provider.target {
-                crate::provider_catalog::LoginProviderTarget::Jcode => {
+                crate::provider_catalog::LoginProviderTarget::Weavecoder => {
                     Some(("wvc", "wvc", "openrouter", ""))
                 }
                 crate::provider_catalog::LoginProviderTarget::Claude => {
@@ -1516,9 +1516,9 @@ mod tests {
                 provider.id
             );
 
-            crate::env::remove_var("JCODE_RUNTIME_PROVIDER");
-            crate::env::remove_var("JCODE_ACTIVE_PROVIDER");
-            crate::env::remove_var("JCODE_INITIAL_PROVIDER_EXPLICIT");
+            crate::env::remove_var("WVC_RUNTIME_PROVIDER");
+            crate::env::remove_var("WVC_ACTIVE_PROVIDER");
+            crate::env::remove_var("WVC_INITIAL_PROVIDER_EXPLICIT");
 
             let activation = activate_auth_change(&AuthActivationRequest::new(
                 None,
@@ -1530,15 +1530,15 @@ mod tests {
                 Some(provider.display_name)
             );
             assert_eq!(
-                std::env::var("JCODE_RUNTIME_PROVIDER").as_deref(),
+                std::env::var("WVC_RUNTIME_PROVIDER").as_deref(),
                 Ok(runtime)
             );
             assert_eq!(
-                std::env::var("JCODE_ACTIVE_PROVIDER").as_deref(),
+                std::env::var("WVC_ACTIVE_PROVIDER").as_deref(),
                 Ok(active)
             );
             assert_eq!(
-                std::env::var("JCODE_INITIAL_PROVIDER_EXPLICIT").as_deref(),
+                std::env::var("WVC_INITIAL_PROVIDER_EXPLICIT").as_deref(),
                 Ok("1")
             );
             let expected_switch = if switch_prefix.is_empty() {
@@ -1626,7 +1626,7 @@ mod tests {
             route(
                 "gpt-5.5",
                 "Weavecoder Subscription",
-                crate::subscription_catalog::JCODE_ROUTE_API_METHOD,
+                crate::subscription_catalog::WVC_ROUTE_API_METHOD,
                 true,
             ),
         ];
@@ -1634,14 +1634,14 @@ mod tests {
         let report = validate_catalog_invariants(&activation, Some("gpt-5.5"), &routes);
         assert!(
             report.ok(),
-            "canonical Jcode route should match: {report:?}"
+            "canonical Weavecoder route should match: {report:?}"
         );
         assert_eq!(report.selectable_provider_routes, 1);
         assert_eq!(
             report.route_sample,
             vec![format!(
                 "`gpt-5.5` via {}",
-                crate::subscription_catalog::JCODE_ROUTE_API_METHOD
+                crate::subscription_catalog::WVC_ROUTE_API_METHOD
             )]
         );
         assert_eq!(
@@ -1961,11 +1961,11 @@ mod tests {
         // order; the fallback must preserve live-catalog order for them.
         //
         // Selection consults the process-global namespaced catalog, so hold the
-        // shared test-env lock (and a private JCODE_HOME) or a sibling test's
+        // shared test-env lock (and a private WVC_HOME) or a sibling test's
         // cached catalog decides this assertion depending on ordering.
-        let _env = EnvGuard::new(&["JCODE_HOME"]);
+        let _env = EnvGuard::new(&["WVC_HOME"]);
         let temp = tempfile::tempdir().expect("tempdir");
-        crate::env::set_var("JCODE_HOME", temp.path());
+        crate::env::set_var("WVC_HOME", temp.path());
         let activation = AuthActivationResult {
             provider_id: Some("cerebras".to_string()),
             provider_label: Some("Cerebras".to_string()),
@@ -1997,9 +1997,9 @@ mod tests {
 
     #[test]
     fn post_auth_model_selection_prefers_newest_live_release_for_unranked_provider() {
-        let _env = EnvGuard::new(&["JCODE_HOME"]);
+        let _env = EnvGuard::new(&["WVC_HOME"]);
         let temp = tempfile::tempdir().expect("tempdir");
-        crate::env::set_var("JCODE_HOME", temp.path());
+        crate::env::set_var("WVC_HOME", temp.path());
         wvc_provider_openrouter::save_disk_cache_with_source_for_namespace(
             "cerebras",
             &[
@@ -2514,7 +2514,7 @@ mod tests {
     }
 
     /// Copilot proxies both families; the cross-family tie-break must prefer the
-    /// Claude flagship over the OpenAI flagship to mirror jcode's default model.
+    /// Claude flagship over the OpenAI flagship to mirror wvc's default model.
     #[test]
     fn post_auth_model_selection_copilot_prefers_claude_family_over_openai() {
         let activation = activation_for_provider_id("copilot");

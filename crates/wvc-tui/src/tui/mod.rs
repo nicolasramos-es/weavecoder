@@ -13,7 +13,7 @@ pub(crate) mod color_support;
 mod core;
 pub(crate) mod fuzzy;
 // Terminal image display + metadata helpers now live in the dependency-free
-// `jcode-terminal-image` crate (shared with the `read` tool). Re-exported here
+// `wvc-terminal-image` crate (shared with the `read` tool). Re-exported here
 // so existing `crate::tui::image` / `crate::tui::image_metadata` paths keep working.
 pub use wvc_terminal_image::display as image;
 use wvc_terminal_image::metadata as image_metadata;
@@ -276,9 +276,9 @@ pub trait TuiState {
     fn available_skills(&self) -> Vec<String>;
     /// Authoritative active credential (OAuth vs API key) for a dual-auth
     /// provider, as resolved from the live provider / remote server rather than
-    /// from the `JCODE_RUNTIME_PROVIDER` env var. The header must prefer this
+    /// from the `WVC_RUNTIME_PROVIDER` env var. The header must prefer this
     /// over its own env-based heuristic: the TUI client process often does not
-    /// inherit `JCODE_RUNTIME_PROVIDER` (it is set inside the agent/server
+    /// inherit `WVC_RUNTIME_PROVIDER` (it is set inside the agent/server
     /// process), so the env heuristic silently falls back to "auto prefers
     /// OAuth" and the header claimed OAuth while the info widget correctly
     /// reported an API key. Returns `None` when the credential cannot be
@@ -341,7 +341,7 @@ pub trait TuiState {
     }
     /// Total session token usage (input, output) - used for high usage warnings
     fn total_session_tokens(&self) -> Option<(u64, u64)>;
-    /// Number of jcode compactions already applied to this session, when known.
+    /// Number of wvc compactions already applied to this session, when known.
     fn session_compaction_count(&self) -> usize {
         0
     }
@@ -805,7 +805,7 @@ fn supports_reliable_zero_cache_read_warning(
         return true;
     }
 
-    // OpenRouter/Jcode-subscription routes can only be treated as reliable for zero-read
+    // OpenRouter/Weavecoder-subscription routes can only be treated as reliable for zero-read
     // warnings once the upstream provider identifies a known cache-reporting family.
     // A bare OpenRouter route with cached_tokens=0 is not enough: some upstreams simply
     // do not implement prompt caching, and warning on those would make the UI untrustworthy.
@@ -961,7 +961,7 @@ pub struct LoginImportPrompt {
     /// `Some` while the telemetry settings sub-page is open, holding the
     /// highlighted choice.
     pub telemetry: Option<TelemetryChoice>,
-    /// Whether the environment (JCODE_NO_TELEMETRY / DO_NOT_TRACK) already
+    /// Whether the environment (WVC_NO_TELEMETRY / DO_NOT_TRACK) already
     /// forces telemetry off, so the sub-page should say so.
     pub telemetry_env_forced_off: bool,
     /// How many rows are currently checked for import.

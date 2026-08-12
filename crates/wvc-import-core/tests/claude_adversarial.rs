@@ -1,5 +1,5 @@
 //! Adversarial / edge-case tests for the Claude Code JSONL parser and the
-//! parent_uuid ordering logic in `jcode-import-core`.
+//! parent_uuid ordering logic in `wvc-import-core`.
 //!
 //! These assert the *target* (correct) behavior agreed with the swarm
 //! coordinator:
@@ -402,7 +402,7 @@ fn long_linear_chain_orders_correctly() {
 fn malformed_json_line_fails_to_parse_in_isolation() {
     // A genuinely malformed JSON line returns Err (the importer's line loop
     // skips just this one and keeps going). Good lines around it are unaffected
-    // (validated at the importer level in the jcode-base integration test).
+    // (validated at the importer level in the wvc-base integration test).
     assert!(parse("{this is not valid json}").is_err());
     assert!(parse("").is_err());
     // ...but a well-formed line still parses.

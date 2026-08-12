@@ -1,7 +1,7 @@
 //! Markdown -> backend-neutral [`Document`].
 //!
 //! This mirrors the *semantics* of the TUI markdown renderer
-//! (`jcode-tui-markdown`) but emits the neutral [`crate::model`] types instead
+//! (`wvc-tui-markdown`) but emits the neutral [`crate::model`] types instead
 //! of `ratatui` spans. Front-ends adapt the document to their backend and may
 //! wrap it with [`crate::wrap`].
 //!

@@ -404,7 +404,7 @@ impl AuthLifecycleDriver {
             .clone()
             .or_else(|| activation.activated_model.clone());
         // Mirror the server's post-auth re-selection
-        // (`handle_notify_auth_changed`): once the live catalog lands, jcode
+        // (`handle_notify_auth_changed`): once the live catalog lands, wvc
         // switches to an accessible model returned by the live catalog when
         // the current model has no matching provider route (e.g. a static
         // profile default the live catalog no longer serves).
@@ -495,7 +495,7 @@ impl AuthLifecycleDriver {
                 resolved.default_model.as_deref().unwrap_or("none")
             ));
             transcript.push(format!(
-                "**{} API key saved.**\n\nStored at `{}`.\nFetching models now. Jcode will switch to an accessible model returned by the live catalog and show the catalog diff when discovery finishes.",
+                "**{} API key saved.**\n\nStored at `{}`.\nFetching models now. Weavecoder will switch to an accessible model returned by the live catalog and show the catalog diff when discovery finishes.",
                 spec.provider_label,
                 self.sandbox.env_file_path(&resolved.env_file).display()
             ));
@@ -571,14 +571,14 @@ mod tests {
     }
 
     fn live_cerebras_api_key() -> Option<LiveTestApiKey> {
-        std::env::var("JCODE_AUTH_LIFECYCLE_CEREBRAS_API_KEY")
+        std::env::var("WVC_AUTH_LIFECYCLE_CEREBRAS_API_KEY")
             .ok()
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty())
             .map(|secret| LiveTestApiKey {
                 auth: wvc_base::live_tests::LiveVerificationAuth::from_secret(
-                    "env:JCODE_AUTH_LIFECYCLE_CEREBRAS_API_KEY",
-                    Some("JCODE_AUTH_LIFECYCLE_CEREBRAS_API_KEY"),
+                    "env:WVC_AUTH_LIFECYCLE_CEREBRAS_API_KEY",
+                    Some("WVC_AUTH_LIFECYCLE_CEREBRAS_API_KEY"),
                     &secret,
                 ),
                 secret,
@@ -586,15 +586,15 @@ mod tests {
     }
 
     fn live_opencode_zen_api_key() -> Option<LiveTestApiKey> {
-        if let Some(secret) = std::env::var("JCODE_AUTH_LIFECYCLE_OPENCODE_API_KEY")
+        if let Some(secret) = std::env::var("WVC_AUTH_LIFECYCLE_OPENCODE_API_KEY")
             .ok()
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty())
         {
             return Some(LiveTestApiKey {
                 auth: wvc_base::live_tests::LiveVerificationAuth::from_secret(
-                    "env:JCODE_AUTH_LIFECYCLE_OPENCODE_API_KEY",
-                    Some("JCODE_AUTH_LIFECYCLE_OPENCODE_API_KEY"),
+                    "env:WVC_AUTH_LIFECYCLE_OPENCODE_API_KEY",
+                    Some("WVC_AUTH_LIFECYCLE_OPENCODE_API_KEY"),
                     &secret,
                 ),
                 secret,
@@ -1243,17 +1243,17 @@ mod tests {
 
     #[tokio::test(flavor = "current_thread")]
     async fn cerebras_live_opt_in_catalog_lifecycle_uses_isolated_sandbox() {
-        if !env_truthy("JCODE_AUTH_LIFECYCLE_LIVE") {
+        if !env_truthy("WVC_AUTH_LIFECYCLE_LIVE") {
             eprintln!(
-                "skipping live Cerebras auth lifecycle test; set JCODE_AUTH_LIFECYCLE_LIVE=1 and JCODE_AUTH_LIFECYCLE_CEREBRAS_API_KEY"
+                "skipping live Cerebras auth lifecycle test; set WVC_AUTH_LIFECYCLE_LIVE=1 and WVC_AUTH_LIFECYCLE_CEREBRAS_API_KEY"
             );
             return;
         }
         let api_key = live_cerebras_api_key()
-            .expect("JCODE_AUTH_LIFECYCLE_LIVE=1 requires JCODE_AUTH_LIFECYCLE_CEREBRAS_API_KEY");
+            .expect("WVC_AUTH_LIFECYCLE_LIVE=1 requires WVC_AUTH_LIFECYCLE_CEREBRAS_API_KEY");
 
-        let spend_smoke = env_truthy("JCODE_AUTH_LIFECYCLE_SMOKE");
-        let stream_smoke = env_truthy("JCODE_AUTH_LIFECYCLE_STREAM_SMOKE");
+        let spend_smoke = env_truthy("WVC_AUTH_LIFECYCLE_SMOKE");
+        let stream_smoke = env_truthy("WVC_AUTH_LIFECYCLE_STREAM_SMOKE");
         let mut stages = vec![
             wvc_base::live_tests::LiveVerificationStage::passed(
                 wvc_base::live_tests::checkpoints::AUTH_CREDENTIAL_LOADED,
@@ -1464,23 +1464,23 @@ mod tests {
 
     #[tokio::test(flavor = "current_thread")]
     async fn opencode_zen_live_opt_in_tool_call_smoke() {
-        if !env_truthy("JCODE_OPENCODE_ZEN_LIVE_TOOL_TEST") {
+        if !env_truthy("WVC_OPENCODE_ZEN_LIVE_TOOL_TEST") {
             eprintln!(
-                "skipping live OpenCode Zen tool-call smoke; set JCODE_OPENCODE_ZEN_LIVE_TOOL_TEST=1 and provide OPENCODE_API_KEY"
+                "skipping live OpenCode Zen tool-call smoke; set WVC_OPENCODE_ZEN_LIVE_TOOL_TEST=1 and provide OPENCODE_API_KEY"
             );
             return;
         }
         let api_key = live_opencode_zen_api_key().expect(
-            "JCODE_OPENCODE_ZEN_LIVE_TOOL_TEST=1 requires OPENCODE_API_KEY or JCODE_AUTH_LIFECYCLE_OPENCODE_API_KEY",
+            "WVC_OPENCODE_ZEN_LIVE_TOOL_TEST=1 requires OPENCODE_API_KEY or WVC_AUTH_LIFECYCLE_OPENCODE_API_KEY",
         );
-        let model = std::env::var("JCODE_OPENCODE_ZEN_LIVE_TOOL_MODEL")
+        let model = std::env::var("WVC_OPENCODE_ZEN_LIVE_TOOL_MODEL")
             .ok()
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty())
             .unwrap_or_else(|| "kimi-k2.6".to_string());
 
-        let stream_smoke = env_truthy("JCODE_OPENCODE_ZEN_LIVE_STREAM_TEST")
-            || env_truthy("JCODE_AUTH_LIFECYCLE_STREAM_SMOKE");
+        let stream_smoke = env_truthy("WVC_OPENCODE_ZEN_LIVE_STREAM_TEST")
+            || env_truthy("WVC_AUTH_LIFECYCLE_STREAM_SMOKE");
         let mut stages = vec![
             wvc_base::live_tests::LiveVerificationStage::passed(
                 wvc_base::live_tests::checkpoints::AUTH_CREDENTIAL_LOADED,
@@ -1684,13 +1684,13 @@ mod tests {
 
     #[tokio::test(flavor = "current_thread")]
     async fn issue_driven_openai_compatible_live_target_smoke() {
-        let Some(provider_id) = std::env::var("JCODE_ISSUE_DRIVEN_LIVE_PROVIDER")
+        let Some(provider_id) = std::env::var("WVC_ISSUE_DRIVEN_LIVE_PROVIDER")
             .ok()
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty())
         else {
             eprintln!(
-                "skipping issue-driven live provider test; set JCODE_ISSUE_DRIVEN_LIVE_PROVIDER to an OpenAI-compatible profile id"
+                "skipping issue-driven live provider test; set WVC_ISSUE_DRIVEN_LIVE_PROVIDER to an OpenAI-compatible profile id"
             );
             return;
         };
@@ -1699,17 +1699,17 @@ mod tests {
         let resolved = wvc_base::provider_catalog::resolve_openai_compatible_profile(profile);
         let api_key = live_openai_compatible_api_key(profile).unwrap_or_else(|| {
             panic!(
-                "JCODE_ISSUE_DRIVEN_LIVE_PROVIDER={} requires {} or {}",
+                "WVC_ISSUE_DRIVEN_LIVE_PROVIDER={} requires {} or {}",
                 provider_id, resolved.api_key_env, resolved.env_file
             )
         });
-        let requested_model = std::env::var("JCODE_ISSUE_DRIVEN_LIVE_MODEL")
+        let requested_model = std::env::var("WVC_ISSUE_DRIVEN_LIVE_MODEL")
             .ok()
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty())
             .or_else(|| resolved.default_model.clone());
-        let spend_smoke = env_truthy("JCODE_ISSUE_DRIVEN_LIVE_COMPLETION_SMOKE");
-        let stream_smoke = env_truthy("JCODE_ISSUE_DRIVEN_LIVE_STREAM_SMOKE");
+        let spend_smoke = env_truthy("WVC_ISSUE_DRIVEN_LIVE_COMPLETION_SMOKE");
+        let stream_smoke = env_truthy("WVC_ISSUE_DRIVEN_LIVE_STREAM_SMOKE");
 
         let mut stages = vec![
             wvc_base::live_tests::LiveVerificationStage::passed(

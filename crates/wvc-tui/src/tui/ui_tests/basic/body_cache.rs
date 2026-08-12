@@ -1123,10 +1123,10 @@ fn test_prepare_body_with_math_never_blocks_on_a_stalled_tex_toolchain() {
     std::fs::set_permissions(&stub, std::fs::Permissions::from_mode(0o755)).unwrap();
     // SAFETY: read only by the render and worker threads spawned below.
     unsafe {
-        std::env::set_var("JCODE_LATEX_COMMAND", &stub);
-        std::env::set_var("JCODE_DVIPNG_COMMAND", &stub);
-        std::env::set_var("JCODE_PDFLATEX_COMMAND", &stub);
-        std::env::set_var("JCODE_PDFTOCAIRO_COMMAND", &stub);
+        std::env::set_var("WVC_LATEX_COMMAND", &stub);
+        std::env::set_var("WVC_DVIPNG_COMMAND", &stub);
+        std::env::set_var("WVC_PDFLATEX_COMMAND", &stub);
+        std::env::set_var("WVC_PDFTOCAIRO_COMMAND", &stub);
     }
 
     // Unique formulas so no previously cached artifact short-circuits this.
@@ -1166,9 +1166,9 @@ fn test_prepare_body_with_math_never_blocks_on_a_stalled_tex_toolchain() {
     );
 
     unsafe {
-        std::env::remove_var("JCODE_LATEX_COMMAND");
-        std::env::remove_var("JCODE_DVIPNG_COMMAND");
-        std::env::remove_var("JCODE_PDFLATEX_COMMAND");
-        std::env::remove_var("JCODE_PDFTOCAIRO_COMMAND");
+        std::env::remove_var("WVC_LATEX_COMMAND");
+        std::env::remove_var("WVC_DVIPNG_COMMAND");
+        std::env::remove_var("WVC_PDFLATEX_COMMAND");
+        std::env::remove_var("WVC_PDFTOCAIRO_COMMAND");
     }
 }

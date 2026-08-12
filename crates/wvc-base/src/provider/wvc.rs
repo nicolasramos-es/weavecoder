@@ -5,12 +5,12 @@ use anyhow::Result;
 use async_trait::async_trait;
 use std::sync::{Arc, RwLock};
 
-pub struct JcodeProvider {
+pub struct WeavecoderProvider {
     inner: MultiProvider,
     selected_model: Arc<RwLock<String>>,
 }
 
-impl JcodeProvider {
+impl WeavecoderProvider {
     pub fn new() -> Self {
         crate::subscription_catalog::apply_runtime_env();
         Self::apply_runtime_profile();
@@ -38,7 +38,7 @@ impl JcodeProvider {
     }
 
     fn entitled_models_for(
-        tier: crate::subscription_catalog::JcodeTier,
+        tier: crate::subscription_catalog::WeavecoderTier,
     ) -> impl Iterator<Item = &'static crate::subscription_catalog::CuratedModel> {
         crate::subscription_catalog::curated_models()
             .iter()
@@ -50,12 +50,12 @@ impl JcodeProvider {
         Self::entitled_models_for(crate::subscription_catalog::effective_tier())
     }
 
-    fn model_routes_for(tier: crate::subscription_catalog::JcodeTier) -> Vec<ModelRoute> {
+    fn model_routes_for(tier: crate::subscription_catalog::WeavecoderTier) -> Vec<ModelRoute> {
         Self::entitled_models_for(tier)
             .map(|model| ModelRoute {
                 model: model.id.to_string(),
-                provider: crate::subscription_catalog::JCODE_PROVIDER_DISPLAY_NAME.to_string(),
-                api_method: crate::subscription_catalog::JCODE_ROUTE_API_METHOD.to_string(),
+                provider: crate::subscription_catalog::WVC_PROVIDER_DISPLAY_NAME.to_string(),
+                api_method: crate::subscription_catalog::WVC_ROUTE_API_METHOD.to_string(),
                 available: true,
                 detail: crate::subscription_catalog::routing_policy_detail(model),
                 cheapness: None,
@@ -64,14 +64,14 @@ impl JcodeProvider {
     }
 }
 
-impl Default for JcodeProvider {
+impl Default for WeavecoderProvider {
     fn default() -> Self {
         Self::new()
     }
 }
 
 #[async_trait]
-impl Provider for JcodeProvider {
+impl Provider for WeavecoderProvider {
     async fn complete(
         &self,
         messages: &[Message],
@@ -106,7 +106,7 @@ impl Provider for JcodeProvider {
     }
 
     fn name(&self) -> &str {
-        crate::subscription_catalog::JCODE_PROVIDER_DISPLAY_NAME
+        crate::subscription_catalog::WVC_PROVIDER_DISPLAY_NAME
     }
 
     fn model(&self) -> String {
@@ -288,7 +288,7 @@ mod tests {
         let runtime = tokio::runtime::Runtime::new().expect("tokio runtime");
 
         runtime.block_on(async {
-            let provider = JcodeProvider::new();
+            let provider = WeavecoderProvider::new();
             assert!(crate::subscription_catalog::is_runtime_mode_enabled());
             assert!(
                 provider
@@ -308,7 +308,7 @@ mod tests {
         let runtime = tokio::runtime::Runtime::new().expect("tokio runtime");
 
         runtime.block_on(async {
-            let provider = JcodeProvider::new();
+            let provider = WeavecoderProvider::new();
             assert_eq!(provider.name(), "Weavecoder Subscription");
             let model = provider.model();
             assert!(
@@ -322,15 +322,15 @@ mod tests {
 
     #[test]
     fn wvc_provider_exposes_only_explicit_subscription_routes() {
-        use crate::subscription_catalog::JcodeTier;
+        use crate::subscription_catalog::WeavecoderTier;
 
-        let plus_routes = JcodeProvider::model_routes_for(JcodeTier::Plus);
+        let plus_routes = WeavecoderProvider::model_routes_for(WeavecoderTier::Plus);
         let gpt_route = plus_routes
             .iter()
             .find(|route| route.model == "gpt-5.5")
             .expect("Plus tier includes GPT-5.5");
         let route_selection = wvc_provider_core::RouteSelection::from_model_route(gpt_route);
-        let flagship_routes = JcodeProvider::model_routes_for(JcodeTier::Flagship);
+        let flagship_routes = WeavecoderProvider::model_routes_for(WeavecoderTier::Flagship);
         let expected_models = vec![
             "claude-opus-4-8",
             "claude-opus-5",
@@ -366,7 +366,7 @@ mod tests {
                 && route.available
         }));
         assert_eq!(
-            JcodeProvider::entitled_models_for(JcodeTier::Plus)
+            WeavecoderProvider::entitled_models_for(WeavecoderTier::Plus)
                 .map(|model| model.id.to_string())
                 .collect::<Vec<_>>(),
             expected_models
@@ -377,7 +377,7 @@ mod tests {
         assert_eq!(route_selection.routed_model_spec(), "gpt-5.5");
         assert_eq!(
             route_selection.runtime_key,
-            wvc_provider_core::RuntimeKey::JcodeSubscription
+            wvc_provider_core::RuntimeKey::WeavecoderSubscription
         );
         assert_eq!(route_selection.api_method, "wvc-subscription");
         assert_eq!(route_selection.provider_label, "Weavecoder Subscription");

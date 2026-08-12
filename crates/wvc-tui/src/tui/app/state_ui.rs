@@ -1640,7 +1640,7 @@ fn format_cache_stats(app: &App) -> String {
 }
 
 /// Build the `/skills` report: currently loaded skills (marking the active one)
-/// plus the curated list of jcode-endorsed skills (marking which are installed).
+/// plus the curated list of wvc-endorsed skills (marking which are installed).
 fn build_skills_report(app: &App) -> String {
     let mut out = String::new();
 
@@ -1666,7 +1666,7 @@ fn build_skills_report(app: &App) -> String {
         skills.sort_by(|a, b| a.name.cmp(&b.name));
         if skills.is_empty() {
             out.push_str(
-                "- none loaded\n  Add skills under ~/.jcode/skills/<name>/SKILL.md or ./.jcode/skills/<name>/SKILL.md\n",
+                "- none loaded\n  Add skills under ~/.wvc/skills/<name>/SKILL.md or ./.wvc/skills/<name>/SKILL.md\n",
             );
         } else {
             for skill in skills {
@@ -1694,7 +1694,7 @@ fn build_skills_report(app: &App) -> String {
                 .map(|s| s.name.clone())
                 .collect()
         };
-    out.push_str("\nEndorsed skills (recommended by jcode)\n");
+    out.push_str("\nEndorsed skills (recommended by wvc)\n");
     // Group by category, preserving first-seen category order.
     let mut category_order: Vec<&str> = Vec::new();
     for endorsed in crate::skill::endorsed_skills() {
@@ -2003,7 +2003,7 @@ pub(super) fn handle_info_command(app: &mut App, trimmed: &str) -> bool {
                     None => "none",
                 };
                 format!(
-                    "- supported: yes\n- mode: {}\n- jcode-managed: {}\n- active summary: {} ({})\n- compacted messages: {}\n- active messages: {}\n- summary chars: {}\n- estimated tokens: {}\n- effective tokens: {}\n- observed tokens: {}\n- usage: {:.1}%\n- compacting now: {}\n- budget: {}",
+                    "- supported: yes\n- mode: {}\n- wvc-managed: {}\n- active summary: {} ({})\n- compacted messages: {}\n- active messages: {}\n- summary chars: {}\n- estimated tokens: {}\n- effective tokens: {}\n- observed tokens: {}\n- usage: {:.1}%\n- compacting now: {}\n- budget: {}",
                     mode,
                     if app.provider.uses_wvc_compaction() {
                         "yes"

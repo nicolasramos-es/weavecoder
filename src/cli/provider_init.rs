@@ -23,7 +23,7 @@ use crate::external_auth::{
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, clap::ValueEnum)]
 pub enum ProviderChoice {
-    Jcode,
+    Weavecoder,
     Claude,
     #[value(alias = "claude-api", alias = "anthropic-key", alias = "claude-key")]
     AnthropicApi,
@@ -130,7 +130,7 @@ impl ProviderChoice {
     #[allow(deprecated)]
     pub fn as_arg_value(&self) -> &'static str {
         match self {
-            Self::Jcode => "wvc",
+            Self::Weavecoder => "wvc",
             Self::Claude => "claude",
             Self::AnthropicApi => "anthropic-api",
             Self::ClaudeSubprocess => "claude-subprocess",
@@ -186,8 +186,8 @@ impl ProviderChoice {
 #[allow(deprecated)]
 const PROVIDER_CHOICE_LOGIN_PROVIDERS: &[(ProviderChoice, LoginProviderDescriptor)] = &[
     (
-        ProviderChoice::Jcode,
-        crate::provider_catalog::JCODE_LOGIN_PROVIDER,
+        ProviderChoice::Weavecoder,
+        crate::provider_catalog::WVC_LOGIN_PROVIDER,
     ),
     (
         ProviderChoice::Claude,
@@ -686,7 +686,7 @@ fn ensure_external_api_key_auth_allowed_for_explicit_choice(env_key: &str) -> Re
         return Ok(());
     }
     anyhow::bail!(
-        "Skipped trusting external {} credentials. Run `{}` to authenticate jcode directly.",
+        "Skipped trusting external {} credentials. Run `{}` to authenticate wvc directly.",
         provider_name,
         login_hint
     )
@@ -839,7 +839,7 @@ fn ensure_openai_auth_allowed_for_explicit_choice() -> Result<()> {
     }
 
     anyhow::bail!(
-        "Skipped trusting existing ~/.codex/auth.json credentials. Run `jcode login --provider openai` to authenticate jcode directly."
+        "Skipped trusting existing ~/.codex/auth.json credentials. Run `wvc login --provider openai` to authenticate wvc directly."
     )
 }
 
@@ -921,7 +921,7 @@ fn ensure_claude_auth_allowed_for_explicit_choice() -> Result<()> {
         return Ok(());
     }
     anyhow::bail!(
-        "Skipped trusting external Claude credentials. Run `jcode login --provider claude` to authenticate jcode directly."
+        "Skipped trusting external Claude credentials. Run `wvc login --provider claude` to authenticate wvc directly."
     )
 }
 
@@ -1004,7 +1004,7 @@ fn ensure_gemini_auth_allowed_for_explicit_choice() -> Result<()> {
         return Ok(());
     }
     anyhow::bail!(
-        "Skipped trusting Gemini CLI credentials. Run `jcode login --provider gemini` to authenticate jcode directly."
+        "Skipped trusting Gemini CLI credentials. Run `wvc login --provider gemini` to authenticate wvc directly."
     )
 }
 
@@ -1092,7 +1092,7 @@ fn ensure_copilot_auth_allowed_for_explicit_choice() -> Result<()> {
         return Ok(());
     }
     anyhow::bail!(
-        "Skipped trusting external Copilot credentials. Run `jcode login --provider copilot` to authenticate jcode directly."
+        "Skipped trusting external Copilot credentials. Run `wvc login --provider copilot` to authenticate wvc directly."
     )
 }
 
@@ -1144,7 +1144,7 @@ fn ensure_cursor_auth_allowed_for_explicit_choice() -> Result<()> {
         return Ok(());
     }
     anyhow::bail!(
-        "Skipped trusting external Cursor credentials. Run `jcode login --provider cursor` to authenticate jcode directly."
+        "Skipped trusting external Cursor credentials. Run `wvc login --provider cursor` to authenticate wvc directly."
     )
 }
 
@@ -1201,10 +1201,10 @@ fn disable_subscription_runtime_mode() {
 }
 
 fn disable_subscription_runtime_mode_preserving_active_provider_profile() {
-    if std::env::var_os("JCODE_PROVIDER_PROFILE_ACTIVE").is_some()
-        || std::env::var_os("JCODE_NAMED_PROVIDER_PROFILE").is_some()
+    if std::env::var_os("WVC_PROVIDER_PROFILE_ACTIVE").is_some()
+        || std::env::var_os("WVC_NAMED_PROVIDER_PROFILE").is_some()
     {
-        crate::env::remove_var(crate::subscription_catalog::JCODE_SUBSCRIPTION_ACTIVE_ENV);
+        crate::env::remove_var(crate::subscription_catalog::WVC_SUBSCRIPTION_ACTIVE_ENV);
     } else {
         disable_subscription_runtime_mode();
     }
@@ -1213,7 +1213,7 @@ fn disable_subscription_runtime_mode_preserving_active_provider_profile() {
 pub fn apply_login_provider_profile_env(provider: LoginProviderDescriptor) {
     // #712: the arms below clear an explicitly selected named profile, which
     // made auth-test probe (and false-negative) the generic compatible slot.
-    if std::env::var_os("JCODE_NAMED_PROVIDER_PROFILE").is_some() {
+    if std::env::var_os("WVC_NAMED_PROVIDER_PROFILE").is_some() {
         return;
     }
     match provider.target {
@@ -1222,7 +1222,7 @@ pub fn apply_login_provider_profile_env(provider: LoginProviderDescriptor) {
             // Bootstrap login still spawns the daemon with `--provider auto`. Mark the
             // just-selected compatible provider as active so the child process does
             // not clear these inherited runtime vars before credential detection.
-            crate::env::set_var("JCODE_PROVIDER_PROFILE_ACTIVE", "1");
+            crate::env::set_var("WVC_PROVIDER_PROFILE_ACTIVE", "1");
         }
         LoginProviderTarget::AutoImport | LoginProviderTarget::Google => {}
         _ => {
@@ -1254,7 +1254,7 @@ pub async fn login_and_bootstrap_provider(
             disable_subscription_runtime_mode();
             Arc::new(provider::MultiProvider::new())
         }
-        LoginProviderTarget::Jcode => Arc::new(provider::wvc::JcodeProvider::new()),
+        LoginProviderTarget::Weavecoder => Arc::new(provider::wvc::WeavecoderProvider::new()),
         LoginProviderTarget::Claude | LoginProviderTarget::ClaudeApiKey => {
             disable_subscription_runtime_mode();
             Arc::new(provider::MultiProvider::new())
@@ -1302,7 +1302,7 @@ pub async fn login_and_bootstrap_provider(
         LoginProviderTarget::Cursor => {
             disable_subscription_runtime_mode();
             clear_initial_model_provider();
-            crate::env::set_var("JCODE_ACTIVE_PROVIDER", "cursor");
+            crate::env::set_var("WVC_ACTIVE_PROVIDER", "cursor");
             Arc::new(wvc_provider_cursor_runtime::CursorCliProvider::new())
         }
         LoginProviderTarget::Copilot => {
@@ -1312,13 +1312,13 @@ pub async fn login_and_bootstrap_provider(
         LoginProviderTarget::Gemini => {
             disable_subscription_runtime_mode();
             clear_initial_model_provider();
-            crate::env::set_var("JCODE_ACTIVE_PROVIDER", "gemini");
+            crate::env::set_var("WVC_ACTIVE_PROVIDER", "gemini");
             Arc::new(wvc_provider_gemini_runtime::GeminiProvider::new())
         }
         LoginProviderTarget::Antigravity => {
             disable_subscription_runtime_mode();
             clear_initial_model_provider();
-            crate::env::set_var("JCODE_ACTIVE_PROVIDER", "antigravity");
+            crate::env::set_var("WVC_ACTIVE_PROVIDER", "antigravity");
             Arc::new(wvc_provider_antigravity_runtime::AntigravityProvider::new())
         }
         LoginProviderTarget::Google => {
@@ -1382,15 +1382,15 @@ async fn init_provider_with_options(
     // OpenRouter/OpenAI-compatible factory) and their model-picker routes.
     super::startup::register_external_provider_runtimes();
 
-    if let Ok(profile_name) = std::env::var("JCODE_PROVIDER_PROFILE_NAME")
+    if let Ok(profile_name) = std::env::var("WVC_PROVIDER_PROFILE_NAME")
         && !profile_name.trim().is_empty()
     {
         crate::provider_catalog::apply_named_provider_profile_env(profile_name.trim())?;
-        crate::env::set_var("JCODE_PROVIDER_PROFILE_ACTIVE", "1");
+        crate::env::set_var("WVC_PROVIDER_PROFILE_ACTIVE", "1");
     }
 
-    if std::env::var_os("JCODE_PROVIDER_PROFILE_ACTIVE").is_none()
-        && std::env::var_os("JCODE_NAMED_PROVIDER_PROFILE").is_none()
+    if std::env::var_os("WVC_PROVIDER_PROFILE_ACTIVE").is_none()
+        && std::env::var_os("WVC_NAMED_PROVIDER_PROFILE").is_none()
     {
         if let Some(profile) = profile_for_choice(choice) {
             apply_openai_compatible_profile_env(Some(profile));
@@ -1406,9 +1406,9 @@ async fn init_provider_with_options(
     };
 
     let provider: Arc<dyn provider::Provider> = match choice {
-        ProviderChoice::Jcode => {
-            init_notice("Using Jcode subscription provider");
-            Arc::new(provider::wvc::JcodeProvider::new())
+        ProviderChoice::Weavecoder => {
+            init_notice("Using Weavecoder subscription provider");
+            Arc::new(provider::wvc::WeavecoderProvider::new())
         }
         ProviderChoice::Claude => {
             disable_subscription_runtime_mode();
@@ -1430,7 +1430,7 @@ async fn init_provider_with_options(
             crate::logging::warn(
                 "Using --provider claude-subprocess is deprecated and will be removed. Prefer `--provider claude`.",
             );
-            crate::env::set_var("JCODE_USE_CLAUDE_CLI", "1");
+            crate::env::set_var("WVC_USE_CLAUDE_CLI", "1");
             init_notice(
                 "Using deprecated Claude subprocess transport as the initial provider (legacy compatibility mode)",
             );
@@ -1456,7 +1456,7 @@ async fn init_provider_with_options(
             ensure_cursor_auth_allowed_for_explicit_choice()?;
             init_notice("Using Cursor native HTTPS provider (experimental)");
             clear_initial_model_provider();
-            crate::env::set_var("JCODE_ACTIVE_PROVIDER", "cursor");
+            crate::env::set_var("WVC_ACTIVE_PROVIDER", "cursor");
             Arc::new(wvc_provider_cursor_runtime::CursorCliProvider::new())
         }
         ProviderChoice::Copilot => {
@@ -1477,7 +1477,7 @@ async fn init_provider_with_options(
                 init_notice("Using Gemini provider (native Google Code Assist OAuth)");
             }
             clear_initial_model_provider();
-            crate::env::set_var("JCODE_ACTIVE_PROVIDER", "gemini");
+            crate::env::set_var("WVC_ACTIVE_PROVIDER", "gemini");
             Arc::new(wvc_provider_gemini_runtime::GeminiProvider::new())
         }
         ProviderChoice::Openrouter => {
@@ -1540,7 +1540,7 @@ async fn init_provider_with_options(
             disable_subscription_runtime_mode();
             let profile = profile_for_choice(choice)
                 .ok_or_else(|| anyhow::anyhow!("missing provider profile for choice"))?;
-            if std::env::var_os("JCODE_NAMED_PROVIDER_PROFILE").is_none() {
+            if std::env::var_os("WVC_NAMED_PROVIDER_PROFILE").is_none() {
                 // An explicit `--provider <compatible>` selection should win over
                 // any stale active-profile marker inherited from a previous
                 // bootstrap/login flow. Named provider profiles still take
@@ -1548,7 +1548,7 @@ async fn init_provider_with_options(
                 force_apply_openai_compatible_profile_env(Some(profile));
             }
             let mut runtime_model_hint = None;
-            let display_name = if let Ok(named) = std::env::var("JCODE_NAMED_PROVIDER_PROFILE") {
+            let display_name = if let Ok(named) = std::env::var("WVC_NAMED_PROVIDER_PROFILE") {
                 if let Some(profile) = crate::config::config().providers.get(&named) {
                     runtime_model_hint = profile.default_model.clone();
                 }
@@ -1568,8 +1568,8 @@ async fn init_provider_with_options(
                 display_name
             ));
             crate::provider::activation::apply_openai_compatible_runtime(runtime_model_hint)?;
-            if std::env::var_os("JCODE_NAMED_PROVIDER_PROFILE").is_some() {
-                let profile_name = std::env::var("JCODE_NAMED_PROVIDER_PROFILE")?;
+            if std::env::var_os("WVC_NAMED_PROVIDER_PROFILE").is_some() {
+                let profile_name = std::env::var("WVC_NAMED_PROVIDER_PROFILE")?;
                 let cfg = crate::config::config();
                 let profile = cfg.providers.get(&profile_name).ok_or_else(|| {
                     anyhow::anyhow!("Unknown provider profile '{}'", profile_name)
@@ -1589,7 +1589,7 @@ async fn init_provider_with_options(
             ensure_antigravity_auth_allowed_for_explicit_choice()?;
             init_notice("Using Antigravity provider (experimental)");
             clear_initial_model_provider();
-            crate::env::set_var("JCODE_ACTIVE_PROVIDER", "antigravity");
+            crate::env::set_var("WVC_ACTIVE_PROVIDER", "antigravity");
             Arc::new(wvc_provider_antigravity_runtime::AntigravityProvider::new())
         }
         ProviderChoice::Google => {
@@ -1598,7 +1598,7 @@ async fn init_provider_with_options(
                 "Note: Google/Gmail is not a model provider. Using auto-detect for model provider.",
             );
             init_notice(
-                "Gmail credentials can be configured with `jcode login google`; the gmail tool is enabled by default in the full tool profile.",
+                "Gmail credentials can be configured with `wvc login google`; the gmail tool is enabled by default in the full tool profile.",
             );
             clear_initial_model_provider();
             Arc::new(provider::MultiProvider::new_fast())
@@ -1737,29 +1737,29 @@ async fn init_provider_with_options(
                     "Using {} (use /model to switch models)",
                     multi.name()
                 ));
-                crate::env::set_var("JCODE_ACTIVE_PROVIDER", multi.name().to_lowercase());
+                crate::env::set_var("WVC_ACTIVE_PROVIDER", multi.name().to_lowercase());
                 Arc::new(multi)
             } else {
-                let non_interactive = std::env::var("JCODE_NON_INTERACTIVE").is_ok();
+                let non_interactive = std::env::var("WVC_NON_INTERACTIVE").is_ok();
                 // Deferred-auth bootstrap: the interactive TUI server is spawned
-                // headless (JCODE_NON_INTERACTIVE) but the user logs in *inside*
+                // headless (WVC_NON_INTERACTIVE) but the user logs in *inside*
                 // the TUI on a fresh install. Rather than bail, boot an empty
                 // MultiProvider with no configured credentials yet. The TUI's
                 // `/login` flow then activates a provider via the normal
                 // auth-changed path (MultiProvider::on_auth_changed hot-inits the
                 // newly logged-in provider). Only the actual TUI server opts in
-                // via JCODE_DEFERRED_AUTH_BOOTSTRAP, so `wvc run` and other
+                // via WVC_DEFERRED_AUTH_BOOTSTRAP, so `wvc run` and other
                 // genuinely headless callers still fail loudly.
-                if std::env::var_os("JCODE_DEFERRED_AUTH_BOOTSTRAP").is_some() {
+                if std::env::var_os("WVC_DEFERRED_AUTH_BOOTSTRAP").is_some() {
                     crate::logging::info(
                         "No credentials configured; booting deferred-auth MultiProvider for in-TUI onboarding login",
                     );
                     let multi = provider::MultiProvider::from_auth_status(availability.auth_status);
-                    crate::env::set_var("JCODE_ACTIVE_PROVIDER", multi.name().to_lowercase());
+                    crate::env::set_var("WVC_ACTIVE_PROVIDER", multi.name().to_lowercase());
                     Arc::new(multi)
                 } else if non_interactive {
                     anyhow::bail!(
-                        "No credentials configured. Run 'jcode login' or set ANTHROPIC_API_KEY to authenticate."
+                        "No credentials configured. Run 'wvc login' or set ANTHROPIC_API_KEY to authenticate."
                     );
                 } else if !allow_login_bootstrap {
                     anyhow::bail!(
@@ -1785,8 +1785,8 @@ async fn init_provider_with_options(
         })?;
     }
 
-    if std::env::var_os("JCODE_PROVIDER_PROFILE_ACTIVE").is_none()
-        && std::env::var_os("JCODE_NAMED_PROVIDER_PROFILE").is_none()
+    if std::env::var_os("WVC_PROVIDER_PROFILE_ACTIVE").is_none()
+        && std::env::var_os("WVC_NAMED_PROVIDER_PROFILE").is_none()
         && model.is_none()
         && let Some(profile) = profile_for_choice(choice)
         && let Some(default_model) = resolved_profile_default_model(profile)

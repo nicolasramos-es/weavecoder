@@ -7,18 +7,18 @@ fn with_temp_wvc_home<T>(f: impl FnOnce() -> T) -> T {
     let _env_guard = crate::storage::lock_test_env();
     let temp = tempfile::tempdir().expect("tempdir");
     let saved_env = [
-        "JCODE_HOME",
-        "JCODE_OPENAI_COMPAT_API_BASE",
-        "JCODE_OPENAI_COMPAT_API_KEY_NAME",
-        "JCODE_OPENAI_COMPAT_ENV_FILE",
-        "JCODE_OPENAI_COMPAT_SETUP_URL",
-        "JCODE_OPENAI_COMPAT_DEFAULT_MODEL",
-        "JCODE_OPENAI_COMPAT_LOCAL_ENABLED",
+        "WVC_HOME",
+        "WVC_OPENAI_COMPAT_API_BASE",
+        "WVC_OPENAI_COMPAT_API_KEY_NAME",
+        "WVC_OPENAI_COMPAT_ENV_FILE",
+        "WVC_OPENAI_COMPAT_SETUP_URL",
+        "WVC_OPENAI_COMPAT_DEFAULT_MODEL",
+        "WVC_OPENAI_COMPAT_LOCAL_ENABLED",
         "OPENAI_COMPAT_API_KEY",
     ]
     .map(|key| (key, std::env::var_os(key)));
 
-    crate::env::set_var("JCODE_HOME", temp.path());
+    crate::env::set_var("WVC_HOME", temp.path());
     for (key, _) in saved_env.iter().skip(1) {
         crate::env::remove_var(key);
     }
@@ -86,7 +86,7 @@ fn tui_openai_compatible_api_base_keeps_wvc_docs_and_remote_endpoint() -> anyhow
         let resolved = save_tui_openai_compatible_api_base("https://api.deepseek.com/")?;
         assert_eq!(resolved.api_base, "https://api.deepseek.com");
         assert!(resolved.requires_api_key);
-        assert!(resolved.setup_url.contains("github.com/1jehuang/jcode"));
+        assert!(resolved.setup_url.contains("github.com/nicolasramos/weavecoder"));
         assert!(!resolved.setup_url.contains("opencode.ai"));
         Ok(())
     })
@@ -152,44 +152,44 @@ fn tui_api_key_logout_clears_saved_key_and_process_env() -> anyhow::Result<()> {
 fn tui_wvc_subscription_logout_clears_credentials_and_preserves_api_base() -> anyhow::Result<()> {
     with_temp_wvc_home(|| {
         crate::provider_catalog::save_env_value_to_env_file(
-            crate::subscription_catalog::JCODE_API_KEY_ENV,
-            crate::subscription_catalog::JCODE_ENV_FILE,
-            Some("test-jcode-key"),
+            crate::subscription_catalog::WVC_API_KEY_ENV,
+            crate::subscription_catalog::WVC_ENV_FILE,
+            Some("test-wvc-key"),
         )?;
         crate::provider_catalog::save_env_value_to_env_file(
-            crate::subscription_catalog::JCODE_API_BASE_ENV,
-            crate::subscription_catalog::JCODE_ENV_FILE,
+            crate::subscription_catalog::WVC_API_BASE_ENV,
+            crate::subscription_catalog::WVC_ENV_FILE,
             Some("https://subscription.example/v1"),
         )?;
         crate::provider_catalog::save_env_value_to_env_file(
-            crate::subscription_catalog::JCODE_ACCOUNT_ID_ENV,
-            crate::subscription_catalog::JCODE_ENV_FILE,
+            crate::subscription_catalog::WVC_ACCOUNT_ID_ENV,
+            crate::subscription_catalog::WVC_ENV_FILE,
             Some("acct_test"),
         )?;
         crate::provider_catalog::save_env_value_to_env_file(
-            crate::subscription_catalog::JCODE_ACCOUNT_EMAIL_ENV,
-            crate::subscription_catalog::JCODE_ENV_FILE,
+            crate::subscription_catalog::WVC_ACCOUNT_EMAIL_ENV,
+            crate::subscription_catalog::WVC_ENV_FILE,
             Some("user@example.com"),
         )?;
 
         crate::subscription_catalog::clear_account_credentials()?;
 
-        assert!(std::env::var_os(crate::subscription_catalog::JCODE_API_KEY_ENV).is_none());
+        assert!(std::env::var_os(crate::subscription_catalog::WVC_API_KEY_ENV).is_none());
         assert_eq!(
-            std::env::var(crate::subscription_catalog::JCODE_API_BASE_ENV).as_deref(),
+            std::env::var(crate::subscription_catalog::WVC_API_BASE_ENV).as_deref(),
             Ok("https://subscription.example/v1")
         );
-        assert!(std::env::var_os(crate::subscription_catalog::JCODE_ACCOUNT_ID_ENV).is_none());
-        assert!(std::env::var_os(crate::subscription_catalog::JCODE_ACCOUNT_EMAIL_ENV).is_none());
+        assert!(std::env::var_os(crate::subscription_catalog::WVC_ACCOUNT_ID_ENV).is_none());
+        assert!(std::env::var_os(crate::subscription_catalog::WVC_ACCOUNT_EMAIL_ENV).is_none());
         assert!(crate::subscription_catalog::configured_api_key().is_none());
         for env_key in [
-            crate::subscription_catalog::JCODE_ACCOUNT_ID_ENV,
-            crate::subscription_catalog::JCODE_ACCOUNT_EMAIL_ENV,
+            crate::subscription_catalog::WVC_ACCOUNT_ID_ENV,
+            crate::subscription_catalog::WVC_ACCOUNT_EMAIL_ENV,
         ] {
             assert!(
                 crate::provider_catalog::load_env_value_from_env_or_config(
                     env_key,
-                    crate::subscription_catalog::JCODE_ENV_FILE,
+                    crate::subscription_catalog::WVC_ENV_FILE,
                 )
                 .is_none()
             );

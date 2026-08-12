@@ -7,7 +7,7 @@ use std::time::Duration;
 use wvc_harness_api::{
     API_VERSION_MAJOR, ApiEvent, ApiRequest, ClientFrame, ServerFrame, read_frame, write_frame,
 };
-use wvc_sdk::{ConnectOptions, JcodeClient, RunStructuredError, RunStructuredOptions, Transport};
+use wvc_sdk::{ConnectOptions, WeavecoderClient, RunStructuredError, RunStructuredOptions, Transport};
 
 struct PairTransport(UnixStream);
 
@@ -18,7 +18,7 @@ impl Transport for PairTransport {
     }
 }
 
-fn fake_harness(handle: impl Fn(&ClientFrame, &mut dyn Write) + Send + 'static) -> JcodeClient {
+fn fake_harness(handle: impl Fn(&ClientFrame, &mut dyn Write) + Send + 'static) -> WeavecoderClient {
     let (ours, theirs) = UnixStream::pair().expect("socket pair");
     std::thread::spawn(move || {
         let mut reader = BufReader::new(theirs.try_clone().expect("clone"));
@@ -39,7 +39,7 @@ fn fake_harness(handle: impl Fn(&ClientFrame, &mut dyn Write) + Send + 'static) 
             handle(&frame, &mut writer);
         }
     });
-    JcodeClient::connect_with(
+    WeavecoderClient::connect_with(
         Box::new(PairTransport(ours)),
         ConnectOptions {
             request_timeout: Some(Duration::from_secs(5)),

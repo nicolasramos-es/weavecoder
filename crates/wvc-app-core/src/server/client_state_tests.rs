@@ -108,8 +108,8 @@ async fn session_activity_snapshot_uses_fallback_when_no_live_connection_is_mark
 async fn handle_get_history_falls_back_to_persisted_snapshot_when_agent_is_busy() {
     let _guard = crate::storage::lock_test_env();
     let temp_home = tempfile::TempDir::new().expect("create temp home");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp_home.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp_home.path());
 
     let session_id = "session_busy_history_fallback";
     let mut session = crate::session::Session::create_with_id(
@@ -205,9 +205,9 @@ async fn handle_get_history_falls_back_to_persisted_snapshot_when_agent_is_busy(
     }
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -219,8 +219,8 @@ async fn handle_get_history_falls_back_to_persisted_snapshot_when_agent_is_busy(
 async fn handle_get_model_catalog_does_not_wait_for_busy_agent_lock() {
     let _guard = crate::storage::lock_test_env();
     let temp_home = tempfile::TempDir::new().expect("create temp home");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp_home.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp_home.path());
 
     let session_id = "session_busy_model_catalog_fallback";
     let mut session = crate::session::Session::create_with_id(
@@ -283,9 +283,9 @@ async fn handle_get_model_catalog_does_not_wait_for_busy_agent_lock() {
     }
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
@@ -296,10 +296,10 @@ struct ReloadHistoryEnvGuard {
 
 impl ReloadHistoryEnvGuard {
     fn new(home: &std::path::Path, runtime: &std::path::Path) -> Self {
-        let prev_home = std::env::var_os("JCODE_HOME");
-        let prev_runtime = std::env::var_os("JCODE_RUNTIME_DIR");
-        crate::env::set_var("JCODE_HOME", home);
-        crate::env::set_var("JCODE_RUNTIME_DIR", runtime);
+        let prev_home = std::env::var_os("WVC_HOME");
+        let prev_runtime = std::env::var_os("WVC_RUNTIME_DIR");
+        crate::env::set_var("WVC_HOME", home);
+        crate::env::set_var("WVC_RUNTIME_DIR", runtime);
         Self {
             prev_home,
             prev_runtime,
@@ -311,14 +311,14 @@ impl Drop for ReloadHistoryEnvGuard {
     fn drop(&mut self) {
         crate::server::clear_reload_marker();
         if let Some(prev_home) = self.prev_home.take() {
-            crate::env::set_var("JCODE_HOME", prev_home);
+            crate::env::set_var("WVC_HOME", prev_home);
         } else {
-            crate::env::remove_var("JCODE_HOME");
+            crate::env::remove_var("WVC_HOME");
         }
         if let Some(prev_runtime) = self.prev_runtime.take() {
-            crate::env::set_var("JCODE_RUNTIME_DIR", prev_runtime);
+            crate::env::set_var("WVC_RUNTIME_DIR", prev_runtime);
         } else {
-            crate::env::remove_var("JCODE_RUNTIME_DIR");
+            crate::env::remove_var("WVC_RUNTIME_DIR");
         }
     }
 }

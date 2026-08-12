@@ -1,4 +1,4 @@
-//! Process-wide "keep the machine awake while jcode is working" inhibitor.
+//! Process-wide "keep the machine awake while wvc is working" inhibitor.
 //!
 //! The shared `wvc serve` daemon hosts every session, so a single inhibitor
 //! living in that process is enough to keep the laptop awake while *any* session
@@ -27,7 +27,7 @@ use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread::{self, JoinHandle};
 
 /// Legacy/global override shared with the desktop app: when set, never inhibit.
-const DISABLE_ENV: &str = "JCODE_DISABLE_POWER_INHIBIT";
+const DISABLE_ENV: &str = "WVC_DISABLE_POWER_INHIBIT";
 
 /// How long each spawned helper holds the lock before it must be refreshed.
 /// Bounding this is what makes orphaned locks self-heal after a crash/reload.
@@ -37,7 +37,7 @@ const INHIBIT_TTL: Duration = Duration::from_secs(150);
 /// below `INHIBIT_TTL` so coverage never lapses between reconcile ticks.
 const INHIBIT_REFRESH_AFTER: Duration = Duration::from_secs(90);
 
-/// Best-effort inhibitor that keeps the machine awake while jcode is actively
+/// Best-effort inhibitor that keeps the machine awake while wvc is actively
 /// streaming/processing.
 pub struct PowerInhibitor {
     handle: Option<InhibitHandle>,
@@ -70,7 +70,7 @@ impl Default for PowerInhibitor {
 
 impl PowerInhibitor {
     /// Build an inhibitor. The inhibitor is "available" on supported platforms
-    /// unless the legacy `JCODE_DISABLE_POWER_INHIBIT` env escape hatch is set.
+    /// unless the legacy `WVC_DISABLE_POWER_INHIBIT` env escape hatch is set.
     ///
     /// The user-facing config toggle is intentionally *not* baked in here: the
     /// caller evaluates it per-reconcile (via [`PowerInhibitor::set_active`]) so
@@ -376,8 +376,8 @@ fn build_linux_systemd_inhibit_command(ttl: Duration) -> Command {
     let mut command = Command::new("systemd-inhibit");
     command
         .arg("--what=sleep:handle-lid-switch")
-        .arg("--who=jcode")
-        .arg("--why=Jcode is streaming or processing active work")
+        .arg("--who=wvc")
+        .arg("--why=Weavecoder is streaming or processing active work")
         .arg("--mode=block")
         .arg("sleep")
         .arg(ttl.as_secs().to_string())
@@ -445,7 +445,7 @@ mod tests {
 
         assert_eq!(command_name(&command), "systemd-inhibit");
         assert!(args.contains(&"--what=sleep:handle-lid-switch".to_string()));
-        assert!(args.contains(&"--who=jcode".to_string()));
+        assert!(args.contains(&"--who=wvc".to_string()));
         assert!(args.contains(&"--mode=block".to_string()));
         assert!(args.contains(&"sleep".to_string()));
         // Bounded TTL (not "infinity") so orphaned locks self-heal.

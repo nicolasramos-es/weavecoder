@@ -2,8 +2,8 @@
 fn test_metadata_only_history_preserves_fast_restored_startup_state() {
     let _guard = crate::storage::lock_test_env();
     let temp_home = tempfile::TempDir::new().expect("create temp home");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp_home.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp_home.path());
 
     let session_id = "session_fast_resume_meta_42";
     let mut session = crate::session::Session::create_with_id(
@@ -84,9 +84,9 @@ fn test_metadata_only_history_preserves_fast_restored_startup_state() {
     assert_eq!(app.connection_type.as_deref(), Some("https"));
 
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 

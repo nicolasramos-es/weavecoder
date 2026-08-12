@@ -1,4 +1,4 @@
-//! Render and install global "launch a new jcode" hotkeys on Linux/niri.
+//! Render and install global "launch a new wvc" hotkeys on Linux/niri.
 //!
 //! Unlike macOS, a Wayland client cannot grab system-wide hotkeys: the
 //! `global-hotkey` crate only works on X11/macOS. The portable, correct
@@ -21,24 +21,24 @@
 //! idempotent and a user can hand-remove it cleanly:
 //!
 //! ```text
-//!     // >>> jcode launch hotkeys (managed) >>>
+//!     // >>> wvc launch hotkeys (managed) >>>
 //!     Alt+Semicolon hotkey-overlay-title="wvc: home" { spawn "sh" "-c" "..."; }
-//!     // <<< jcode launch hotkeys (managed) <<<
+//!     // <<< wvc launch hotkeys (managed) <<<
 //! ```
 
 use crate::keymap::KeyChord;
 
 /// Opening sentinel for the managed bind region inside `binds { }`.
-pub(crate) const NIRI_BLOCK_BEGIN: &str = "// >>> jcode launch hotkeys (managed) >>>";
+pub(crate) const NIRI_BLOCK_BEGIN: &str = "// >>> wvc launch hotkeys (managed) >>>";
 /// Closing sentinel for the managed bind region inside `binds { }`.
-pub(crate) const NIRI_BLOCK_END: &str = "// <<< jcode launch hotkeys (managed) <<<";
+pub(crate) const NIRI_BLOCK_END: &str = "// <<< wvc launch hotkeys (managed) <<<";
 
 /// One resolved hotkey ready to render as a niri bind: the chord, the target
 /// directory, a human label, and whether it is a self-dev session.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct NiriHotkey {
     pub chord: KeyChord,
-    /// Concrete directory to launch jcode in (already resolved from any
+    /// Concrete directory to launch wvc in (already resolved from any
     /// `$HOME`/`$LAST_DIR` sentinel).
     pub dir: String,
     /// Short human label, e.g. the repo's directory name.
@@ -47,16 +47,16 @@ pub(crate) struct NiriHotkey {
     pub self_dev: bool,
 }
 
-/// Map a jcode modifier+key chord onto niri's KDL key syntax.
+/// Map a wvc modifier+key chord onto niri's KDL key syntax.
 ///
 /// niri uses `+`-joined modifiers followed by an XKB key name, e.g.
-/// `Alt+Semicolon`, `Super+Shift+Apostrophe`. We translate jcode's `cmd`
+/// `Alt+Semicolon`, `Super+Shift+Apostrophe`. We translate wvc's `cmd`
 /// modifier to `Super` (the Wayland super/meta key) since there is no Command
 /// key on Linux. Returns `None` for keys niri cannot name.
 pub(crate) fn chord_to_niri_bind(chord: &KeyChord) -> Option<String> {
     let key = niri_key_name(&chord.key)?;
     let mut parts: Vec<&str> = Vec::new();
-    // jcode `cmd` == macOS Command == Wayland Super.
+    // wvc `cmd` == macOS Command == Wayland Super.
     if chord.cmd {
         parts.push("Super");
     }
@@ -77,7 +77,7 @@ pub(crate) fn chord_to_niri_bind(chord: &KeyChord) -> Option<String> {
     }
 }
 
-/// Translate a canonical jcode key token into the XKB key name niri expects.
+/// Translate a canonical wvc key token into the XKB key name niri expects.
 /// Returns `None` for tokens with no stable niri spelling.
 fn niri_key_name(key: &str) -> Option<String> {
     let named = match key {
@@ -135,11 +135,11 @@ fn sh_single_quote(input: &str) -> String {
     format!("'{}'", input.replace('\'', r#"'\''"#))
 }
 
-/// Build the `sh -c` command string a bind runs to open jcode in `dir`.
+/// Build the `sh -c` command string a bind runs to open wvc in `dir`.
 ///
 /// We `cd` into the directory (falling back to `$HOME` if it has since been
-/// removed), then launch jcode via the user's terminal. The terminal is chosen
-/// by `terminal` (e.g. `kitty`); we pass it the jcode executable directly.
+/// removed), then launch wvc via the user's terminal. The terminal is chosen
+/// by `terminal` (e.g. `kitty`); we pass it the wvc executable directly.
 fn launch_shell_command(
     exe_path: &str,
     terminal: &str,
@@ -152,7 +152,7 @@ fn launch_shell_command(
     let term_q = sh_single_quote(terminal);
     let chord_q = sh_single_quote(chord);
     let subcmd = if self_dev { " self-dev" } else { "" };
-    // cd with $HOME fallback, then exec the terminal running jcode.
+    // cd with $HOME fallback, then exec the terminal running wvc.
     format!(
         "if [ -d {dir_q} ]; then cd {dir_q}; else cd \"$HOME\"; fi; exec {term_q} {exe_q} --spawn-hotkey {chord_q}{subcmd}",
         dir_q = dir_q,
@@ -466,17 +466,17 @@ mod tests {
     #[test]
     fn renders_bind_line_with_cd_and_terminal() {
         let line = render_niri_bind_line(
-            &hk("alt+;", "/home/jeremy/jcode", "wvc", true),
-            "/home/jeremy/.local/bin/jcode",
+            &hk("alt+;", "/home/jeremy/wvc", "wvc", true),
+            "/home/jeremy/.local/bin/wvc",
             "kitty",
             "    ",
         )
         .unwrap();
         assert!(line.contains("Alt+Semicolon"));
         assert!(line.contains("self-dev"));
-        assert!(line.contains("hotkey-overlay-title=\"wvc: jcode (self-dev)\""));
+        assert!(line.contains("hotkey-overlay-title=\"wvc: wvc (self-dev)\""));
         assert!(line.contains("spawn \"sh\" \"-c\""));
-        assert!(line.contains("/home/jeremy/jcode"));
+        assert!(line.contains("/home/jeremy/wvc"));
         assert!(line.starts_with("    "));
     }
 
@@ -487,16 +487,16 @@ mod tests {
                 hk("alt+;", "/home/u", "home", false),
                 hk("alt+'", "/home/u/proj", "proj", false),
             ],
-            "/bin/jcode",
+            "/bin/wvc",
             "kitty",
             "    ",
         )
         .unwrap();
-        assert!(block.starts_with("    // >>> jcode launch hotkeys (managed) >>>"));
+        assert!(block.starts_with("    // >>> wvc launch hotkeys (managed) >>>"));
         assert!(
             block
                 .trim_end()
-                .ends_with("// <<< jcode launch hotkeys (managed) <<<")
+                .ends_with("// <<< wvc launch hotkeys (managed) <<<")
         );
         assert_eq!(block.matches("spawn \"sh\"").count(), 2);
     }
@@ -506,7 +506,7 @@ mod tests {
         let cfg = "binds {\n    Alt+Tab { focus-window-previous; }\n}\n";
         let block = render_niri_block(
             &[hk("alt+;", "/home/u", "home", false)],
-            "/bin/jcode",
+            "/bin/wvc",
             "kitty",
             "    ",
         )
@@ -525,7 +525,7 @@ mod tests {
     fn splice_replaces_existing_managed_region_in_place() {
         let block_v1 = render_niri_block(
             &[hk("alt+;", "/home/u", "home", false)],
-            "/bin/jcode",
+            "/bin/wvc",
             "kitty",
             "    ",
         )
@@ -534,7 +534,7 @@ mod tests {
 
         let block_v2 = render_niri_block(
             &[hk("alt+;", "/home/u/newproj", "newproj", false)],
-            "/bin/jcode",
+            "/bin/wvc",
             "kitty",
             "    ",
         )
@@ -553,7 +553,7 @@ mod tests {
     fn splice_is_idempotent() {
         let block = render_niri_block(
             &[hk("alt+;", "/home/u", "home", false)],
-            "/bin/jcode",
+            "/bin/wvc",
             "kitty",
             "    ",
         )
@@ -569,7 +569,7 @@ mod tests {
     fn splice_appends_binds_block_when_missing() {
         let block = render_niri_block(
             &[hk("alt+;", "/home/u", "home", false)],
-            "/bin/jcode",
+            "/bin/wvc",
             "kitty",
             "    ",
         )
@@ -588,7 +588,7 @@ mod tests {
         let cfg = "recent-windows {\n    binds {\n        Mod+Tab { next-window; }\n    }\n}\n\ninclude \"binds.kdl\"\n";
         let block = render_niri_block(
             &[hk("alt+;", "/home/u", "home", false)],
-            "/bin/jcode",
+            "/bin/wvc",
             "kitty",
             "    ",
         )
@@ -613,7 +613,7 @@ mod tests {
         let cfg = "recent-windows {\n    binds {\n        Mod+Tab { next-window; }\n    }\n}\n\nbinds {\n    Alt+Tab { focus-window-previous; }\n}\n";
         let block = render_niri_block(
             &[hk("alt+;", "/home/u", "home", false)],
-            "/bin/jcode",
+            "/bin/wvc",
             "kitty",
             "    ",
         )
@@ -629,7 +629,7 @@ mod tests {
     fn splice_relocates_a_managed_block_previously_written_into_a_nested_node() {
         let block = render_niri_block(
             &[hk("alt+;", "/home/u", "home", false)],
-            "/bin/jcode",
+            "/bin/wvc",
             "kitty",
             "        ",
         )
@@ -640,7 +640,7 @@ mod tests {
         );
         let fixed_block = render_niri_block(
             &[hk("alt+;", "/home/u", "home", false)],
-            "/bin/jcode",
+            "/bin/wvc",
             "kitty",
             "    ",
         )
@@ -682,7 +682,7 @@ mod tests {
 
         let block = render_niri_block(
             &[hk("cmd+;", "/home/u", "home", false)],
-            "/bin/jcode",
+            "/bin/wvc",
             "kitty",
             "    ",
         )
@@ -741,7 +741,7 @@ mod tests {
     fn unbalanced_braces_in_a_block_comment_do_not_hide_the_binds_node() {
         let block = render_niri_block(
             &[hk("alt+;", "/home/u", "home", false)],
-            "/bin/jcode",
+            "/bin/wvc",
             "kitty",
             "    ",
         )
@@ -775,7 +775,7 @@ mod tests {
     /// The unit tests above check configs I thought of, which is exactly how the
     /// block-comment bug survived the first fix. This instead uses niri itself as
     /// the oracle: for every generated config that niri accepts, the config must
-    /// still be accepted after jcode splices its managed block in, and the block
+    /// still be accepted after wvc splices its managed block in, and the block
     /// must land in a real top-level `binds` node.
     ///
     /// The corpus lives beside this file so the test is hermetic and fast; the
@@ -794,7 +794,7 @@ mod tests {
         let corpus = include_str!("linux_niri_fuzz_corpus.txt");
         let block = render_niri_block(
             &[hk("alt+;", "/home/u", "home", false)],
-            "/bin/jcode",
+            "/bin/wvc",
             "kitty",
             "    ",
         )
@@ -845,9 +845,9 @@ mod tests {
 
     #[test]
     fn shell_command_cds_and_self_devs() {
-        let s = launch_shell_command("/bin/jcode", "kitty", "/home/u/proj", "cmd+shift+'", true);
+        let s = launch_shell_command("/bin/wvc", "kitty", "/home/u/proj", "cmd+shift+'", true);
         assert!(s.contains("cd '/home/u/proj'"));
-        assert!(s.contains("exec 'kitty' '/bin/jcode' --spawn-hotkey"));
+        assert!(s.contains("exec 'kitty' '/bin/wvc' --spawn-hotkey"));
         assert!(s.contains("'cmd+shift+'\\''' self-dev"));
         assert!(s.contains("\"$HOME\""));
     }

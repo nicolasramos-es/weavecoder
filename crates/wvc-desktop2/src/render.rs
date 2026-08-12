@@ -237,7 +237,7 @@ impl RenderState {
         self.window.request_redraw();
     }
 
-    /// Retitle the window, so a compositor's window list can tell two jcode
+    /// Retitle the window, so a compositor's window list can tell two wvc
     /// windows on different checkouts apart.
     pub fn set_title(&self, title: &str) {
         self.window.set_title(title);

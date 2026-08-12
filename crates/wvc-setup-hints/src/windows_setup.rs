@@ -173,8 +173,8 @@ $current = {current_pid}
 Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
   Where-Object {{
     ($_.ProcessId -ne $current) -and ($_.ProcessId -ne $PID) -and (
-      (($_.Name -eq 'powershell.exe' -or $_.Name -eq 'pwsh.exe') -and $_.CommandLine -like '*jcode-hotkey*') -or
-      (($_.Name -eq 'jcode.exe') -and $_.CommandLine -like '*--listen-windows-hotkey*')
+      (($_.Name -eq 'powershell.exe' -or $_.Name -eq 'pwsh.exe') -and $_.CommandLine -like '*wvc-hotkey*') -or
+      (($_.Name -eq 'wvc.exe') -and $_.CommandLine -like '*--listen-windows-hotkey*')
     )
   }} |
   ForEach-Object {{ Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }}
@@ -204,7 +204,7 @@ $shell = New-Object -ComObject WScript.Shell
 $shortcut = $shell.CreateShortcut({shortcut_path})
 $shortcut.TargetPath = 'powershell.exe'
 $shortcut.Arguments = {listener_arguments}
-$shortcut.Description = 'jcode global launch hotkey listener'
+$shortcut.Description = 'wvc global launch hotkey listener'
 $shortcut.WindowStyle = 7
 $shortcut.Save()
 Write-Output 'OK'
@@ -246,7 +246,7 @@ pub(super) fn uninstall_windows_hotkey_listener() -> Result<()> {
     state.hotkey_configured = false;
     state.hotkey_dismissed = true;
     state.save()?;
-    eprintln!("  \x1b[32m✓\x1b[0m Removed jcode Windows launch-hotkey listener");
+    eprintln!("  \x1b[32m✓\x1b[0m Removed wvc Windows launch-hotkey listener");
     Ok(())
 }
 
@@ -320,7 +320,7 @@ fn launch_windows_hotkey(entry: &WindowsHotkey) -> Result<()> {
             cmd.spawn().map(|_| ())
         })?;
     if !launched {
-        anyhow::bail!("no terminal found to launch jcode");
+        anyhow::bail!("no terminal found to launch wvc");
     }
     Ok(())
 }
@@ -442,7 +442,7 @@ fn windows_native_hotkey_loop(entries: Vec<WindowsHotkey>) -> Result<()> {
         WH_KEYBOARD_LL, WM_HOTKEY,
     };
 
-    const MUTEX_NAME: &str = "Local\\JcodeLaunchHotkeyListener";
+    const MUTEX_NAME: &str = "Local\\WeavecoderLaunchHotkeyListener";
 
     let mutex_name = wide_null(MUTEX_NAME);
     let mut retry_count = 0;
@@ -550,7 +550,7 @@ fn windows_native_hotkey_loop(entries: Vec<WindowsHotkey>) -> Result<()> {
                 std::thread::spawn(move || {
                     if let Err(err) = launch_windows_hotkey(&entry) {
                         wvc_logging::warn(&format!(
-                            "failed to launch jcode from Windows hotkey: {err}"
+                            "failed to launch wvc from Windows hotkey: {err}"
                         ));
                     }
                 });
@@ -585,7 +585,7 @@ fn windows_native_hotkey_loop(_entries: Vec<WindowsHotkey>) -> Result<()> {
 /// Build the TUI startup notice for the Windows launch hotkeys (or `None` when
 /// there is nothing to show). Mirrors the macOS/Linux notices with Windows-native
 /// display labels. Only shown once the listener is configured, since Windows needs the
-/// interactive `jcode setup-hotkey` flow to install it.
+/// interactive `wvc setup-hotkey` flow to install it.
 pub(super) fn windows_launch_hotkeys_notice(state: &SetupHintsState) -> Option<StartupHints> {
     if !state.hotkey_configured {
         return None;
@@ -624,7 +624,7 @@ pub(super) fn windows_launch_hotkeys_notice(state: &SetupHintsState) -> Option<S
         "Launch hotkeys available".to_string(),
         "Launch hotkeys",
         format!(
-            "Configured Jcode launch hotkeys:\n{}\n\nThese fire system-wide.",
+            "Configured Weavecoder launch hotkeys:\n{}\n\nThese fire system-wide.",
             lines.join("\n")
         ),
     ))
@@ -684,7 +684,7 @@ fn nudge_hotkey(state: &mut SetupHintsState) -> bool {
 
     eprintln!("\x1b[36m┌─────────────────────────────────────────────────────────────┐\x1b[0m");
     eprintln!(
-        "\x1b[36m│\x1b[0m \x1b[1m💡 Set up global keys to launch jcode?\x1b[0m                  \x1b[36m│\x1b[0m"
+        "\x1b[36m│\x1b[0m \x1b[1m💡 Set up global keys to launch wvc?\x1b[0m                  \x1b[36m│\x1b[0m"
     );
     eprintln!(
         "\x1b[36m│\x1b[0m                                                             \x1b[36m│\x1b[0m"
@@ -693,7 +693,7 @@ fn nudge_hotkey(state: &mut SetupHintsState) -> bool {
         "\x1b[36m│\x1b[0m    Creates a global hotkey - no extra software needed.       \x1b[36m│\x1b[0m"
     );
     eprintln!(
-        "\x1b[36m│\x1b[0m    Opens jcode in {:<39}    \x1b[36m│\x1b[0m",
+        "\x1b[36m│\x1b[0m    Opens wvc in {:<39}    \x1b[36m│\x1b[0m",
         format!("{}.", terminal_name)
     );
     eprintln!(
@@ -717,7 +717,7 @@ fn nudge_hotkey(state: &mut SetupHintsState) -> bool {
                     state.launch_hotkey_tracking_version = super::LAUNCH_HOTKEY_TRACKING_VERSION;
                     let _ = state.save();
                     eprintln!(
-                        "  \x1b[32m✓\x1b[0m Created hotkeys (\x1b[1mAlt+;\x1b[0m and \x1b[1mCopilot\x1b[0m) → {} + jcode",
+                        "  \x1b[32m✓\x1b[0m Created hotkeys (\x1b[1mAlt+;\x1b[0m and \x1b[1mCopilot\x1b[0m) → {} + wvc",
                         terminal_name
                     );
                     eprintln!();
@@ -726,7 +726,7 @@ fn nudge_hotkey(state: &mut SetupHintsState) -> bool {
                 Err(e) => {
                     eprintln!("  \x1b[31m✗\x1b[0m Failed to create hotkey: {}", e);
                     eprintln!(
-                        "    You can set it up manually later with: \x1b[1mjcode setup-hotkey\x1b[0m"
+                        "    You can set it up manually later with: \x1b[1mwvc setup-hotkey\x1b[0m"
                     );
                     eprintln!();
                     false
@@ -753,7 +753,7 @@ fn nudge_alacritty(state: &mut SetupHintsState) -> bool {
 
     eprintln!("\x1b[36m┌─────────────────────────────────────────────────────────────┐\x1b[0m");
     eprintln!(
-        "\x1b[36m│\x1b[0m \x1b[1m💡 Alacritty: the fastest terminal for jcode\x1b[0m               \x1b[36m│\x1b[0m"
+        "\x1b[36m│\x1b[0m \x1b[1m💡 Alacritty: the fastest terminal for wvc\x1b[0m               \x1b[36m│\x1b[0m"
     );
     eprintln!(
         "\x1b[36m│\x1b[0m                                                             \x1b[36m│\x1b[0m"
@@ -800,7 +800,7 @@ fn nudge_alacritty(state: &mut SetupHintsState) -> bool {
                         match create_hotkey_shortcut(true) {
                             Ok(()) => {
                                 eprintln!(
-                                    "  \x1b[32m✓\x1b[0m Hotkeys updated: \x1b[1mAlt+;\x1b[0m and \x1b[1mCopilot\x1b[0m → Alacritty + jcode"
+                                    "  \x1b[32m✓\x1b[0m Hotkeys updated: \x1b[1mAlt+;\x1b[0m and \x1b[1mCopilot\x1b[0m → Alacritty + wvc"
                                 );
                             }
                             Err(e) => {
@@ -837,10 +837,10 @@ fn prompt_try_it_out(installed_alacritty: bool) {
         "\x1b[32m│\x1b[0m                                                             \x1b[32m│\x1b[0m"
     );
     eprintln!(
-        "\x1b[32m│\x1b[0m    Press \x1b[1mAlt+;\x1b[0m or the \x1b[1mCopilot key\x1b[0m to launch jcode.       \x1b[32m│\x1b[0m"
+        "\x1b[32m│\x1b[0m    Press \x1b[1mAlt+;\x1b[0m or the \x1b[1mCopilot key\x1b[0m to launch wvc.       \x1b[32m│\x1b[0m"
     );
     eprintln!(
-        "\x1b[32m│\x1b[0m    The listener is native Jcode, no AutoHotkey required.          \x1b[32m│\x1b[0m"
+        "\x1b[32m│\x1b[0m    The listener is native Weavecoder, no AutoHotkey required.          \x1b[32m│\x1b[0m"
     );
     if installed_alacritty {
         eprintln!(
@@ -851,7 +851,7 @@ fn prompt_try_it_out(installed_alacritty: bool) {
         "\x1b[32m│\x1b[0m                                                             \x1b[32m│\x1b[0m"
     );
     eprintln!(
-        "\x1b[32m│\x1b[0m    \x1b[90m(Starting jcode normally in 3 seconds...)\x1b[0m                 \x1b[32m│\x1b[0m"
+        "\x1b[32m│\x1b[0m    \x1b[90m(Starting wvc normally in 3 seconds...)\x1b[0m                 \x1b[32m│\x1b[0m"
     );
     eprintln!("\x1b[32m└─────────────────────────────────────────────────────────────┘\x1b[0m");
     eprintln!();
@@ -904,7 +904,7 @@ mod tests {
 
     #[test]
     fn powershell_single_quote_escapes_embedded_quotes() {
-        assert_eq!(ps_single_quote(r"C:\O'Hara\jcode"), r"'C:\O''Hara\jcode'");
+        assert_eq!(ps_single_quote(r"C:\O'Hara\wvc"), r"'C:\O''Hara\wvc'");
     }
 
     #[test]
@@ -917,8 +917,8 @@ mod tests {
     #[test]
     fn startup_shortcut_uses_native_listener_without_vbscript_or_bypass() {
         let script = render_startup_shortcut_script(
-            Path::new(r"C:\Users\O'Hara\Startup\jcode-hotkey.lnk"),
-            Path::new(r"C:\Program Files\Jcode O'Hara\jcode.exe"),
+            Path::new(r"C:\Users\O'Hara\Startup\wvc-hotkey.lnk"),
+            Path::new(r"C:\Program Files\Weavecoder O'Hara\wvc.exe"),
         );
         assert!(script.contains("$shortcut.TargetPath = 'powershell.exe'"));
         assert!(script.contains("-ExecutionPolicy RemoteSigned"));
@@ -982,7 +982,7 @@ pub(super) fn run_setup_hotkey_windows() -> Result<()> {
     let terminal = detect_terminal();
     let already_using_alacritty = terminal == "alacritty";
 
-    eprintln!("\x1b[1mjcode setup-hotkey\x1b[0m");
+    eprintln!("\x1b[1mwvc setup-hotkey\x1b[0m");
     eprintln!();
 
     eprintln!(
@@ -1040,7 +1040,7 @@ pub(super) fn run_setup_hotkey_windows() -> Result<()> {
     };
 
     eprintln!(
-        "  Setting up global launch hotkeys → {} + jcode...",
+        "  Setting up global launch hotkeys → {} + wvc...",
         terminal_name
     );
 
@@ -1087,7 +1087,7 @@ pub(super) fn create_windows_desktop_shortcut(state: &mut SetupHintsState) -> Re
     };
 
     let desktop_dir = std::env::var("USERPROFILE").unwrap_or_else(|_| "C:\\Users\\Default".into());
-    let shortcut_path = format!("{}\\Desktop\\jcode.lnk", desktop_dir);
+    let shortcut_path = format!("{}\\Desktop\\wvc.lnk", desktop_dir);
 
     let ps_script = format!(
         r#"

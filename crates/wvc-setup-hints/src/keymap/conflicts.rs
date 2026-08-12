@@ -1,8 +1,8 @@
-//! Detect conflicts between jcode's own key bindings and the bindings
+//! Detect conflicts between wvc's own key bindings and the bindings
 //! discovered on the machine (terminal emulator + macOS system shortcuts).
 //!
 //! The flow is:
-//!   1. enumerate jcode's configured bindings as `(field, label, KeyChord)`
+//!   1. enumerate wvc's configured bindings as `(field, label, KeyChord)`
 //!      from [`wvc_config_types::KeybindingsConfig`] ([`wvc_bindings`]),
 //!   2. index the discovered machine bindings from a [`KeymapSnapshot`],
 //!   3. report every overlap as a [`Conflict`] that names the exact config
@@ -19,9 +19,9 @@ use super::KeymapSnapshot;
 use super::chord::KeyChord;
 use super::source::{DiscoveredBinding, KeySource};
 
-/// One configured jcode binding, tied back to its config field.
+/// One configured wvc binding, tied back to its config field.
 #[derive(Debug, Clone)]
-pub struct JcodeBinding {
+pub struct WeavecoderBinding {
     /// The dotted config path, e.g. `keybindings.model_switch_next`.
     pub field: String,
     /// Human-friendly description of what the binding does.
@@ -32,11 +32,11 @@ pub struct JcodeBinding {
     pub chord: KeyChord,
 }
 
-/// A detected conflict between a jcode binding and something on the machine.
+/// A detected conflict between a wvc binding and something on the machine.
 #[derive(Debug, Clone)]
 pub struct Conflict {
-    /// The jcode binding that may not reach the app.
-    pub jcode: JcodeBinding,
+    /// The wvc binding that may not reach the app.
+    pub wvc: WeavecoderBinding,
     /// The machine binding that intercepts it.
     pub interceptor: DiscoveredBinding,
 }
@@ -46,9 +46,9 @@ impl Conflict {
     pub fn summary(&self) -> String {
         format!(
             "{} (`{}` = \"{}\") is also bound by your {} to {}",
-            self.jcode.action,
-            self.jcode.field,
-            self.jcode.raw,
+            self.wvc.action,
+            self.wvc.field,
+            self.wvc.raw,
             self.interceptor_label(),
             describe_action(&self.interceptor),
         )
@@ -86,11 +86,11 @@ fn describe_action(b: &DiscoveredBinding) -> String {
     }
 }
 
-/// Enumerate jcode's configured bindings as comparable chords. Bindings that are
+/// Enumerate wvc's configured bindings as comparable chords. Bindings that are
 /// disabled or fail to parse are skipped. Multi-binding fields (the workspace
 /// navigation keys accept a comma-separated list) expand into one entry per
 /// chord.
-pub fn wvc_bindings(cfg: &KeybindingsConfig) -> Vec<JcodeBinding> {
+pub fn wvc_bindings(cfg: &KeybindingsConfig) -> Vec<WeavecoderBinding> {
     // (field, action, raw-value) for single-chord fields.
     let single: &[(&str, &str, &str)] = &[
         ("scroll_up", "Scroll up", cfg.scroll_up.as_str()),
@@ -191,7 +191,7 @@ pub fn wvc_bindings(cfg: &KeybindingsConfig) -> Vec<JcodeBinding> {
     let mut out = Vec::new();
     for (field, action, raw) in single {
         if let Some(chord) = KeyChord::parse(raw) {
-            out.push(JcodeBinding {
+            out.push(WeavecoderBinding {
                 field: format!("keybindings.{field}"),
                 action: action.to_string(),
                 raw: raw.to_string(),
@@ -227,7 +227,7 @@ pub fn wvc_bindings(cfg: &KeybindingsConfig) -> Vec<JcodeBinding> {
         for piece in raw.split(',') {
             let piece = piece.trim();
             if let Some(chord) = KeyChord::parse(piece) {
-                out.push(JcodeBinding {
+                out.push(WeavecoderBinding {
                     field: format!("keybindings.{field}"),
                     action: action.to_string(),
                     raw: piece.to_string(),
@@ -262,7 +262,7 @@ pub fn wvc_bindings(cfg: &KeybindingsConfig) -> Vec<JcodeBinding> {
             } else {
                 "Jump to next prompt (built-in)"
             };
-            out.push(JcodeBinding {
+            out.push(WeavecoderBinding {
                 field: format!("keybindings.{field} (built-in fallback)"),
                 action: action.to_string(),
                 raw: (*raw).to_string(),
@@ -274,10 +274,10 @@ pub fn wvc_bindings(cfg: &KeybindingsConfig) -> Vec<JcodeBinding> {
     out
 }
 
-/// Find conflicts between jcode's configured bindings and the discovered
+/// Find conflicts between wvc's configured bindings and the discovered
 /// machine bindings in `snapshot`.
 ///
-/// Conflicts are deduplicated per `(jcode field, interceptor chord, source)` so
+/// Conflicts are deduplicated per `(wvc field, interceptor chord, source)` so
 /// a single overlap is reported once even if the snapshot lists the same chord
 /// multiple times (Ghostty, for example, lists `super+1` and `super+digit_1`).
 pub fn detect_conflicts(cfg: &KeybindingsConfig, snapshot: &KeymapSnapshot) -> Vec<Conflict> {
@@ -291,13 +291,13 @@ pub fn detect_conflicts(cfg: &KeybindingsConfig, snapshot: &KeymapSnapshot) -> V
         std::collections::HashSet::new();
     let mut conflicts = Vec::new();
 
-    for jcode in wvc_bindings(cfg) {
-        let Some(interceptors) = by_chord.get(&jcode.chord) else {
+    for wvc in wvc_bindings(cfg) {
+        let Some(interceptors) = by_chord.get(&wvc.chord) else {
             continue;
         };
         for interceptor in interceptors {
             let dedup_key = (
-                jcode.field.clone(),
+                wvc.field.clone(),
                 interceptor.chord.canonical(),
                 interceptor.source,
             );
@@ -305,7 +305,7 @@ pub fn detect_conflicts(cfg: &KeybindingsConfig, snapshot: &KeymapSnapshot) -> V
                 continue;
             }
             conflicts.push(Conflict {
-                jcode: jcode.clone(),
+                wvc: wvc.clone(),
                 interceptor: (*interceptor).clone(),
             });
         }
@@ -324,8 +324,8 @@ pub fn conflict_signature(conflicts: &[Conflict]) -> String {
         .map(|c| {
             format!(
                 "{}|{}|{}",
-                c.jcode.field,
-                c.jcode.chord.canonical(),
+                c.wvc.field,
+                c.wvc.chord.canonical(),
                 c.interceptor.chord.canonical()
             )
         })
@@ -399,7 +399,7 @@ mod tests {
             term_binding("ctrl+shift+tab", "previous_tab"),
         ]);
         let conflicts = detect_conflicts(&cfg, &snapshot);
-        let fields: Vec<&str> = conflicts.iter().map(|c| c.jcode.field.as_str()).collect();
+        let fields: Vec<&str> = conflicts.iter().map(|c| c.wvc.field.as_str()).collect();
         assert!(fields.contains(&"keybindings.model_switch_next"));
         assert!(fields.contains(&"keybindings.model_switch_prev"));
         let summary = conflicts[0].summary();
@@ -410,7 +410,7 @@ mod tests {
     #[test]
     fn detects_window_manager_prompt_jump_conflict() {
         // The motivating case: a tiling WM (OmniWM) binds Cmd+J / Cmd+K to window
-        // focus, shadowing jcode's built-in prompt navigation fallback.
+        // focus, shadowing wvc's built-in prompt navigation fallback.
         let cfg = KeybindingsConfig::default();
         let snapshot = snapshot_with(vec![
             app_binding("cmd+j", "focus.down", "OmniWM"),
@@ -425,7 +425,7 @@ mod tests {
         assert!(
             conflicts
                 .iter()
-                .all(|c| c.jcode.field.contains("built-in fallback")),
+                .all(|c| c.wvc.field.contains("built-in fallback")),
             "prompt-jump fallback fields should be flagged"
         );
     }
@@ -434,7 +434,7 @@ mod tests {
     fn no_conflict_when_chords_differ() {
         let cfg = KeybindingsConfig::default();
         let snapshot = snapshot_with(vec![term_binding("cmd+t", "new_tab")]);
-        // jcode has no cmd+t binding by default.
+        // wvc has no cmd+t binding by default.
         assert!(detect_conflicts(&cfg, &snapshot).is_empty());
     }
 
@@ -464,7 +464,7 @@ mod tests {
         assert!(
             !conflicts
                 .iter()
-                .any(|c| c.jcode.field == "keybindings.model_switch_next")
+                .any(|c| c.wvc.field == "keybindings.model_switch_next")
         );
     }
 

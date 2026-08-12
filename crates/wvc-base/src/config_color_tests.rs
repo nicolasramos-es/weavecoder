@@ -9,18 +9,18 @@ use super::Config;
 /// The color config a user actually writes must survive a real file round trip.
 ///
 /// The template tests check the string we ship; this checks the whole path a
-/// user takes: jcode writes the default file, the user uncomments the color
-/// example, and jcode loads it back through the same cache the running process
+/// user takes: wvc writes the default file, the user uncomments the color
+/// example, and wvc loads it back through the same cache the running process
 /// uses. A schema or template mistake that only shows up on disk lands here.
 #[test]
 fn configured_colors_survive_a_real_config_file_round_trip() {
     let _guard = crate::storage::lock_test_env();
-    let prev_home = std::env::var_os("JCODE_HOME");
+    let prev_home = std::env::var_os("WVC_HOME");
     let dir = tempfile::TempDir::new().expect("tempdir");
-    crate::env::set_var("JCODE_HOME", dir.path());
+    crate::env::set_var("WVC_HOME", dir.path());
     Config::invalidate_cache();
 
-    // The file jcode writes for a new user must document colors and parse.
+    // The file wvc writes for a new user must document colors and parse.
     let path = Config::create_default_config_file().expect("create default config file");
     let generated = std::fs::read_to_string(&path).expect("read generated config");
     assert!(
@@ -58,7 +58,7 @@ fn configured_colors_survive_a_real_config_file_round_trip() {
 
     // A typo must be skipped, never fatal, and must not take valid entries with
     // it: losing a whole palette to one bad line would be the worst outcome.
-    // The palette-side half of that contract is asserted in `jcode-tui-style`
+    // The palette-side half of that contract is asserted in `wvc-tui-style`
     // (`from_pairs_reports_errors_without_dropping_valid_entries`), which owns
     // the parsing; here we only require the config layer to keep both entries
     // and stay loadable.
@@ -76,27 +76,27 @@ fn configured_colors_survive_a_real_config_file_round_trip() {
     );
 
     if let Some(prev) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev);
+        crate::env::set_var("WVC_HOME", prev);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
 }
 
 /// The exact `[display]` block from issue #689 must work through a real config
 /// file, and the user-visible `/config` summary must reflect it.
 ///
-/// The unit tests in `jcode-config-types` cover lenient enum parsing in
+/// The unit tests in `wvc-config-types` cover lenient enum parsing in
 /// isolation. This covers the path the reporter actually took: hand-written
-/// `~/.jcode/config.toml`, loaded through the same global cache the running
+/// `~/.wvc/config.toml`, loaded through the same global cache the running
 /// process uses, then read back through the summary they would check. The
 /// original bug was invisible at the field level precisely because it happened
 /// during whole-file parsing, so it needs a file-level test.
 #[test]
 fn reported_display_config_survives_a_real_config_file_round_trip() {
     let _guard = crate::storage::lock_test_env();
-    let prev_home = std::env::var_os("JCODE_HOME");
+    let prev_home = std::env::var_os("WVC_HOME");
     let dir = tempfile::TempDir::new().expect("tempdir");
-    crate::env::set_var("JCODE_HOME", dir.path());
+    crate::env::set_var("WVC_HOME", dir.path());
     Config::invalidate_cache();
 
     let path = Config::path().expect("config path");
@@ -153,8 +153,8 @@ fn reported_display_config_survives_a_real_config_file_round_trip() {
     );
 
     match prev_home {
-        Some(prev) => crate::env::set_var("JCODE_HOME", prev),
-        None => crate::env::remove_var("JCODE_HOME"),
+        Some(prev) => crate::env::set_var("WVC_HOME", prev),
+        None => crate::env::remove_var("WVC_HOME"),
     }
     Config::invalidate_cache();
 }

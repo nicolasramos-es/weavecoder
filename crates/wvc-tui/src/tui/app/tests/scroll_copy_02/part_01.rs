@@ -19,7 +19,7 @@ fn test_local_error_copy_badge_shortcut_supported() {
     // failed, so assert the text that actually reached the clipboard.
     assert_eq!(
         clipboard.text().as_deref(),
-        Some("permission denied while opening ~/.jcode/config.toml"),
+        Some("permission denied while opening ~/.wvc/config.toml"),
     );
 
     let text = render_and_snap(&app, &mut terminal);

@@ -1,6 +1,6 @@
-//! TeX-style math typesetting for jcode front-ends.
+//! TeX-style math typesetting for wvc front-ends.
 //!
-//! `jcode-math` turns LaTeX math source into positioned glyphs and rules using
+//! `wvc-math` turns LaTeX math source into positioned glyphs and rules using
 //! the OpenType MATH table of a real math font (STIX Two Math, vendored). It
 //! deliberately stops at *positions*: it hands back a [`layout::LayoutBox`] of
 //! glyph ids, sizes, and rectangles, and knows nothing about any renderer.

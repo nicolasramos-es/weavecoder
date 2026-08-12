@@ -651,12 +651,12 @@ pub fn release_retained_heap_if_excessive(
     released
 }
 
-/// Retention trim threshold in bytes, from `JCODE_HEAP_RETENTION_TRIM_MB`
+/// Retention trim threshold in bytes, from `WVC_HEAP_RETENTION_TRIM_MB`
 /// (in MiB), falling back to [`DEFAULT_RETENTION_TRIM_THRESHOLD_BYTES`].
 /// `0` disables retention-triggered trimming (returns `u64::MAX`).
 pub fn retention_trim_threshold_bytes() -> u64 {
     parse_retention_trim_threshold(
-        std::env::var("JCODE_HEAP_RETENTION_TRIM_MB")
+        std::env::var("WVC_HEAP_RETENTION_TRIM_MB")
             .ok()
             .as_deref(),
     )
@@ -1152,7 +1152,7 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn parse_proc_status_count_reads_unitless_counters() {
-        let text = "Name:\tjcode\nThreads:\t10\nVmStk:\t     132 kB\n";
+        let text = "Name:\twvc\nThreads:\t10\nVmStk:\t     132 kB\n";
         assert_eq!(parse_proc_status_count(text, "Threads:"), Some(10));
         assert_eq!(parse_proc_status_count(text, "Missing:"), None);
     }

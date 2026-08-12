@@ -1,5 +1,5 @@
 //! Gemini provider runtime (Google Code Assist OAuth + official Developer API
-//! key), moved out of `jcode-base` so provider edits compile only this crate
+//! key), moved out of `wvc-base` so provider edits compile only this crate
 //! plus a binary relink instead of rebuilding the base -> app-core -> tui
 //! spine. The binary's composition root registers [`GeminiProvider`] with
 //! `wvc_base::provider::external` at startup.
@@ -98,7 +98,7 @@ impl GeminiProvider {
     }
 
     pub fn new() -> Self {
-        let model = std::env::var("JCODE_GEMINI_MODEL").unwrap_or_else(|_| DEFAULT_MODEL.into());
+        let model = std::env::var("WVC_GEMINI_MODEL").unwrap_or_else(|_| DEFAULT_MODEL.into());
         let provider = Self {
             client: gemini_http_client(),
             model: Arc::new(RwLock::new(model)),
@@ -135,10 +135,10 @@ impl GeminiProvider {
     /// An official Gemini Developer API key takes precedence over OAuth Code
     /// Assist credentials: it points at `generativelanguage.googleapis.com` with
     /// the key's own (often higher) quota, while OAuth uses the free
-    /// cloudcode-pa tier. Set `JCODE_GEMINI_FORCE_OAUTH=1` to pin OAuth even when
+    /// cloudcode-pa tier. Set `WVC_GEMINI_FORCE_OAUTH=1` to pin OAuth even when
     /// a key is present.
     fn auth_mode() -> GeminiAuthMode {
-        let force_oauth = std::env::var("JCODE_GEMINI_FORCE_OAUTH")
+        let force_oauth = std::env::var("WVC_GEMINI_FORCE_OAUTH")
             .map(|value| {
                 let value = value.trim();
                 !value.is_empty() && value != "0" && !value.eq_ignore_ascii_case("false")

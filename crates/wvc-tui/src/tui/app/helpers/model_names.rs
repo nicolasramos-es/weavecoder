@@ -33,7 +33,7 @@ pub(crate) fn pretty_model_display_name(model: &str) -> String {
     }
 
     // Preserve bracketed route suffixes (`[1m]`, `[web]`) and re-attach them as
-    // a parenthetical, since they are jcode-side route markers rather than part
+    // a parenthetical, since they are wvc-side route markers rather than part
     // of the upstream family/version name.
     let (core, bracket_suffix) = split_bracket_suffix(model);
     // Dated snapshots (`-20251001`) stay visible so a snapshot row is never
@@ -152,7 +152,7 @@ fn prettify_versioned_family(family_label: &str, core: &str) -> String {
 /// AWS Bedrock region routing prefixes on cross-region inference profile ids.
 const BEDROCK_REGION_PREFIXES: [&str; 4] = ["us.", "eu.", "apac.", "global."];
 
-/// Bedrock vendor namespaces jcode knows how to render.
+/// Bedrock vendor namespaces wvc knows how to render.
 ///
 /// `anthropic.` reuses the Claude formatter. `amazon.` covers the first-party
 /// Nova family, which users see most on Bedrock and which title-cases cleanly.

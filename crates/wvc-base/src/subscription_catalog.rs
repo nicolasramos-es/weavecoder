@@ -1,21 +1,21 @@
 use crate::provider_catalog;
 
-pub const JCODE_API_KEY_ENV: &str = "JCODE_API_KEY";
-pub const JCODE_API_BASE_ENV: &str = "JCODE_API_BASE";
-pub const JCODE_ACCOUNT_ID_ENV: &str = "JCODE_ACCOUNT_ID";
-pub const JCODE_ACCOUNT_EMAIL_ENV: &str = "JCODE_ACCOUNT_EMAIL";
-pub const JCODE_TIER_ENV: &str = "JCODE_TIER";
-pub const JCODE_ENV_FILE: &str = "wvc-subscription.env";
-pub const JCODE_CACHE_NAMESPACE: &str = "wvc-subscription";
-pub const JCODE_SUBSCRIPTION_ACTIVE_ENV: &str = "JCODE_SUBSCRIPTION_ACTIVE";
-pub const DEFAULT_JCODE_API_BASE: &str = "https://api.jcode.sh/v1";
-pub const JCODE_PRICING_URL: &str = "https://jcode.sh/pricing";
-pub const JCODE_ACCOUNT_URL: &str = "https://jcode.sh/account";
-pub const JCODE_PROVIDER_DISPLAY_NAME: &str = "Weavecoder Subscription";
-pub const JCODE_ROUTE_API_METHOD: &str = "wvc-subscription";
+pub const WVC_API_KEY_ENV: &str = "WVC_API_KEY";
+pub const WVC_API_BASE_ENV: &str = "WVC_API_BASE";
+pub const WVC_ACCOUNT_ID_ENV: &str = "WVC_ACCOUNT_ID";
+pub const WVC_ACCOUNT_EMAIL_ENV: &str = "WVC_ACCOUNT_EMAIL";
+pub const WVC_TIER_ENV: &str = "WVC_TIER";
+pub const WVC_ENV_FILE: &str = "wvc-subscription.env";
+pub const WVC_CACHE_NAMESPACE: &str = "wvc-subscription";
+pub const WVC_SUBSCRIPTION_ACTIVE_ENV: &str = "WVC_SUBSCRIPTION_ACTIVE";
+pub const DEFAULT_WVC_API_BASE: &str = "https://api.weavecoder.sh/v1";
+pub const WVC_PRICING_URL: &str = "https://weavecoder.sh/pricing";
+pub const WVC_ACCOUNT_URL: &str = "https://weavecoder.sh/account";
+pub const WVC_PROVIDER_DISPLAY_NAME: &str = "Weavecoder Subscription";
+pub const WVC_ROUTE_API_METHOD: &str = "wvc-subscription";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub enum JcodeTier {
+pub enum WeavecoderTier {
     Plus,
     Pro,
     Max,
@@ -23,13 +23,13 @@ pub enum JcodeTier {
     Flagship,
 }
 
-impl JcodeTier {
-    pub const ALL: &'static [JcodeTier] = &[
-        JcodeTier::Plus,
-        JcodeTier::Pro,
-        JcodeTier::Max,
-        JcodeTier::Ultra,
-        JcodeTier::Flagship,
+impl WeavecoderTier {
+    pub const ALL: &'static [WeavecoderTier] = &[
+        WeavecoderTier::Plus,
+        WeavecoderTier::Pro,
+        WeavecoderTier::Max,
+        WeavecoderTier::Ultra,
+        WeavecoderTier::Flagship,
     ];
 
     pub fn retail_price_usd(self) -> u32 {
@@ -86,14 +86,14 @@ impl JcodeTier {
     }
 
     /// Whether an account on this tier may use a model gated at `required`.
-    pub fn allows(self, required: JcodeTier) -> bool {
+    pub fn allows(self, required: WeavecoderTier) -> bool {
         self >= required
     }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum UpstreamRoutingPolicy {
-    /// Routing is decided server-side by the jcode router (model -> provider +
+    /// Routing is decided server-side by the wvc router (model -> provider +
     /// org key). The client does not pick upstreams; this is the only policy for
     /// the managed subscription.
     ServerManaged,
@@ -107,7 +107,7 @@ pub struct CuratedModel {
     pub default_enabled: bool,
     pub routing_policy: UpstreamRoutingPolicy,
     /// Minimum subscription tier that may use this model.
-    pub min_tier: JcodeTier,
+    pub min_tier: WeavecoderTier,
     pub note: &'static str,
 }
 
@@ -118,8 +118,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         aliases: &["claude-opus-4-8", "opus-4-8", "opus 4.8", "claude opus 4.8"],
         default_enabled: true,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Plus,
-        note: "Frontier model; routed server-side to Anthropic by the jcode router.",
+        min_tier: WeavecoderTier::Plus,
+        note: "Frontier model; routed server-side to Anthropic by the wvc router.",
     },
     CuratedModel {
         id: "claude-opus-5",
@@ -127,8 +127,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         aliases: &["claude-opus-5", "opus-5", "opus 5", "claude opus 5"],
         default_enabled: false,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Plus,
-        note: "Frontier model; routed server-side to Anthropic by the jcode router.",
+        min_tier: WeavecoderTier::Plus,
+        note: "Frontier model; routed server-side to Anthropic by the wvc router.",
     },
     CuratedModel {
         id: "claude-sonnet-4-6",
@@ -141,8 +141,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         ],
         default_enabled: false,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Plus,
-        note: "Frontier model; routed server-side to Amazon Bedrock by the jcode router.",
+        min_tier: WeavecoderTier::Plus,
+        note: "Frontier model; routed server-side to Amazon Bedrock by the wvc router.",
     },
     CuratedModel {
         id: "gpt-5.5",
@@ -150,8 +150,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         aliases: &["gpt-5.5", "gpt-5-5", "gpt 5.5"],
         default_enabled: false,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Plus,
-        note: "Frontier model; routed server-side to OpenAI by the jcode router.",
+        min_tier: WeavecoderTier::Plus,
+        note: "Frontier model; routed server-side to OpenAI by the wvc router.",
     },
     CuratedModel {
         id: "claude-fable-5",
@@ -159,8 +159,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         aliases: &["claude-fable-5", "fable-5", "fable 5", "claude fable 5"],
         default_enabled: false,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Ultra,
-        note: "Ultra-tier model; routed server-side to Anthropic by the jcode router.",
+        min_tier: WeavecoderTier::Ultra,
+        note: "Ultra-tier model; routed server-side to Anthropic by the wvc router.",
     },
     CuratedModel {
         id: "gpt-5.6-sol",
@@ -168,8 +168,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         aliases: &["gpt-5.6-sol", "gpt 5.6 sol", "sol"],
         default_enabled: false,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Plus,
-        note: "Frontier model; routed server-side to OpenAI by the jcode router.",
+        min_tier: WeavecoderTier::Plus,
+        note: "Frontier model; routed server-side to OpenAI by the wvc router.",
     },
     CuratedModel {
         id: "qwen3-coder-next",
@@ -177,8 +177,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         aliases: &["qwen3-coder-next", "qwen 3 coder next", "qwen3 coder next"],
         default_enabled: false,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Plus,
-        note: "Open-weight coding model; routed server-side to Amazon Bedrock by the jcode router.",
+        min_tier: WeavecoderTier::Plus,
+        note: "Open-weight coding model; routed server-side to Amazon Bedrock by the wvc router.",
     },
     CuratedModel {
         id: "devstral-2-123b",
@@ -190,8 +190,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         ],
         default_enabled: false,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Plus,
-        note: "Open-weight coding model; routed server-side to Amazon Bedrock by the jcode router.",
+        min_tier: WeavecoderTier::Plus,
+        note: "Open-weight coding model; routed server-side to Amazon Bedrock by the wvc router.",
     },
     CuratedModel {
         id: "deepseek-v3.2",
@@ -199,8 +199,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         aliases: &["deepseek-v3.2", "deepseek v3.2", "deepseek 3.2"],
         default_enabled: false,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Plus,
-        note: "Open-weight reasoning and coding model; routed server-side to Amazon Bedrock by the jcode router.",
+        min_tier: WeavecoderTier::Plus,
+        note: "Open-weight reasoning and coding model; routed server-side to Amazon Bedrock by the wvc router.",
     },
     CuratedModel {
         id: "nova-2-lite",
@@ -208,8 +208,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         aliases: &["nova-2-lite", "nova 2 lite", "amazon nova 2 lite"],
         default_enabled: false,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Plus,
-        note: "Recent efficient multimodal model; routed server-side to Amazon Bedrock by the jcode router.",
+        min_tier: WeavecoderTier::Plus,
+        note: "Recent efficient multimodal model; routed server-side to Amazon Bedrock by the wvc router.",
     },
     CuratedModel {
         id: "minimax-m2.5",
@@ -217,8 +217,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         aliases: &["minimax-m2.5", "minimax m2.5", "minimax m2 5"],
         default_enabled: false,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Plus,
-        note: "Recent reasoning and coding model; routed server-side to Amazon Bedrock by the jcode router.",
+        min_tier: WeavecoderTier::Plus,
+        note: "Recent reasoning and coding model; routed server-side to Amazon Bedrock by the wvc router.",
     },
     CuratedModel {
         id: "mistral-large-3",
@@ -226,8 +226,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         aliases: &["mistral-large-3", "mistral large 3"],
         default_enabled: false,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Plus,
-        note: "Open-weight general and coding model; routed server-side to Amazon Bedrock by the jcode router.",
+        min_tier: WeavecoderTier::Plus,
+        note: "Open-weight general and coding model; routed server-side to Amazon Bedrock by the wvc router.",
     },
     CuratedModel {
         id: "kimi-k2.5",
@@ -235,8 +235,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         aliases: &["kimi-k2.5", "kimi k2.5", "kimi k2 5"],
         default_enabled: false,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Plus,
-        note: "Recent reasoning and agentic model; routed server-side to Amazon Bedrock by the jcode router.",
+        min_tier: WeavecoderTier::Plus,
+        note: "Recent reasoning and agentic model; routed server-side to Amazon Bedrock by the wvc router.",
     },
     CuratedModel {
         id: "kimi-k2-thinking",
@@ -244,8 +244,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         aliases: &["kimi-k2-thinking", "kimi k2 thinking"],
         default_enabled: false,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Plus,
-        note: "Reasoning-focused model; routed server-side to Amazon Bedrock by the jcode router.",
+        min_tier: WeavecoderTier::Plus,
+        note: "Reasoning-focused model; routed server-side to Amazon Bedrock by the wvc router.",
     },
     CuratedModel {
         id: "nemotron-nano-3-30b",
@@ -257,8 +257,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         ],
         default_enabled: false,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Plus,
-        note: "Efficient open-weight reasoning model; routed server-side to Amazon Bedrock by the jcode router.",
+        min_tier: WeavecoderTier::Plus,
+        note: "Efficient open-weight reasoning model; routed server-side to Amazon Bedrock by the wvc router.",
     },
     CuratedModel {
         id: "gpt-oss-120b",
@@ -266,8 +266,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         aliases: &["gpt-oss-120b", "gpt oss 120b", "openai gpt oss 120b"],
         default_enabled: false,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Plus,
-        note: "Large open-weight reasoning model; routed server-side to Amazon Bedrock by the jcode router.",
+        min_tier: WeavecoderTier::Plus,
+        note: "Large open-weight reasoning model; routed server-side to Amazon Bedrock by the wvc router.",
     },
     CuratedModel {
         id: "gpt-oss-20b",
@@ -275,8 +275,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         aliases: &["gpt-oss-20b", "gpt oss 20b", "openai gpt oss 20b"],
         default_enabled: false,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Plus,
-        note: "Efficient open-weight reasoning model; routed server-side to Amazon Bedrock by the jcode router.",
+        min_tier: WeavecoderTier::Plus,
+        note: "Efficient open-weight reasoning model; routed server-side to Amazon Bedrock by the wvc router.",
     },
     CuratedModel {
         id: "qwen3-next-80b",
@@ -284,8 +284,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         aliases: &["qwen3-next-80b", "qwen3 next 80b", "qwen 3 next 80b a3b"],
         default_enabled: false,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Plus,
-        note: "Open-weight general and coding model; routed server-side to Amazon Bedrock by the jcode router.",
+        min_tier: WeavecoderTier::Plus,
+        note: "Open-weight general and coding model; routed server-side to Amazon Bedrock by the wvc router.",
     },
     CuratedModel {
         id: "glm-5",
@@ -293,8 +293,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         aliases: &["glm-5", "glm 5", "zai glm 5"],
         default_enabled: false,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Plus,
-        note: "Recent general and coding model; routed server-side to Amazon Bedrock by the jcode router.",
+        min_tier: WeavecoderTier::Plus,
+        note: "Recent general and coding model; routed server-side to Amazon Bedrock by the wvc router.",
     },
     CuratedModel {
         id: "glm-4.7-flash",
@@ -302,8 +302,8 @@ pub const CURATED_MODELS: &[CuratedModel] = &[
         aliases: &["glm-4.7-flash", "glm 4.7 flash", "zai glm 4.7 flash"],
         default_enabled: false,
         routing_policy: UpstreamRoutingPolicy::ServerManaged,
-        min_tier: JcodeTier::Plus,
-        note: "Efficient recent general model; routed server-side to Amazon Bedrock by the jcode router.",
+        min_tier: WeavecoderTier::Plus,
+        note: "Efficient recent general model; routed server-side to Amazon Bedrock by the wvc router.",
     },
 ];
 
@@ -347,25 +347,25 @@ pub fn is_curated_model(model: &str) -> bool {
 /// The effective subscription tier for gating decisions.
 ///
 /// `/v1/me` is the source of truth; the last-known tier is persisted to
-/// `jcode-subscription.env` (`JCODE_TIER`). Unknown/absent tier behaves like
+/// `wvc-subscription.env` (`WVC_TIER`). Unknown/absent tier behaves like
 /// Plus for backward compatibility.
-pub fn effective_tier() -> JcodeTier {
-    cached_tier().unwrap_or(JcodeTier::Plus)
+pub fn effective_tier() -> WeavecoderTier {
+    cached_tier().unwrap_or(WeavecoderTier::Plus)
 }
 
 /// The last tier reported by the backend, if any was persisted.
-pub fn cached_tier() -> Option<JcodeTier> {
-    provider_catalog::load_env_value_from_env_or_config(JCODE_TIER_ENV, JCODE_ENV_FILE)
+pub fn cached_tier() -> Option<WeavecoderTier> {
+    provider_catalog::load_env_value_from_env_or_config(WVC_TIER_ENV, WVC_ENV_FILE)
         .as_deref()
-        .and_then(JcodeTier::parse)
+        .and_then(WeavecoderTier::parse)
 }
 
 /// Persist the last-known tier reported by the backend (`None` clears it).
-pub fn store_cached_tier(tier: Option<JcodeTier>) -> anyhow::Result<()> {
+pub fn store_cached_tier(tier: Option<WeavecoderTier>) -> anyhow::Result<()> {
     provider_catalog::save_env_value_to_env_file(
-        JCODE_TIER_ENV,
-        JCODE_ENV_FILE,
-        tier.map(JcodeTier::as_str),
+        WVC_TIER_ENV,
+        WVC_ENV_FILE,
+        tier.map(WeavecoderTier::as_str),
     )
 }
 
@@ -386,18 +386,18 @@ pub fn routing_policy_detail(model: &CuratedModel) -> String {
 }
 
 pub fn configured_api_key() -> Option<String> {
-    provider_catalog::load_env_value_from_env_or_config(JCODE_API_KEY_ENV, JCODE_ENV_FILE)
+    provider_catalog::load_env_value_from_env_or_config(WVC_API_KEY_ENV, WVC_ENV_FILE)
 }
 
 pub fn configured_api_base() -> Option<String> {
-    provider_catalog::load_env_value_from_env_or_config(JCODE_API_BASE_ENV, JCODE_ENV_FILE)
+    provider_catalog::load_env_value_from_env_or_config(WVC_API_BASE_ENV, WVC_ENV_FILE)
 }
 
 pub fn has_credentials() -> bool {
     configured_api_key().is_some()
 }
 
-/// Persist an account API key and its non-secret account metadata in jcode's
+/// Persist an account API key and its non-secret account metadata in wvc's
 /// owner-only subscription file.
 pub fn persist_account_credentials(
     api_key: &str,
@@ -407,16 +407,16 @@ pub fn persist_account_credentials(
 ) -> anyhow::Result<()> {
     let api_key = api_key.trim();
     if api_key.is_empty() {
-        anyhow::bail!("refusing to persist an empty jcode account API key");
+        anyhow::bail!("refusing to persist an empty wvc account API key");
     }
 
     for (key, value) in [
-        (JCODE_API_KEY_ENV, Some(api_key)),
-        (JCODE_ACCOUNT_ID_ENV, nonempty(account_id)),
-        (JCODE_ACCOUNT_EMAIL_ENV, nonempty(email)),
-        (JCODE_TIER_ENV, nonempty(tier)),
+        (WVC_API_KEY_ENV, Some(api_key)),
+        (WVC_ACCOUNT_ID_ENV, nonempty(account_id)),
+        (WVC_ACCOUNT_EMAIL_ENV, nonempty(email)),
+        (WVC_TIER_ENV, nonempty(tier)),
     ] {
-        provider_catalog::save_env_value_to_env_file(key, JCODE_ENV_FILE, value)?;
+        provider_catalog::save_env_value_to_env_file(key, WVC_ENV_FILE, value)?;
     }
     ensure_account_credential_permissions()
 }
@@ -426,12 +426,12 @@ pub fn persist_account_credentials(
 /// configuration, not an authorization credential.
 pub fn clear_account_credentials() -> anyhow::Result<()> {
     for key in [
-        JCODE_API_KEY_ENV,
-        JCODE_ACCOUNT_ID_ENV,
-        JCODE_ACCOUNT_EMAIL_ENV,
-        JCODE_TIER_ENV,
+        WVC_API_KEY_ENV,
+        WVC_ACCOUNT_ID_ENV,
+        WVC_ACCOUNT_EMAIL_ENV,
+        WVC_TIER_ENV,
     ] {
-        provider_catalog::save_env_value_to_env_file(key, JCODE_ENV_FILE, None)?;
+        provider_catalog::save_env_value_to_env_file(key, WVC_ENV_FILE, None)?;
     }
     clear_runtime_env();
     ensure_account_credential_permissions()
@@ -442,7 +442,7 @@ fn nonempty(value: Option<&str>) -> Option<&str> {
 }
 
 pub fn account_credential_path() -> anyhow::Result<std::path::PathBuf> {
-    Ok(crate::storage::app_config_dir()?.join(JCODE_ENV_FILE))
+    Ok(crate::storage::app_config_dir()?.join(WVC_ENV_FILE))
 }
 
 /// Re-harden and verify the subscription file after every credential mutation.
@@ -474,7 +474,7 @@ pub fn has_router_base() -> bool {
 }
 
 pub fn is_runtime_mode_enabled() -> bool {
-    std::env::var(JCODE_SUBSCRIPTION_ACTIVE_ENV)
+    std::env::var(WVC_SUBSCRIPTION_ACTIVE_ENV)
         .ok()
         .map(|value| {
             matches!(
@@ -486,32 +486,32 @@ pub fn is_runtime_mode_enabled() -> bool {
 }
 
 pub fn apply_runtime_env() {
-    crate::env::set_var(JCODE_SUBSCRIPTION_ACTIVE_ENV, "1");
+    crate::env::set_var(WVC_SUBSCRIPTION_ACTIVE_ENV, "1");
     crate::env::set_var(
-        "JCODE_OPENROUTER_API_BASE",
-        configured_api_base().unwrap_or_else(|| DEFAULT_JCODE_API_BASE.to_string()),
+        "WVC_OPENROUTER_API_BASE",
+        configured_api_base().unwrap_or_else(|| DEFAULT_WVC_API_BASE.to_string()),
     );
-    crate::env::set_var("JCODE_OPENROUTER_API_KEY_NAME", JCODE_API_KEY_ENV);
-    crate::env::set_var("JCODE_OPENROUTER_ENV_FILE", JCODE_ENV_FILE);
-    crate::env::set_var("JCODE_OPENROUTER_CACHE_NAMESPACE", JCODE_CACHE_NAMESPACE);
-    crate::env::set_var("JCODE_OPENROUTER_PROVIDER_FEATURES", "0");
-    crate::env::set_var("JCODE_OPENROUTER_TRANSPORT_STATE", "wvc-subscription");
-    crate::env::remove_var("JCODE_OPENROUTER_ALLOW_NO_AUTH");
-    crate::env::remove_var("JCODE_OPENROUTER_PROVIDER");
-    crate::env::remove_var("JCODE_OPENROUTER_NO_FALLBACK");
+    crate::env::set_var("WVC_OPENROUTER_API_KEY_NAME", WVC_API_KEY_ENV);
+    crate::env::set_var("WVC_OPENROUTER_ENV_FILE", WVC_ENV_FILE);
+    crate::env::set_var("WVC_OPENROUTER_CACHE_NAMESPACE", WVC_CACHE_NAMESPACE);
+    crate::env::set_var("WVC_OPENROUTER_PROVIDER_FEATURES", "0");
+    crate::env::set_var("WVC_OPENROUTER_TRANSPORT_STATE", "wvc-subscription");
+    crate::env::remove_var("WVC_OPENROUTER_ALLOW_NO_AUTH");
+    crate::env::remove_var("WVC_OPENROUTER_PROVIDER");
+    crate::env::remove_var("WVC_OPENROUTER_NO_FALLBACK");
 }
 
 pub fn clear_runtime_env() {
-    crate::env::remove_var(JCODE_SUBSCRIPTION_ACTIVE_ENV);
-    crate::env::remove_var("JCODE_OPENROUTER_API_BASE");
-    crate::env::remove_var("JCODE_OPENROUTER_API_KEY_NAME");
-    crate::env::remove_var("JCODE_OPENROUTER_ENV_FILE");
-    crate::env::remove_var("JCODE_OPENROUTER_CACHE_NAMESPACE");
-    crate::env::remove_var("JCODE_OPENROUTER_PROVIDER_FEATURES");
-    crate::env::remove_var("JCODE_OPENROUTER_TRANSPORT_STATE");
-    crate::env::remove_var("JCODE_OPENROUTER_ALLOW_NO_AUTH");
-    crate::env::remove_var("JCODE_OPENROUTER_PROVIDER");
-    crate::env::remove_var("JCODE_OPENROUTER_NO_FALLBACK");
+    crate::env::remove_var(WVC_SUBSCRIPTION_ACTIVE_ENV);
+    crate::env::remove_var("WVC_OPENROUTER_API_BASE");
+    crate::env::remove_var("WVC_OPENROUTER_API_KEY_NAME");
+    crate::env::remove_var("WVC_OPENROUTER_ENV_FILE");
+    crate::env::remove_var("WVC_OPENROUTER_CACHE_NAMESPACE");
+    crate::env::remove_var("WVC_OPENROUTER_PROVIDER_FEATURES");
+    crate::env::remove_var("WVC_OPENROUTER_TRANSPORT_STATE");
+    crate::env::remove_var("WVC_OPENROUTER_ALLOW_NO_AUTH");
+    crate::env::remove_var("WVC_OPENROUTER_PROVIDER");
+    crate::env::remove_var("WVC_OPENROUTER_NO_FALLBACK");
 }
 
 #[cfg(test)]
@@ -605,7 +605,7 @@ mod tests {
         assert_eq!(
             CURATED_MODELS
                 .iter()
-                .filter(|model| model.min_tier == JcodeTier::Plus)
+                .filter(|model| model.min_tier == WeavecoderTier::Plus)
                 .map(|model| model.id)
                 .collect::<Vec<_>>(),
             EXPECTED_PLUS_MODELS
@@ -613,7 +613,7 @@ mod tests {
         assert_eq!(
             CURATED_MODELS
                 .iter()
-                .filter(|model| model.min_tier == JcodeTier::Ultra)
+                .filter(|model| model.min_tier == WeavecoderTier::Ultra)
                 .map(|model| model.id)
                 .collect::<Vec<_>>(),
             vec!["claude-fable-5"]
@@ -621,7 +621,7 @@ mod tests {
         assert!(
             CURATED_MODELS
                 .iter()
-                .all(|model| model.min_tier != JcodeTier::Flagship)
+                .all(|model| model.min_tier != WeavecoderTier::Flagship)
         );
         assert_eq!(CURATED_MODELS.len(), 20);
         assert!(find_curated_model("magistral-small-1.2").is_none());
@@ -634,14 +634,14 @@ mod tests {
     #[test]
     fn tier_pricing_matches_launched_plans() {
         let expected = [
-            (JcodeTier::Plus, "plus", "Plus", 10, 18.00),
-            (JcodeTier::Pro, "pro", "Pro", 20, 40.00),
-            (JcodeTier::Max, "max", "Max", 100, 225.00),
-            (JcodeTier::Ultra, "ultra", "Ultra", 200, 500.00),
-            (JcodeTier::Flagship, "flagship", "Solo", 1000, 3000.00),
+            (WeavecoderTier::Plus, "plus", "Plus", 10, 18.00),
+            (WeavecoderTier::Pro, "pro", "Pro", 20, 40.00),
+            (WeavecoderTier::Max, "max", "Max", 100, 225.00),
+            (WeavecoderTier::Ultra, "ultra", "Ultra", 200, 500.00),
+            (WeavecoderTier::Flagship, "flagship", "Solo", 1000, 3000.00),
         ];
 
-        assert_eq!(JcodeTier::ALL, expected.map(|(tier, ..)| tier));
+        assert_eq!(WeavecoderTier::ALL, expected.map(|(tier, ..)| tier));
         for (tier, id, display_name, retail_price, usable_budget) in expected {
             assert_eq!(tier.as_str(), id);
             assert_eq!(tier.display_name(), display_name);
@@ -652,22 +652,22 @@ mod tests {
 
     #[test]
     fn tier_parse_round_trips() {
-        for tier in JcodeTier::ALL {
-            assert_eq!(JcodeTier::parse(tier.as_str()), Some(*tier));
+        for tier in WeavecoderTier::ALL {
+            assert_eq!(WeavecoderTier::parse(tier.as_str()), Some(*tier));
         }
-        assert_eq!(JcodeTier::parse("PLUS"), Some(JcodeTier::Plus));
-        assert_eq!(JcodeTier::parse(" Pro "), Some(JcodeTier::Pro));
-        assert_eq!(JcodeTier::parse("MAX"), Some(JcodeTier::Max));
-        assert_eq!(JcodeTier::parse(" ultra "), Some(JcodeTier::Ultra));
-        assert_eq!(JcodeTier::parse(" Flagship "), Some(JcodeTier::Flagship));
-        assert_eq!(JcodeTier::parse(" Solo "), Some(JcodeTier::Flagship));
-        assert_eq!(JcodeTier::parse("starter"), None);
+        assert_eq!(WeavecoderTier::parse("PLUS"), Some(WeavecoderTier::Plus));
+        assert_eq!(WeavecoderTier::parse(" Pro "), Some(WeavecoderTier::Pro));
+        assert_eq!(WeavecoderTier::parse("MAX"), Some(WeavecoderTier::Max));
+        assert_eq!(WeavecoderTier::parse(" ultra "), Some(WeavecoderTier::Ultra));
+        assert_eq!(WeavecoderTier::parse(" Flagship "), Some(WeavecoderTier::Flagship));
+        assert_eq!(WeavecoderTier::parse(" Solo "), Some(WeavecoderTier::Flagship));
+        assert_eq!(WeavecoderTier::parse("starter"), None);
     }
 
     #[test]
     fn tier_gating_follows_catalog_order() {
-        for (account_index, account_tier) in JcodeTier::ALL.iter().copied().enumerate() {
-            for (required_index, required_tier) in JcodeTier::ALL.iter().copied().enumerate() {
+        for (account_index, account_tier) in WeavecoderTier::ALL.iter().copied().enumerate() {
+            for (required_index, required_tier) in WeavecoderTier::ALL.iter().copied().enumerate() {
                 assert_eq!(
                     account_tier.allows(required_tier),
                     account_index >= required_index,
@@ -683,18 +683,18 @@ mod tests {
     fn model_entitlements_match_paid_tiers() {
         for model in CURATED_MODELS {
             match model.id {
-                "claude-fable-5" => assert_eq!(model.min_tier, JcodeTier::Ultra),
-                _ => assert_eq!(model.min_tier, JcodeTier::Plus),
+                "claude-fable-5" => assert_eq!(model.min_tier, WeavecoderTier::Ultra),
+                _ => assert_eq!(model.min_tier, WeavecoderTier::Plus),
             }
         }
 
-        for tier in JcodeTier::ALL {
+        for tier in WeavecoderTier::ALL {
             for model in EXPECTED_PLUS_MODELS {
                 assert!(tier.allows(find_curated_model(model).unwrap().min_tier));
             }
             assert_eq!(
                 tier.allows(find_curated_model("claude-fable-5").unwrap().min_tier),
-                matches!(tier, JcodeTier::Ultra | JcodeTier::Flagship)
+                matches!(tier, WeavecoderTier::Ultra | WeavecoderTier::Flagship)
             );
         }
     }
@@ -702,23 +702,23 @@ mod tests {
     #[test]
     fn effective_tier_defaults_to_plus_when_unknown() {
         let _guard = crate::storage::lock_test_env();
-        crate::env::remove_var(JCODE_TIER_ENV);
+        crate::env::remove_var(WVC_TIER_ENV);
         let temp = tempfile::tempdir().expect("temp home");
-        crate::env::set_var("JCODE_HOME", temp.path().to_string_lossy().to_string());
+        crate::env::set_var("WVC_HOME", temp.path().to_string_lossy().to_string());
 
         assert_eq!(cached_tier(), None);
-        assert_eq!(effective_tier(), JcodeTier::Plus);
+        assert_eq!(effective_tier(), WeavecoderTier::Plus);
         for model in EXPECTED_PLUS_MODELS {
             assert!(is_model_allowed_for_current_tier(model));
         }
         assert!(!is_model_allowed_for_current_tier("claude-fable-5"));
 
-        crate::env::set_var(JCODE_TIER_ENV, "mystery");
+        crate::env::set_var(WVC_TIER_ENV, "mystery");
         assert_eq!(cached_tier(), None);
-        assert_eq!(effective_tier(), JcodeTier::Plus);
+        assert_eq!(effective_tier(), WeavecoderTier::Plus);
 
-        for tier in [JcodeTier::Pro, JcodeTier::Max] {
-            crate::env::set_var(JCODE_TIER_ENV, tier.as_str());
+        for tier in [WeavecoderTier::Pro, WeavecoderTier::Max] {
+            crate::env::set_var(WVC_TIER_ENV, tier.as_str());
             assert_eq!(effective_tier(), tier);
             for model in EXPECTED_PLUS_MODELS {
                 assert!(is_model_allowed_for_current_tier(model));
@@ -726,21 +726,21 @@ mod tests {
             assert!(!is_model_allowed_for_current_tier("claude-fable-5"));
         }
 
-        crate::env::set_var(JCODE_TIER_ENV, JcodeTier::Ultra.as_str());
-        assert_eq!(effective_tier(), JcodeTier::Ultra);
+        crate::env::set_var(WVC_TIER_ENV, WeavecoderTier::Ultra.as_str());
+        assert_eq!(effective_tier(), WeavecoderTier::Ultra);
         assert!(is_model_allowed_for_current_tier("claude-fable-5"));
 
-        crate::env::remove_var(JCODE_TIER_ENV);
-        store_cached_tier(Some(JcodeTier::Flagship)).expect("persist tier");
-        assert_eq!(cached_tier(), Some(JcodeTier::Flagship));
+        crate::env::remove_var(WVC_TIER_ENV);
+        store_cached_tier(Some(WeavecoderTier::Flagship)).expect("persist tier");
+        assert_eq!(cached_tier(), Some(WeavecoderTier::Flagship));
         assert!(is_model_allowed_for_current_tier("claude-fable-5"));
         assert!(is_model_allowed_for_current_tier("gpt-5.6-sol"));
 
         store_cached_tier(None).expect("clear tier");
         assert_eq!(cached_tier(), None);
 
-        crate::env::remove_var("JCODE_HOME");
-        crate::env::remove_var(JCODE_TIER_ENV);
+        crate::env::remove_var("WVC_HOME");
+        crate::env::remove_var(WVC_TIER_ENV);
     }
 
     #[test]

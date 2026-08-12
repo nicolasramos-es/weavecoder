@@ -722,7 +722,7 @@ pub(super) fn launch_forked_session_local(
         .filter(|path| path.is_dir())
         .or_else(|| std::env::current_dir().ok())
         .unwrap_or_else(|| std::path::PathBuf::from("."));
-    let socket = std::env::var("JCODE_SOCKET").ok();
+    let socket = std::env::var("WVC_SOCKET").ok();
     let opened = super::spawn_in_new_terminal(&exe, &session_id, &cwd, socket.as_deref())?;
     match (opened, has_prompt) {
         (true, true) => {
@@ -741,14 +741,14 @@ pub(super) fn launch_forked_session_local(
         }
         (false, true) => {
             app.push_display_message(DisplayMessage::system(format!(
-                "↗ New session {} created for the next prompt.\n\nNo terminal was opened automatically. Resume manually:\n\n  jcode --resume {}",
+                "↗ New session {} created for the next prompt.\n\nNo terminal was opened automatically. Resume manually:\n\n  wvc --resume {}",
                 session_name, session_id
             )));
             app.set_status_notice("Prompt session created");
         }
         (false, false) => {
             app.push_display_message(DisplayMessage::system(format!(
-                "✂ Fork → {}\n\nNo terminal was opened automatically. Resume manually:\n\n  jcode --resume {}",
+                "✂ Fork → {}\n\nNo terminal was opened automatically. Resume manually:\n\n  wvc --resume {}",
                 session_name, session_id
             )));
             app.set_status_notice("Forked session created");
@@ -787,7 +787,7 @@ fn launch_review_window_local(
         .filter(|path| path.is_dir())
         .or_else(|| std::env::current_dir().ok())
         .unwrap_or_else(|| std::path::PathBuf::from("."));
-    let socket = std::env::var("JCODE_SOCKET").ok();
+    let socket = std::env::var("WVC_SOCKET").ok();
     let opened = super::spawn_in_new_terminal(&exe, &session_id, &cwd, socket.as_deref())?;
     if opened {
         app.push_display_message(DisplayMessage::system(format!(
@@ -797,7 +797,7 @@ fn launch_review_window_local(
         app.set_status_notice(format!("{} launched", label));
     } else {
         app.push_display_message(DisplayMessage::system(format!(
-            "🔍 {} session {} created.\n\nNo terminal was opened automatically. Resume manually:\n\n  jcode --resume {}",
+            "🔍 {} session {} created.\n\nNo terminal was opened automatically. Resume manually:\n\n  wvc --resume {}",
             label, session_name, session_id
         )));
         app.set_status_notice(format!("{} session created", label));

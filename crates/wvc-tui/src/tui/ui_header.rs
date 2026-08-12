@@ -339,7 +339,7 @@ fn auth_full_specs(
         active: ActiveCredentialOverrides,
     ) -> Option<&'static str> {
         use crate::auth::{ActiveCredential, resolve_dual_credential_auth};
-        let runtime_provider = std::env::var("JCODE_RUNTIME_PROVIDER").ok();
+        let runtime_provider = std::env::var("WVC_RUNTIME_PROVIDER").ok();
         let resolved = resolve_dual_credential_auth(provider, auth, runtime_provider.as_deref())?;
         // Prefer the app's authoritative answer over the env heuristic.
         let active = active.get(provider).unwrap_or(resolved.active);
@@ -426,7 +426,7 @@ fn header_provider_auth_tag(
     auth: &AuthStatus,
     active: ActiveCredentialOverrides,
 ) -> &'static str {
-    let runtime_provider = std::env::var("JCODE_RUNTIME_PROVIDER").ok();
+    let runtime_provider = std::env::var("WVC_RUNTIME_PROVIDER").ok();
 
     // Anthropic and OpenAI share one credential-resolution source of truth so
     // the header tag never drifts from the info widget / model-switch line. We
@@ -586,7 +586,7 @@ fn version_display_candidates() -> Vec<String> {
 #[cfg(test)]
 fn configured_auth_count(auth: &AuthStatus) -> usize {
     [
-        auth.jcode,
+        auth.wvc,
         auth.anthropic.state,
         auth.openrouter,
         auth.azure,
@@ -679,7 +679,7 @@ fn build_persistent_header_with_auth(
         .as_deref()
         .map(|version| header_version_label(version, include_hash));
 
-    // First line: `jcode` (+ `self-dev` when running a dev/canary build),
+    // First line: `wvc` (+ `self-dev` when running a dev/canary build),
     // followed by any remaining status badges rendered dimly.
     {
         let mut spans = vec![Span::styled(
@@ -740,7 +740,7 @@ fn build_persistent_header_with_auth(
     } else if server_name.is_none() {
         lines.push(
             Line::from(Span::styled(
-                "JCode".to_string(),
+                "Weavecoder".to_string(),
                 Style::default().fg(header_name_color()),
             ))
             .alignment(align),
@@ -806,7 +806,7 @@ fn build_persistent_header_with_auth(
     }
 
     // When there is no server/client version labeling (standalone mode),
-    // still surface the running version on the jcode line's own row.
+    // still surface the running version on the wvc line's own row.
     if client_version_label.is_none() {
         let version_text = if is_running_stable_release() {
             let tag = wvc_build_meta::git_tag();
@@ -1034,7 +1034,7 @@ mod tests {
     fn ensure_test_wvc_home_if_unset() {
         static TEST_HOME: OnceLock<std::path::PathBuf> = OnceLock::new();
 
-        if std::env::var_os("JCODE_HOME").is_some() {
+        if std::env::var_os("WVC_HOME").is_some() {
             return;
         }
 
@@ -1043,7 +1043,7 @@ mod tests {
             let _ = std::fs::create_dir_all(&path);
             path
         });
-        crate::env::set_var("JCODE_HOME", path);
+        crate::env::set_var("WVC_HOME", path);
     }
 
     fn create_test_app() -> crate::tui::app::App {
@@ -1324,7 +1324,7 @@ mod tests {
     #[test]
     fn header_model_display_name_sweeps_real_model_catalog() {
         // End-to-end through shorten_model_name + format_model_name +
-        // prettify_model_id, over the model ids jcode actually routes.
+        // prettify_model_id, over the model ids wvc actually routes.
         let cases = [
             // Anthropic
             ("claude-opus-4-5-20251101", "Claude 4.5 Opus"),
@@ -1398,7 +1398,7 @@ mod tests {
     #[test]
     fn configured_auth_count_includes_non_model_auth_surfaces() {
         let auth = AuthStatus {
-            jcode: AuthState::Available,
+            wvc: AuthState::Available,
             anthropic: ProviderAuth {
                 state: AuthState::Expired,
                 has_oauth: true,
@@ -1416,8 +1416,8 @@ mod tests {
     #[test]
     fn header_provider_auth_tag_reports_active_credential_for_openai() {
         let _guard = crate::storage::lock_test_env();
-        let prev = std::env::var_os("JCODE_RUNTIME_PROVIDER");
-        crate::env::remove_var("JCODE_RUNTIME_PROVIDER");
+        let prev = std::env::var_os("WVC_RUNTIME_PROVIDER");
+        crate::env::remove_var("WVC_RUNTIME_PROVIDER");
         let auth = AuthStatus {
             openai: AuthState::Available,
             openai_has_oauth: true,
@@ -1432,17 +1432,17 @@ mod tests {
             "oauth"
         );
         if let Some(value) = prev {
-            crate::env::set_var("JCODE_RUNTIME_PROVIDER", value);
+            crate::env::set_var("WVC_RUNTIME_PROVIDER", value);
         }
     }
 
     #[test]
     fn header_provider_auth_tag_prefers_app_resolved_credential_over_env() {
         let _guard = crate::storage::lock_test_env();
-        let prev = std::env::var_os("JCODE_RUNTIME_PROVIDER");
-        // The TUI client usually does not inherit JCODE_RUNTIME_PROVIDER, so the
+        let prev = std::env::var_os("WVC_RUNTIME_PROVIDER");
+        // The TUI client usually does not inherit WVC_RUNTIME_PROVIDER, so the
         // env heuristic would answer "oauth" here; the app's resolution must win.
-        crate::env::remove_var("JCODE_RUNTIME_PROVIDER");
+        crate::env::remove_var("WVC_RUNTIME_PROVIDER");
         let both = AuthStatus {
             anthropic: ProviderAuth {
                 // `state` must be set alongside the credential booleans:
@@ -1474,14 +1474,14 @@ mod tests {
         );
 
         if let Some(value) = prev {
-            crate::env::set_var("JCODE_RUNTIME_PROVIDER", value);
+            crate::env::set_var("WVC_RUNTIME_PROVIDER", value);
         }
     }
 
     #[test]
     fn header_provider_auth_tag_honors_runtime_selection_and_oauth_first() {
         let _guard = crate::storage::lock_test_env();
-        let prev = std::env::var_os("JCODE_RUNTIME_PROVIDER");
+        let prev = std::env::var_os("WVC_RUNTIME_PROVIDER");
 
         let both = AuthStatus {
             anthropic: ProviderAuth {
@@ -1493,21 +1493,21 @@ mod tests {
         };
 
         // Explicit API-key selection wins even when OAuth is available.
-        crate::env::set_var("JCODE_RUNTIME_PROVIDER", "claude-api");
+        crate::env::set_var("WVC_RUNTIME_PROVIDER", "claude-api");
         assert_eq!(
             header_provider_auth_tag("anthropic", &both, ActiveCredentialOverrides::default()),
             "api-key"
         );
 
         // Explicit OAuth selection.
-        crate::env::set_var("JCODE_RUNTIME_PROVIDER", "claude");
+        crate::env::set_var("WVC_RUNTIME_PROVIDER", "claude");
         assert_eq!(
             header_provider_auth_tag("anthropic", &both, ActiveCredentialOverrides::default()),
             "oauth"
         );
 
         // Auto (unset) prefers OAuth when both credentials are present.
-        crate::env::remove_var("JCODE_RUNTIME_PROVIDER");
+        crate::env::remove_var("WVC_RUNTIME_PROVIDER");
         assert_eq!(
             header_provider_auth_tag("anthropic", &both, ActiveCredentialOverrides::default()),
             "oauth"
@@ -1518,12 +1518,12 @@ mod tests {
             header_provider_auth_tag("claude", &both, ActiveCredentialOverrides::default()),
             "oauth"
         );
-        crate::env::set_var("JCODE_RUNTIME_PROVIDER", "claude-api");
+        crate::env::set_var("WVC_RUNTIME_PROVIDER", "claude-api");
         assert_eq!(
             header_provider_auth_tag("claude", &both, ActiveCredentialOverrides::default()),
             "api-key"
         );
-        crate::env::remove_var("JCODE_RUNTIME_PROVIDER");
+        crate::env::remove_var("WVC_RUNTIME_PROVIDER");
 
         // Auto falls back to the API key when no OAuth credential exists.
         let api_only = AuthStatus {
@@ -1540,19 +1540,19 @@ mod tests {
         );
 
         if let Some(value) = prev {
-            crate::env::set_var("JCODE_RUNTIME_PROVIDER", value);
+            crate::env::set_var("WVC_RUNTIME_PROVIDER", value);
         } else {
-            crate::env::remove_var("JCODE_RUNTIME_PROVIDER");
+            crate::env::remove_var("WVC_RUNTIME_PROVIDER");
         }
     }
 
     #[test]
     fn build_persistent_header_prefers_configured_model_during_remote_connect() {
         let _guard = crate::storage::lock_test_env();
-        let prev_model = std::env::var_os("JCODE_MODEL");
-        let prev_provider = std::env::var_os("JCODE_PROVIDER");
-        crate::env::set_var("JCODE_MODEL", "gpt-5.4");
-        crate::env::set_var("JCODE_PROVIDER", "openai");
+        let prev_model = std::env::var_os("WVC_MODEL");
+        let prev_provider = std::env::var_os("WVC_PROVIDER");
+        crate::env::set_var("WVC_MODEL", "gpt-5.4");
+        crate::env::set_var("WVC_PROVIDER", "openai");
 
         let app = crate::tui::app::App::new_for_remote(None);
         let lines = build_persistent_header(&app, 80);
@@ -1566,31 +1566,31 @@ mod tests {
         assert!(!rendered.contains("connecting to server…"));
 
         if let Some(prev_model) = prev_model {
-            crate::env::set_var("JCODE_MODEL", prev_model);
+            crate::env::set_var("WVC_MODEL", prev_model);
         } else {
-            crate::env::remove_var("JCODE_MODEL");
+            crate::env::remove_var("WVC_MODEL");
         }
         if let Some(prev_provider) = prev_provider {
-            crate::env::set_var("JCODE_PROVIDER", prev_provider);
+            crate::env::set_var("WVC_PROVIDER", prev_provider);
         } else {
-            crate::env::remove_var("JCODE_PROVIDER");
+            crate::env::remove_var("WVC_PROVIDER");
         }
     }
 
     #[test]
     fn build_header_lines_omits_placeholder_provider_label_when_unknown() {
         // Reads model/provider env-derived state: without the env lock, the
-        // sibling test that sets JCODE_MODEL=gpt-5.4 mid-flight leaks into this
+        // sibling test that sets WVC_MODEL=gpt-5.4 mid-flight leaks into this
         // render and the "loading session…" placeholder never appears. The
         // startup-phase label is also only rendered when no model hint is
-        // known, so neutralize JCODE_MODEL/JCODE_PROVIDER for the duration
+        // known, so neutralize WVC_MODEL/WVC_PROVIDER for the duration
         // ("unknown" also suppresses the shared test home's config
         // default_model fallback, which another test may have persisted).
         let _guard = crate::storage::lock_test_env();
-        let prev_model = std::env::var_os("JCODE_MODEL");
-        let prev_provider = std::env::var_os("JCODE_PROVIDER");
-        crate::env::set_var("JCODE_MODEL", "unknown");
-        crate::env::remove_var("JCODE_PROVIDER");
+        let prev_model = std::env::var_os("WVC_MODEL");
+        let prev_provider = std::env::var_os("WVC_PROVIDER");
+        crate::env::set_var("WVC_MODEL", "unknown");
+        crate::env::remove_var("WVC_PROVIDER");
 
         let mut app = crate::tui::app::App::new_for_remote(None);
         app.set_remote_startup_phase(crate::tui::app::RemoteStartupPhase::LoadingSession);
@@ -1605,14 +1605,14 @@ mod tests {
             .collect::<String>();
 
         if let Some(prev_model) = prev_model {
-            crate::env::set_var("JCODE_MODEL", prev_model);
+            crate::env::set_var("WVC_MODEL", prev_model);
         } else {
-            crate::env::remove_var("JCODE_MODEL");
+            crate::env::remove_var("WVC_MODEL");
         }
         if let Some(prev_provider) = prev_provider {
-            crate::env::set_var("JCODE_PROVIDER", prev_provider);
+            crate::env::set_var("WVC_PROVIDER", prev_provider);
         } else {
-            crate::env::remove_var("JCODE_PROVIDER");
+            crate::env::remove_var("WVC_PROVIDER");
         }
 
         assert!(rendered.contains("loading session…"), "{rendered}");
@@ -1622,8 +1622,8 @@ mod tests {
 
     #[test]
     fn build_header_lines_hides_secondary_placeholder_during_brief_connecting_phase() {
-        // Same env sensitivity as the placeholder test above: JCODE_MODEL /
-        // JCODE_PROVIDER mutations from sibling tests change what renders.
+        // Same env sensitivity as the placeholder test above: WVC_MODEL /
+        // WVC_PROVIDER mutations from sibling tests change what renders.
         let _guard = crate::storage::lock_test_env();
         let app = crate::tui::app::App::new_for_remote(None);
 
@@ -1687,7 +1687,7 @@ mod tests {
     #[test]
     fn auth_status_line_marks_active_credential_when_both_configured() {
         let _guard = crate::storage::lock_test_env();
-        let prev = std::env::var_os("JCODE_RUNTIME_PROVIDER");
+        let prev = std::env::var_os("WVC_RUNTIME_PROVIDER");
         let auth = AuthStatus {
             anthropic: ProviderAuth {
                 state: AuthState::Available,
@@ -1700,8 +1700,8 @@ mod tests {
 
         let rendered_with = |runtime: Option<&str>| {
             match runtime {
-                Some(value) => crate::env::set_var("JCODE_RUNTIME_PROVIDER", value),
-                None => crate::env::remove_var("JCODE_RUNTIME_PROVIDER"),
+                Some(value) => crate::env::set_var("WVC_RUNTIME_PROVIDER", value),
+                None => crate::env::remove_var("WVC_RUNTIME_PROVIDER"),
             }
             build_auth_status_lines(&auth, ActiveCredentialOverrides::default())
                 .iter()
@@ -1726,8 +1726,8 @@ mod tests {
         );
 
         match prev {
-            Some(value) => crate::env::set_var("JCODE_RUNTIME_PROVIDER", value),
-            None => crate::env::remove_var("JCODE_RUNTIME_PROVIDER"),
+            Some(value) => crate::env::set_var("WVC_RUNTIME_PROVIDER", value),
+            None => crate::env::remove_var("WVC_RUNTIME_PROVIDER"),
         }
     }
 

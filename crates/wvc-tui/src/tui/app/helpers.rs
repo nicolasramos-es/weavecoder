@@ -105,7 +105,7 @@ pub(crate) fn invalidate_ambient_info_cache() {
 /// Open a file/URL with the system opener, unless suppressed.
 ///
 /// Every TUI-initiated `open::that_detached` must go through here: it honors
-/// NO_BROWSER/JCODE_NO_BROWSER and refuses to open anything from test binaries
+/// NO_BROWSER/WVC_NO_BROWSER and refuses to open anything from test binaries
 /// (`browser_suppressed` detects the test harness), so `cargo test` runs never
 /// pop browser windows, image viewers, or OAuth pages on the developer's
 /// desktop.
@@ -114,7 +114,7 @@ pub(crate) fn open_path_or_url_detached(
 ) -> std::io::Result<()> {
     if crate::auth::browser_suppressed(false) {
         return Err(std::io::Error::other(
-            "opening files/URLs is suppressed (NO_BROWSER/JCODE_NO_BROWSER or test harness)",
+            "opening files/URLs is suppressed (NO_BROWSER/WVC_NO_BROWSER or test harness)",
         ));
     }
     open::that_detached(target)
@@ -218,7 +218,7 @@ pub(super) fn ctrl_bracket_fallback_to_esc(_code: &mut KeyCode, _modifiers: &mut
 
 /// Debug command file path
 pub(super) fn debug_cmd_path() -> PathBuf {
-    if let Ok(path) = std::env::var("JCODE_DEBUG_CMD_PATH") {
+    if let Ok(path) = std::env::var("WVC_DEBUG_CMD_PATH") {
         return PathBuf::from(path);
     }
     std::env::temp_dir().join("wvc_debug_cmd")
@@ -226,7 +226,7 @@ pub(super) fn debug_cmd_path() -> PathBuf {
 
 /// Debug response file path
 pub(super) fn debug_response_path() -> PathBuf {
-    if let Ok(path) = std::env::var("JCODE_DEBUG_RESPONSE_PATH") {
+    if let Ok(path) = std::env::var("WVC_DEBUG_RESPONSE_PATH") {
         return PathBuf::from(path);
     }
     std::env::temp_dir().join("wvc_debug_response")
@@ -620,7 +620,7 @@ pub(super) fn mask_email(email: &str) -> String {
     format!("{}@{}", masked_local, domain)
 }
 
-/// Spawn a new terminal window that resumes a jcode session.
+/// Spawn a new terminal window that resumes a wvc session.
 /// Returns Ok(true) if a terminal was successfully launched, Ok(false) if no terminal found.
 fn resume_invocation_args(session_id: &str, socket: Option<&str>) -> Vec<String> {
     let mut args = vec![
@@ -647,7 +647,7 @@ pub(super) fn build_resume_command(
     socket: Option<&str>,
 ) -> (PathBuf, Vec<String>, String) {
     match target {
-        ResumeTarget::JcodeSession { session_id } => {
+        ResumeTarget::WeavecoderSession { session_id } => {
             let exe = launch_client_executable();
             let args = resume_invocation_args(session_id, socket);
             let title = resumed_window_title(session_id);
@@ -731,7 +731,7 @@ pub(super) fn spawn_resume_target_in_new_terminal(
     spawn_command_in_new_terminal(&program, &args, &title, cwd)
 }
 
-/// Build the terminal command used to spawn a brand-new jcode session.
+/// Build the terminal command used to spawn a brand-new wvc session.
 /// Split from `spawn_fresh_session_in_new_terminal` so tests can verify the
 /// invocation without launching a window.
 fn build_fresh_session_command(socket: Option<&str>) -> crate::terminal_launch::TerminalCommand {
@@ -747,7 +747,7 @@ fn build_fresh_session_command(socket: Option<&str>) -> crate::terminal_launch::
         .fresh_spawn()
 }
 
-/// Spawn a brand-new jcode session in a new terminal window, staying on the
+/// Spawn a brand-new wvc session in a new terminal window, staying on the
 /// same server socket when one is configured. Returns Ok(true) when a terminal
 /// was launched, Ok(false) when no supported terminal was found.
 pub(super) fn spawn_fresh_session_in_new_terminal(cwd: &Path) -> anyhow::Result<bool> {
@@ -755,7 +755,7 @@ pub(super) fn spawn_fresh_session_in_new_terminal(cwd: &Path) -> anyhow::Result<
         // Never launch real terminal windows from unit tests.
         return Ok(false);
     }
-    let socket = std::env::var("JCODE_SOCKET").ok();
+    let socket = std::env::var("WVC_SOCKET").ok();
     let command = build_fresh_session_command(socket.as_deref());
     crate::terminal_launch::spawn_command_in_new_terminal(&command, cwd)
 }

@@ -1,8 +1,8 @@
-//! jcode-desktop2: greenfield desktop app.
+//! wvc-desktop2: greenfield desktop app.
 //!
 //! Milestone 3+4 of docs/HARNESS_API_AND_DESKTOP_REWRITE.md: winit window,
 //! Vello vector rendering, Parley text layout, and a live harness API
-//! connection (via jcode-harness-api-bridge) with a minimal chat loop.
+//! connection (via wvc-harness-api-bridge) with a minimal chat loop.
 
 mod ack;
 mod activity;
@@ -178,7 +178,7 @@ struct App {
     /// here rather than by the model so a frame stays a pure function of the
     /// model.
     mem_sampler: mem::Sampler,
-    /// Live per-frame timing, off unless `JCODE_DESKTOP2_FRAME_METER` is set.
+    /// Live per-frame timing, off unless `WVC_DESKTOP2_FRAME_METER` is set.
     /// Lives on the app rather than the render state so the CPU-side build span
     /// can be timed around `build_scene`, which the render state never sees.
     frame_meter: frame_meter::FrameMeter,
@@ -499,11 +499,11 @@ impl Default for Model {
 /// per-pixel canvas fill.
 pub const DONUT_GRID: usize = 152;
 
-/// Escape hatch: `JCODE_DESKTOP2_DONUT=0` turns the animation off for users who
+/// Escape hatch: `WVC_DESKTOP2_DONUT=0` turns the animation off for users who
 /// do not want motion, and for benchmarking the rest of the frame.
 pub(crate) fn donut_disabled() -> bool {
     matches!(
-        std::env::var("JCODE_DESKTOP2_DONUT").as_deref(),
+        std::env::var("WVC_DESKTOP2_DONUT").as_deref(),
         Ok("0") | Ok("off") | Ok("false")
     )
 }
@@ -925,7 +925,7 @@ impl App {
             return;
         }
         let hit = self.composer_offset_at(x, y);
-        if std::env::var_os("JCODE_DESKTOP2_LOG_INPUT").is_some() {
+        if std::env::var_os("WVC_DESKTOP2_LOG_INPUT").is_some() {
             eprintln!(
                 "[input] press at ({x:.1}, {y:.1}) logical; composer y {:.1}..{:.1}; hit {hit:?}",
                 self.frame.composer_top, self.frame.composer_bottom
@@ -1247,7 +1247,7 @@ impl App {
     }
 
     /// Put the session's directory in the window title, so the compositor's
-    /// window list distinguishes two jcode windows on different checkouts.
+    /// window list distinguishes two wvc windows on different checkouts.
     fn retitle(&self) {
         if let Some(state) = self.state.as_ref() {
             state.set_title(&place::window_title(self.model.working_dir.as_deref()));
@@ -1914,7 +1914,7 @@ impl ApplicationHandler for App {
                 // the user's first character, or makes them watch it finish, is
                 // worse than no animation.
                 self.model.boot = boot::Boot::default();
-                if std::env::var_os("JCODE_DESKTOP2_LOG_INPUT").is_some() {
+                if std::env::var_os("WVC_DESKTOP2_LOG_INPUT").is_some() {
                     eprintln!(
                         "[input] move to ({:.1}, {:.1}) logical",
                         self.pointer.0, self.pointer.1
@@ -1991,7 +1991,7 @@ impl ApplicationHandler for App {
                 self.on_super_changed(self.modifiers.super_key(), std::time::Instant::now());
             }
             // The desktop flipped between light and dark. Only a window in
-            // System mode follows: an explicit JCODE_DESKTOP2_THEME choice is
+            // System mode follows: an explicit WVC_DESKTOP2_THEME choice is
             // the user overriding the desktop, and must keep winning.
             WindowEvent::ThemeChanged(system) => {
                 if self.model.theme_preference == theme::ThemeMode::System {
@@ -2033,7 +2033,7 @@ impl ApplicationHandler for App {
                     },
                 ..
             } => {
-                if std::env::var_os("JCODE_DESKTOP2_LOG_INPUT").is_some() {
+                if std::env::var_os("WVC_DESKTOP2_LOG_INPUT").is_some() {
                     eprintln!(
                         "[input] key {logical_key:?} mods {:?} overview_open {} visible {}",
                         self.modifiers,

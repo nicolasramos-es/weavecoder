@@ -3,7 +3,7 @@ name = "wvc-sdk"
 version = "0.1.0"
 edition = "2024"
 publish = false
-description = "Rust SDK for the jcode harness API: connect, drive sessions, stream events"
+description = "Rust SDK for the wvc harness API: connect, drive sessions, stream events"
 
 [dependencies]
 wvc-harness-api = { path = "../wvc-harness-api" }

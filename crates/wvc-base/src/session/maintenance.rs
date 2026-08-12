@@ -22,7 +22,7 @@ use std::path::Path;
 /// recovery copy.
 const BACKUP_RETENTION_DAYS: i64 = 30;
 
-/// Minimum interval between prune passes across all jcode processes.
+/// Minimum interval between prune passes across all wvc processes.
 ///
 /// The prune walks the entire sessions directory (easily 100k+ entries on a
 /// long-lived install), which profiles as the single largest CPU cost of TUI
@@ -35,7 +35,7 @@ const PRUNE_INTERVAL_SECS: u64 = 24 * 60 * 60;
 ///
 /// Best-effort: any I/O error is ignored so this can run on a background thread
 /// at startup without ever affecting launch. Skips cheaply (one stat) unless
-/// the machine-wide prune interval has elapsed, so spawning many jcode
+/// the machine-wide prune interval has elapsed, so spawning many wvc
 /// processes at once does not trigger many full directory walks.
 pub fn prune_old_session_backups() {
     if let Ok(base) = storage::wvc_dir() {

@@ -1,4 +1,4 @@
-//! End-to-end tests for jcode using a mock provider
+//! End-to-end tests for wvc using a mock provider
 //!
 //! These tests verify the full flow from user input to response
 //! without making actual API calls.
@@ -31,7 +31,7 @@ pub(crate) use weavecoder::server;
 pub(crate) use weavecoder::session::{Session, StoredCompactionState};
 pub(crate) use weavecoder::tool::Registry;
 
-static JCODE_HOME_LOCK: std::sync::OnceLock<Mutex<()>> = std::sync::OnceLock::new();
+static WVC_HOME_LOCK: std::sync::OnceLock<Mutex<()>> = std::sync::OnceLock::new();
 
 pub(crate) fn short_runtime_dir(name: String) -> std::path::PathBuf {
     #[cfg(unix)]
@@ -45,7 +45,7 @@ pub(crate) fn short_runtime_dir(name: String) -> std::path::PathBuf {
 }
 
 fn lock_wvc_home() -> std::sync::MutexGuard<'static, ()> {
-    let mutex = JCODE_HOME_LOCK.get_or_init(|| Mutex::new(()));
+    let mutex = WVC_HOME_LOCK.get_or_init(|| Mutex::new(()));
     // Recover from poisoned state if a previous test panicked
     match mutex.lock() {
         Ok(guard) => guard,
@@ -69,29 +69,29 @@ impl TestEnvGuard {
     pub(crate) fn new() -> Result<Self> {
         let lock = lock_wvc_home();
         let temp_home = tempfile::Builder::new().prefix("wvc-e2e-home-").tempdir()?;
-        let prev_home = std::env::var_os("JCODE_HOME");
-        let prev_runtime_dir = std::env::var_os("JCODE_RUNTIME_DIR");
-        let prev_test_session = std::env::var_os("JCODE_TEST_SESSION");
-        let prev_debug_control = std::env::var_os("JCODE_DEBUG_CONTROL");
-        let prev_runtime_provider = std::env::var_os("JCODE_RUNTIME_PROVIDER");
-        let prev_active_provider = std::env::var_os("JCODE_ACTIVE_PROVIDER");
-        let prev_openrouter_cache_namespace = std::env::var_os("JCODE_OPENROUTER_CACHE_NAMESPACE");
+        let prev_home = std::env::var_os("WVC_HOME");
+        let prev_runtime_dir = std::env::var_os("WVC_RUNTIME_DIR");
+        let prev_test_session = std::env::var_os("WVC_TEST_SESSION");
+        let prev_debug_control = std::env::var_os("WVC_DEBUG_CONTROL");
+        let prev_runtime_provider = std::env::var_os("WVC_RUNTIME_PROVIDER");
+        let prev_active_provider = std::env::var_os("WVC_ACTIVE_PROVIDER");
+        let prev_openrouter_cache_namespace = std::env::var_os("WVC_OPENROUTER_CACHE_NAMESPACE");
         let runtime_dir = temp_home.path().join("runtime");
         std::fs::create_dir_all(&runtime_dir)?;
 
-        weavecoder::env::set_var("JCODE_HOME", temp_home.path());
-        weavecoder::env::set_var("JCODE_RUNTIME_DIR", &runtime_dir);
-        weavecoder::env::set_var("JCODE_TEST_SESSION", "1");
-        weavecoder::env::set_var("JCODE_DEBUG_CONTROL", "1");
-        weavecoder::env::remove_var("JCODE_RUNTIME_PROVIDER");
-        weavecoder::env::remove_var("JCODE_ACTIVE_PROVIDER");
-        weavecoder::env::remove_var("JCODE_OPENROUTER_CACHE_NAMESPACE");
+        weavecoder::env::set_var("WVC_HOME", temp_home.path());
+        weavecoder::env::set_var("WVC_RUNTIME_DIR", &runtime_dir);
+        weavecoder::env::set_var("WVC_TEST_SESSION", "1");
+        weavecoder::env::set_var("WVC_DEBUG_CONTROL", "1");
+        weavecoder::env::remove_var("WVC_RUNTIME_PROVIDER");
+        weavecoder::env::remove_var("WVC_ACTIVE_PROVIDER");
+        weavecoder::env::remove_var("WVC_OPENROUTER_CACHE_NAMESPACE");
         // Disable the memory sidecar/extraction in e2e runs. Its background
         // extraction makes its own provider `complete()` call, which would steal
         // a queued mock response from the scenario under test and make turn
         // outcomes nondeterministic across transports.
-        weavecoder::env::set_var("JCODE_MEMORY_ENABLED", "0");
-        weavecoder::env::set_var("JCODE_MEMORY_SIDECAR_ENABLED", "0");
+        weavecoder::env::set_var("WVC_MEMORY_ENABLED", "0");
+        weavecoder::env::set_var("WVC_MEMORY_SIDECAR_ENABLED", "0");
 
         Ok(Self {
             _lock: lock,
@@ -110,48 +110,48 @@ impl TestEnvGuard {
 impl Drop for TestEnvGuard {
     fn drop(&mut self) {
         if let Some(prev_home) = &self.prev_home {
-            weavecoder::env::set_var("JCODE_HOME", prev_home);
+            weavecoder::env::set_var("WVC_HOME", prev_home);
         } else {
-            weavecoder::env::remove_var("JCODE_HOME");
+            weavecoder::env::remove_var("WVC_HOME");
         }
 
         if let Some(prev_runtime_dir) = &self.prev_runtime_dir {
-            weavecoder::env::set_var("JCODE_RUNTIME_DIR", prev_runtime_dir);
+            weavecoder::env::set_var("WVC_RUNTIME_DIR", prev_runtime_dir);
         } else {
-            weavecoder::env::remove_var("JCODE_RUNTIME_DIR");
+            weavecoder::env::remove_var("WVC_RUNTIME_DIR");
         }
 
         if let Some(prev_test_session) = &self.prev_test_session {
-            weavecoder::env::set_var("JCODE_TEST_SESSION", prev_test_session);
+            weavecoder::env::set_var("WVC_TEST_SESSION", prev_test_session);
         } else {
-            weavecoder::env::remove_var("JCODE_TEST_SESSION");
+            weavecoder::env::remove_var("WVC_TEST_SESSION");
         }
 
         if let Some(prev_debug_control) = &self.prev_debug_control {
-            weavecoder::env::set_var("JCODE_DEBUG_CONTROL", prev_debug_control);
+            weavecoder::env::set_var("WVC_DEBUG_CONTROL", prev_debug_control);
         } else {
-            weavecoder::env::remove_var("JCODE_DEBUG_CONTROL");
+            weavecoder::env::remove_var("WVC_DEBUG_CONTROL");
         }
 
         if let Some(prev_runtime_provider) = &self.prev_runtime_provider {
-            weavecoder::env::set_var("JCODE_RUNTIME_PROVIDER", prev_runtime_provider);
+            weavecoder::env::set_var("WVC_RUNTIME_PROVIDER", prev_runtime_provider);
         } else {
-            weavecoder::env::remove_var("JCODE_RUNTIME_PROVIDER");
+            weavecoder::env::remove_var("WVC_RUNTIME_PROVIDER");
         }
 
         if let Some(prev_active_provider) = &self.prev_active_provider {
-            weavecoder::env::set_var("JCODE_ACTIVE_PROVIDER", prev_active_provider);
+            weavecoder::env::set_var("WVC_ACTIVE_PROVIDER", prev_active_provider);
         } else {
-            weavecoder::env::remove_var("JCODE_ACTIVE_PROVIDER");
+            weavecoder::env::remove_var("WVC_ACTIVE_PROVIDER");
         }
 
         if let Some(prev_openrouter_cache_namespace) = &self.prev_openrouter_cache_namespace {
             weavecoder::env::set_var(
-                "JCODE_OPENROUTER_CACHE_NAMESPACE",
+                "WVC_OPENROUTER_CACHE_NAMESPACE",
                 prev_openrouter_cache_namespace,
             );
         } else {
-            weavecoder::env::remove_var("JCODE_OPENROUTER_CACHE_NAMESPACE");
+            weavecoder::env::remove_var("WVC_OPENROUTER_CACHE_NAMESPACE");
         }
     }
 }
@@ -605,7 +605,7 @@ pub(crate) async fn run_unix_transport_scenario() -> Result<TransportScenarioRes
                 let state = debug_run_command(debug_socket_path.clone(), "state", None)
                     .await
                     .unwrap_or_else(|e| format!("<state error: {e}>"));
-                let logs = std::env::var_os("JCODE_HOME")
+                let logs = std::env::var_os("WVC_HOME")
                     .and_then(|home| latest_log_excerpt(std::path::Path::new(&home)));
                 let seen = message_events
                     .iter()

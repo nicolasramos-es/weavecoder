@@ -1,4 +1,4 @@
-//! Tracking of active session process IDs under `~/.jcode/active_pids`.
+//! Tracking of active session process IDs under `~/.wvc/active_pids`.
 //!
 //! This is pure filesystem state keyed by session ID, used to discover which
 //! sessions are currently running (and to map a PID back to its session). It
@@ -9,7 +9,7 @@
 use crate::wvc_dir;
 use std::path::PathBuf;
 
-/// Directory holding one file per active session ID (`~/.jcode/active_pids`).
+/// Directory holding one file per active session ID (`~/.wvc/active_pids`).
 pub fn active_pids_dir() -> Option<PathBuf> {
     wvc_dir().ok().map(|d| d.join("active_pids"))
 }
@@ -118,7 +118,7 @@ pub fn find_active_session_id_by_pid(pid: u32) -> Option<String> {
     None
 }
 
-/// List active session IDs currently tracked in `~/.jcode/active_pids`.
+/// List active session IDs currently tracked in `~/.wvc/active_pids`.
 pub fn active_session_ids() -> Vec<String> {
     let Some(dir) = active_pids_dir() else {
         return Vec::new();
@@ -150,9 +150,9 @@ fn process_is_running(pid: u32) -> bool {
     pid != 0
 }
 
-/// Live snapshot of how many jcode sessions are running, and how many of those
+/// Live snapshot of how many wvc sessions are running, and how many of those
 /// are actively streaming a model response right now. Used by the menu bar
-/// indicator (`jcode menubar`) and any other presence UI.
+/// indicator (`wvc menubar`) and any other presence UI.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct SessionCounts {
     /// Number of live sessions (registered PID is still running).
@@ -270,7 +270,7 @@ pub fn user_session_counts() -> SessionCounts {
 mod tests {
     use super::*;
 
-    /// Serialize tests that mutate `JCODE_HOME`.
+    /// Serialize tests that mutate `WVC_HOME`.
     fn lock_env() -> std::sync::MutexGuard<'static, ()> {
         static LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
         LOCK.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
@@ -280,7 +280,7 @@ mod tests {
     fn session_counts_counts_live_and_streaming_only() {
         let _guard = lock_env();
         let temp = tempfile::tempdir().expect("tempdir");
-        wvc_core::env::set_var("JCODE_HOME", temp.path());
+        wvc_core::env::set_var("WVC_HOME", temp.path());
 
         let live = std::process::id();
         // Pick a PID that is almost certainly dead.
@@ -332,14 +332,14 @@ mod tests {
         unregister_active_pid("session_epsilon");
         assert_eq!(session_counts().streaming, 0);
 
-        wvc_core::env::remove_var("JCODE_HOME");
+        wvc_core::env::remove_var("WVC_HOME");
     }
 
     #[test]
     fn streaming_guard_marks_and_clears_on_drop() {
         let _guard = lock_env();
         let temp = tempfile::tempdir().expect("tempdir");
-        wvc_core::env::set_var("JCODE_HOME", temp.path());
+        wvc_core::env::set_var("WVC_HOME", temp.path());
 
         register_active_pid("session_guard", std::process::id());
         assert_eq!(session_counts().streaming, 0);
@@ -349,7 +349,7 @@ mod tests {
         }
         assert_eq!(session_counts().streaming, 0);
 
-        wvc_core::env::remove_var("JCODE_HOME");
+        wvc_core::env::remove_var("WVC_HOME");
     }
 
     /// Issue #508: internal (debug/child) sessions stay in the raw registry
@@ -358,7 +358,7 @@ mod tests {
     fn user_session_counts_exclude_internal_sessions() {
         let _guard = lock_env();
         let temp = tempfile::tempdir().expect("tempdir");
-        wvc_core::env::set_var("JCODE_HOME", temp.path());
+        wvc_core::env::set_var("WVC_HOME", temp.path());
 
         let live = std::process::id();
         register_active_pid("session_user", live);
@@ -388,6 +388,6 @@ mod tests {
         unregister_active_pid("session_worker");
         assert!(!session_is_internal("session_worker"));
 
-        wvc_core::env::remove_var("JCODE_HOME");
+        wvc_core::env::remove_var("WVC_HOME");
     }
 }

@@ -676,30 +676,30 @@ fn test_anthropic_signed_thinking_replayed_in_request_blocks() {
 }
 
 #[tokio::test]
-#[ignore = "live smoke: requires ANTHROPIC_API_KEY, or set JCODE_LIVE_ANTHROPIC_ALLOW_OAUTH=1 to use Claude OAuth credentials"]
+#[ignore = "live smoke: requires ANTHROPIC_API_KEY, or set WVC_LIVE_ANTHROPIC_ALLOW_OAUTH=1 to use Claude OAuth credentials"]
 async fn live_anthropic_reasoning_smoke() -> Result<()> {
     let _env_lock = wvc_base::storage::lock_test_env();
     let using_api_key = std::env::var_os("ANTHROPIC_API_KEY").is_some();
-    let allow_oauth = std::env::var_os("JCODE_LIVE_ANTHROPIC_ALLOW_OAUTH").is_some();
+    let allow_oauth = std::env::var_os("WVC_LIVE_ANTHROPIC_ALLOW_OAUTH").is_some();
     if !using_api_key && !allow_oauth {
         eprintln!(
-            "skipping live Anthropic smoke: set ANTHROPIC_API_KEY or JCODE_LIVE_ANTHROPIC_ALLOW_OAUTH=1"
+            "skipping live Anthropic smoke: set ANTHROPIC_API_KEY or WVC_LIVE_ANTHROPIC_ALLOW_OAUTH=1"
         );
         return Ok(());
     }
 
-    let _max_tokens = EnvVarGuard::set_if_missing("JCODE_ANTHROPIC_MAX_TOKENS", "2048");
-    let model = std::env::var("JCODE_LIVE_ANTHROPIC_MODEL")
-        .or_else(|_| std::env::var("JCODE_ANTHROPIC_MODEL"))
+    let _max_tokens = EnvVarGuard::set_if_missing("WVC_ANTHROPIC_MAX_TOKENS", "2048");
+    let model = std::env::var("WVC_LIVE_ANTHROPIC_MODEL")
+        .or_else(|_| std::env::var("WVC_ANTHROPIC_MODEL"))
         .unwrap_or_else(|_| "claude-sonnet-4-6".to_string());
-    let effort = std::env::var("JCODE_LIVE_ANTHROPIC_REASONING_EFFORT")
+    let effort = std::env::var("WVC_LIVE_ANTHROPIC_REASONING_EFFORT")
         .unwrap_or_else(|_| "low".to_string());
-    let prompt = std::env::var("JCODE_LIVE_ANTHROPIC_PROMPT")
+    let prompt = std::env::var("WVC_LIVE_ANTHROPIC_PROMPT")
         .unwrap_or_else(|_| "Live smoke test: answer exactly OK.".to_string());
-    let system = std::env::var("JCODE_LIVE_ANTHROPIC_SYSTEM").unwrap_or_else(|_| {
+    let system = std::env::var("WVC_LIVE_ANTHROPIC_SYSTEM").unwrap_or_else(|_| {
         "You are a live provider smoke test. Keep the answer tiny.".to_string()
     });
-    let require_thinking = std::env::var_os("JCODE_LIVE_ANTHROPIC_REQUIRE_THINKING").is_some();
+    let require_thinking = std::env::var_os("WVC_LIVE_ANTHROPIC_REQUIRE_THINKING").is_some();
 
     let provider = AnthropicProvider::new();
     provider.set_model(&model)?;
@@ -736,7 +736,7 @@ async fn live_anthropic_reasoning_smoke() -> Result<()> {
     if require_thinking {
         assert!(
             thinking_bytes > 0,
-            "live Anthropic response did not include thinking deltas despite JCODE_LIVE_ANTHROPIC_REQUIRE_THINKING"
+            "live Anthropic response did not include thinking deltas despite WVC_LIVE_ANTHROPIC_REQUIRE_THINKING"
         );
     }
     Ok(())
@@ -1551,16 +1551,16 @@ async fn test_sanitize_dangling_tool_ids_with_dots() {
 #[test]
 fn credential_mode_runtime_provider_identity_round_trips() {
     let _guard = wvc_base::storage::lock_test_env();
-    let previous = std::env::var_os("JCODE_RUNTIME_PROVIDER");
+    let previous = std::env::var_os("WVC_RUNTIME_PROVIDER");
 
-    wvc_base::env::set_var("JCODE_RUNTIME_PROVIDER", "claude");
+    wvc_base::env::set_var("WVC_RUNTIME_PROVIDER", "claude");
     assert_eq!(
         AnthropicCredentialMode::from_runtime_env(wvc_provider_core::DualAuthProvider::Anthropic),
         AnthropicCredentialMode::OAuth,
         "OAuth selection must surface as the OAuth runtime identity"
     );
 
-    wvc_base::env::set_var("JCODE_RUNTIME_PROVIDER", "claude-api");
+    wvc_base::env::set_var("WVC_RUNTIME_PROVIDER", "claude-api");
     assert_eq!(
         AnthropicCredentialMode::from_runtime_env(wvc_provider_core::DualAuthProvider::Anthropic),
         AnthropicCredentialMode::ApiKey,
@@ -1568,8 +1568,8 @@ fn credential_mode_runtime_provider_identity_round_trips() {
     );
 
     match previous {
-        Some(value) => wvc_base::env::set_var("JCODE_RUNTIME_PROVIDER", value),
-        None => wvc_base::env::remove_var("JCODE_RUNTIME_PROVIDER"),
+        Some(value) => wvc_base::env::set_var("WVC_RUNTIME_PROVIDER", value),
+        None => wvc_base::env::remove_var("WVC_RUNTIME_PROVIDER"),
     }
 }
 
@@ -1577,9 +1577,9 @@ fn credential_mode_runtime_provider_identity_round_trips() {
 async fn auto_mode_falls_back_to_api_key_when_oauth_is_expired() {
     let _guard = wvc_base::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set("WVC_HOME", temp.path());
     let _api_key = EnvVarGuard::set("ANTHROPIC_API_KEY", "test-anthropic-api-key");
-    let _runtime = EnvVarGuard::set("JCODE_RUNTIME_PROVIDER", "auto");
+    let _runtime = EnvVarGuard::set("WVC_RUNTIME_PROVIDER", "auto");
 
     wvc_base::auth::claude::upsert_account(wvc_base::auth::claude::AnthropicAccount {
         label: "claude-1".to_string(),
@@ -1610,9 +1610,9 @@ async fn auto_mode_falls_back_to_api_key_when_oauth_is_expired() {
 async fn explicit_oauth_mode_does_not_silently_fall_back_to_api_key() {
     let _guard = wvc_base::storage::lock_test_env();
     let temp = tempfile::TempDir::new().unwrap();
-    let _home = EnvVarGuard::set("JCODE_HOME", temp.path());
+    let _home = EnvVarGuard::set("WVC_HOME", temp.path());
     let _api_key = EnvVarGuard::set("ANTHROPIC_API_KEY", "test-anthropic-api-key");
-    let _runtime = EnvVarGuard::set("JCODE_RUNTIME_PROVIDER", "claude");
+    let _runtime = EnvVarGuard::set("WVC_RUNTIME_PROVIDER", "claude");
 
     wvc_base::auth::claude::upsert_account(wvc_base::auth::claude::AnthropicAccount {
         label: "claude-1".to_string(),
@@ -1855,7 +1855,7 @@ fn ping_keepalive_emits_streaming_phase_event() {
 #[test]
 fn test_anthropic_opus_5_low_effort_reaches_the_wire() {
     // Benchmark campaigns pin `claude-opus-5` at `low` effort. Opus 5 also
-    // *defaults* to `low` (jcode's default model/effort pairing), and an
+    // *defaults* to `low` (wvc's default model/effort pairing), and an
     // explicit `low` must survive normalization, must NOT be silently
     // promoted, and must land in `output_config.effort` on the request.
     assert!(AnthropicProvider::model_supports_output_effort(

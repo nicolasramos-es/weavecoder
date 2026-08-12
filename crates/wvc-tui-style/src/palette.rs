@@ -13,7 +13,7 @@
 //! touching each of the ~250 distinct literal call sites, while an unconfigured
 //! palette is byte-identical to the historical hard-coded look.
 //!
-//! Configuration lives in `~/.jcode/config.toml`:
+//! Configuration lives in `~/.wvc/config.toml`:
 //!
 //! ```toml
 //! [display.colors]
@@ -143,7 +143,7 @@ impl Role {
             .find(|role| role.key() == normalized)
     }
 
-    /// Built-in default RGB, matching jcode's historical hard-coded palette.
+    /// Built-in default RGB, matching wvc's historical hard-coded palette.
     pub const fn default_rgb(self) -> (u8, u8, u8) {
         match self {
             Role::User => (138, 180, 248),
@@ -349,7 +349,7 @@ pub fn role_color(role: Role) -> Color {
 /// # Ordering with the light-theme pass
 ///
 /// This must run **after** [`crate::theme_mode::adapt_buffer_for_theme`]. That
-/// pass exists because jcode's *built-in* palette is designed for dark
+/// pass exists because wvc's *built-in* palette is designed for dark
 /// terminals, so it flips luminance to make the built-in colors work on light
 /// ones. A color the user configured is already the color they want, so letting
 /// the flip touch it turns a deliberately dark red into an unreadable pale one.
@@ -727,7 +727,7 @@ mod light_theme_interaction {
     /// A user on a light terminal who configures a dark, readable color must get
     /// that color, not its inverse.
     ///
-    /// The light adapter exists because jcode's *built-in* palette is designed
+    /// The light adapter exists because wvc's *built-in* palette is designed
     /// for dark backgrounds, so it flips luminance to make that palette work on
     /// light terminals. A color the user chose explicitly is already the color
     /// they want, so flipping it turns a readable dark red into an unreadable
@@ -918,7 +918,7 @@ mod named_colors {
 mod default_palette_is_frozen {
     use super::*;
 
-    /// The exact hand-tuned palette jcode has always shipped.
+    /// The exact hand-tuned palette wvc has always shipped.
     ///
     /// This is a deliberate, redundant copy of [`Role::default_rgb`]. It exists
     /// so the shipped look cannot drift: the generator, the harmony scorer, and

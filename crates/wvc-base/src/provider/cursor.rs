@@ -1,7 +1,7 @@
 //! Cursor pure model-catalog data (compatibility shim).
 //!
 //! The Cursor provider *runtime* (`CursorCliProvider`) now lives in the
-//! downstream `jcode-provider-cursor-runtime` crate so provider edits do not
+//! downstream `wvc-provider-cursor-runtime` crate so provider edits do not
 //! rebuild the base -> app-core -> tui spine. The binary's composition root
 //! registers it via [`crate::provider::external`]. Base keeps only the pure
 //! model-catalog data that its routing logic (`provider::models`) needs.

@@ -23,13 +23,13 @@ use wvc_usage_types::{
 };
 pub use wvc_usage_types::{ErrorCategory, SessionEndReason};
 
-const TELEMETRY_ENDPOINT: &str = "https://telemetry.jcode.sh/v1/event";
+const TELEMETRY_ENDPOINT: &str = "https://telemetry.weavecoder.sh/v1/event";
 const ASYNC_SEND_TIMEOUT: Duration = Duration::from_secs(5);
 const BACKGROUND_QUEUE_CAPACITY: usize = 2048;
 const BLOCKING_INSTALL_TIMEOUT: Duration = Duration::from_millis(1200);
 const BLOCKING_LIFECYCLE_TIMEOUT: Duration = Duration::from_millis(800);
 const TELEMETRY_SCHEMA_VERSION: u32 = 6;
-const DEFAULT_DISCOVERY_ENDPOINT: &str = "https://api.jcode.sh/v1/discovery";
+const DEFAULT_DISCOVERY_ENDPOINT: &str = "https://api.weavecoder.sh/v1/discovery";
 static TELEMETRY_PERMANENTLY_REJECTED: AtomicBool = AtomicBool::new(false);
 static TELEMETRY_QUEUE_OVERFLOW_WARNED: AtomicBool = AtomicBool::new(false);
 static TELEMETRY_BACKGROUND_SENDER: OnceLock<SyncSender<Value>> = OnceLock::new();
@@ -402,7 +402,7 @@ enum DeliveryMode {
 }
 
 pub fn is_enabled() -> bool {
-    if std::env::var("JCODE_NO_TELEMETRY").is_ok() || std::env::var("DO_NOT_TRACK").is_ok() {
+    if std::env::var("WVC_NO_TELEMETRY").is_ok() || std::env::var("DO_NOT_TRACK").is_ok() {
         logging::debug("telemetry disabled by environment");
         return false;
     }
@@ -414,7 +414,7 @@ pub fn is_enabled() -> bool {
 }
 
 /// Marker file recording that the user opted out of anonymous usage telemetry.
-/// Its presence is equivalent to setting `JCODE_NO_TELEMETRY=1`, but persists
+/// Its presence is equivalent to setting `WVC_NO_TELEMETRY=1`, but persists
 /// across shells so the onboarding "Telemetry settings" screen can honor the
 /// choice without asking the user to edit their environment.
 fn opt_out_marker_path() -> Option<std::path::PathBuf> {
@@ -425,7 +425,7 @@ fn opt_out_marker_path() -> Option<std::path::PathBuf> {
 /// persisted marker. Env opt-outs win, so UI should present themselves as
 /// read-only in that case.
 pub fn opt_out_forced_by_env() -> bool {
-    std::env::var("JCODE_NO_TELEMETRY").is_ok() || std::env::var("DO_NOT_TRACK").is_ok()
+    std::env::var("WVC_NO_TELEMETRY").is_ok() || std::env::var("DO_NOT_TRACK").is_ok()
 }
 
 /// Persist the user's anonymous-usage telemetry choice. `enabled == false`
@@ -478,7 +478,7 @@ pub fn content_sharing_enabled() -> bool {
     if !is_enabled() {
         return false;
     }
-    if std::env::var("JCODE_NO_TELEMETRY").is_ok() || std::env::var("DO_NOT_TRACK").is_ok() {
+    if std::env::var("WVC_NO_TELEMETRY").is_ok() || std::env::var("DO_NOT_TRACK").is_ok() {
         return false;
     }
     share_content_marker_path()
@@ -1157,7 +1157,7 @@ fn post_payload(payload: serde_json::Value, timeout: Duration) -> bool {
     }
     let client = TELEMETRY_HTTP_CLIENT.get_or_init(|| {
         reqwest::blocking::Client::builder()
-            .user_agent(wvc_provider_core::JCODE_USER_AGENT)
+            .user_agent(wvc_provider_core::WVC_USER_AGENT)
             .build()
             .expect("telemetry HTTP client should build")
     });
@@ -1552,7 +1552,7 @@ pub fn record_install_if_first_run() {
         return;
     }
     // Skip install/onboarding emission under CI. Ephemeral runners start with a
-    // fresh ~/.jcode (so a new telemetry_id) on every job, which would otherwise
+    // fresh ~/.wvc (so a new telemetry_id) on every job, which would otherwise
     // look like a brand-new install and user, inflating install/active counts,
     // the onboarding funnel, and depressing retention. Session/turn/lifecycle
     // events are still emitted (tagged is_ci) so CI crash/error signal stays
@@ -2310,11 +2310,11 @@ fn show_first_run_notice() {
         ("", "")
     };
     eprintln!("{dim}");
-    eprintln!("  jcode collects anonymous usage statistics (install count, version, OS,");
+    eprintln!("  wvc collects anonymous usage statistics (install count, version, OS,");
     eprintln!("  session activity, tool counts, and crash/exit reasons). No code, filenames,");
     eprintln!("  prompts, or personal data is sent.");
-    eprintln!("  To opt out: export JCODE_NO_TELEMETRY=1");
-    eprintln!("  Details: https://github.com/1jehuang/jcode/blob/master/TELEMETRY.md");
+    eprintln!("  To opt out: export WVC_NO_TELEMETRY=1");
+    eprintln!("  Details: https://github.com/nicolasramos/weavecoder/blob/master/TELEMETRY.md");
     eprintln!("{reset}");
 }
 

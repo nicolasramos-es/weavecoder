@@ -652,7 +652,7 @@ impl MessageChannel for JadeRelayChannel {
     fn is_reply_enabled(&self) -> bool {
         // Inbound Jade relay prompts are delivered by server::jade_relay so they
         // work even when ambient mode is disabled and target the configured live
-        // Jcode session directly. Keep this channel for outbound notifications
+        // Weavecoder session directly. Keep this channel for outbound notifications
         // only; otherwise ambient mode would start a second poller.
         let _configured_for_server_listener = self.reply_enabled;
         false
@@ -850,7 +850,7 @@ mod tests {
     /// run with the relay env vars set:
     ///   JADE_RELAY_API_BASE, JADE_RELAY_TOKEN, JADE_RELAY_TOKEN_ID,
     ///   JADE_RELAY_USER_ID, JADE_RELAY_SESSION_ID
-    ///   cargo test -p jcode-app-core relay_live -- --ignored --nocapture
+    ///   cargo test -p wvc-app-core relay_live -- --ignored --nocapture
     #[tokio::test]
     #[ignore = "requires live Jade relay credentials"]
     async fn test_relay_live_roundtrip() {

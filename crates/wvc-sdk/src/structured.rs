@@ -5,14 +5,14 @@
 //! bounded number of correction opportunities when parsing or validation
 //! fails.
 
-use crate::{ApiEvent, Error, JcodeClient, RunOptions, ToolCall, TurnResult, Usage};
+use crate::{ApiEvent, Error, WeavecoderClient, RunOptions, ToolCall, TurnResult, Usage};
 use jsonschema::Validator;
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
 use std::fmt;
 use std::sync::Arc;
 
-/// JSON Schema accepted by [`JcodeClient::run_structured`].
+/// JSON Schema accepted by [`WeavecoderClient::run_structured`].
 pub type StructuredOutputSchema = Value;
 
 /// Callback invoked for every event in every structured-output attempt.
@@ -71,7 +71,7 @@ pub struct StructuredValidationIssue {
     pub params: Option<Map<String, Value>>,
 }
 
-/// One model attempt made by [`JcodeClient::run_structured`].
+/// One model attempt made by [`WeavecoderClient::run_structured`].
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StructuredOutputAttempt {
     /// One-based attempt number.
@@ -108,7 +108,7 @@ impl<T> StructuredTurnResult<T> {
     }
 }
 
-/// An invalid JSON Schema supplied to [`JcodeClient::run_structured`].
+/// An invalid JSON Schema supplied to [`WeavecoderClient::run_structured`].
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StructuredSchemaError {
     pub message: String,
@@ -229,7 +229,7 @@ impl From<Error> for RunStructuredError {
     }
 }
 
-impl JcodeClient {
+impl WeavecoderClient {
     /// Send a message and parse the assistant answer as schema-validated JSON.
     ///
     /// Schema compilation happens before the first model turn. Invalid model

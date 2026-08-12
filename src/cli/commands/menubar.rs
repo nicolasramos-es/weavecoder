@@ -1,4 +1,4 @@
-//! `jcode menubar` - a lightweight live indicator of how many jcode sessions
+//! `wvc menubar` - a lightweight live indicator of how many wvc sessions
 //! are running and how many are actively streaming a model response.
 //!
 //! On macOS this renders a native menu bar (`NSStatusItem`) item that updates
@@ -133,18 +133,18 @@ pub fn run_menubar_command(once: bool, json: bool) -> Result<()> {
     }
 }
 
-/// Ensure a single background `jcode menubar` helper is running on macOS so the
+/// Ensure a single background `wvc menubar` helper is running on macOS so the
 /// session-count indicator shows up automatically for every macOS user without
-/// them needing to run `jcode menubar` by hand.
+/// them needing to run `wvc menubar` by hand.
 ///
 /// This is a best-effort, fire-and-forget singleton: it records the helper's
-/// PID in the *global* `~/.jcode/menubar.pid` (see [`global_menubar_dir`]) and
+/// PID in the *global* `~/.wvc/menubar.pid` (see [`global_menubar_dir`]) and
 /// only spawns a new detached process when no live helper is already running.
 /// Failures are silently ignored so they never disrupt normal session startup.
 ///
 /// The macOS menu bar is a single per-login-session resource, so this guards
-/// hard against sandboxed jcode processes (tests, self-dev, onboarding) ever
-/// spawning a helper: each such process runs with a throwaway `$JCODE_HOME`,
+/// hard against sandboxed wvc processes (tests, self-dev, onboarding) ever
+/// spawning a helper: each such process runs with a throwaway `$WVC_HOME`,
 /// and without this guard every distinct sandbox home spawned its own helper
 /// and drew its own duplicate status item into the one real menu bar.
 #[cfg(target_os = "macos")]
@@ -153,12 +153,12 @@ pub fn ensure_menubar_helper_running() {
     use std::process::{Command, Stdio};
 
     // Allow users to opt out entirely.
-    if std::env::var_os("JCODE_NO_MENUBAR").is_some() {
+    if std::env::var_os("WVC_NO_MENUBAR").is_some() {
         return;
     }
 
-    // Sandboxed jcode (tests / self-dev / onboarding, anything with a throwaway
-    // `$JCODE_HOME`) must never manage the real user's global menu bar.
+    // Sandboxed wvc (tests / self-dev / onboarding, anything with a throwaway
+    // `$WVC_HOME`) must never manage the real user's global menu bar.
     if running_in_menubar_sandbox() {
         return;
     }
@@ -184,7 +184,7 @@ pub fn ensure_menubar_helper_running() {
     let mut command = Command::new(exe);
     command
         .arg("menubar")
-        .env("JCODE_NO_MENUBAR", "1")
+        .env("WVC_NO_MENUBAR", "1")
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null());
@@ -208,31 +208,31 @@ pub fn ensure_menubar_helper_running() {}
 /// state - the "only one helper" lock and the helper pid file.
 ///
 /// The macOS menu bar is a single per-login-session resource shared by every
-/// jcode process for this user, so this state must live at a fixed location
-/// that does **not** depend on `$JCODE_HOME`. Sandboxes (tests, self-dev,
-/// onboarding) override `$JCODE_HOME` with throwaway temp dirs; anchoring to
-/// the real home (`$HOME/.jcode`) gives every process the same lock inode so
+/// wvc process for this user, so this state must live at a fixed location
+/// that does **not** depend on `$WVC_HOME`. Sandboxes (tests, self-dev,
+/// onboarding) override `$WVC_HOME` with throwaway temp dirs; anchoring to
+/// the real home (`$HOME/.wvc`) gives every process the same lock inode so
 /// the singleton actually holds across them. For a normal (non-sandboxed)
 /// launch this is exactly `crate::storage::wvc_dir()`, so behavior for the
 /// real user is unchanged.
 #[cfg(target_os = "macos")]
 fn global_menubar_dir() -> Option<std::path::PathBuf> {
     let home = dirs::home_dir()?;
-    let dir = home.join(".jcode");
+    let dir = home.join(".wvc");
     let _ = std::fs::create_dir_all(&dir);
     Some(dir)
 }
 
-/// True when this process is a sandboxed jcode that must not own the real
-/// user's global menu bar. A throwaway `$JCODE_HOME` (anything other than the
-/// real `~/.jcode`) or an explicit test/temp marker means "sandbox".
+/// True when this process is a sandboxed wvc that must not own the real
+/// user's global menu bar. A throwaway `$WVC_HOME` (anything other than the
+/// real `~/.wvc`) or an explicit test/temp marker means "sandbox".
 #[cfg(target_os = "macos")]
 fn running_in_menubar_sandbox() -> bool {
     is_menubar_sandbox(
-        env_truthy("JCODE_TEST_SESSION"),
-        env_truthy("JCODE_TEMP_SERVER"),
-        std::env::var_os("JCODE_HOME").as_deref(),
-        dirs::home_dir().map(|home| home.join(".jcode")).as_deref(),
+        env_truthy("WVC_TEST_SESSION"),
+        env_truthy("WVC_TEMP_SERVER"),
+        std::env::var_os("WVC_HOME").as_deref(),
+        dirs::home_dir().map(|home| home.join(".wvc")).as_deref(),
     )
 }
 
@@ -251,7 +251,7 @@ fn env_truthy(key: &str) -> bool {
 /// unit-tested without mutating process-global environment state.
 ///
 /// - An explicit test/temp marker forces "sandbox".
-/// - A `$JCODE_HOME` that differs from the real `~/.jcode` is a sandbox home.
+/// - A `$WVC_HOME` that differs from the real `~/.wvc` is a sandbox home.
 /// - No override (or an override equal to the real home) is the real user.
 #[cfg(target_os = "macos")]
 fn is_menubar_sandbox(
@@ -264,7 +264,7 @@ fn is_menubar_sandbox(
         return true;
     }
 
-    // No explicit override: the real user's default `~/.jcode`.
+    // No explicit override: the real user's default `~/.wvc`.
     let Some(custom_home) = custom_home else {
         return false;
     };
@@ -317,9 +317,9 @@ mod macos {
     /// Acquire the exclusive, system-wide "only one menu bar helper" lock.
     ///
     /// Uses a non-blocking `flock(LOCK_EX | LOCK_NB)` on the *global*
-    /// `~/.jcode/menubar.lock` (see [`super::global_menubar_dir`]) so the lock
-    /// is shared across every jcode process for this OS user, including ones
-    /// running with a sandboxed `$JCODE_HOME`. The menu bar itself is a single
+    /// `~/.wvc/menubar.lock` (see [`super::global_menubar_dir`]) so the lock
+    /// is shared across every wvc process for this OS user, including ones
+    /// running with a sandboxed `$WVC_HOME`. The menu bar itself is a single
     /// per-login-session resource, so the guard must be global too.
     ///
     /// Returns `Some(guard)` if we are the sole helper, or `None` if another
@@ -390,7 +390,7 @@ mod macos {
 
            impl MenuHandler {
                /// Open the clicked session (stored in the item's representedObject)
-               /// in a new terminal window via `jcode --resume <id>`.
+               /// in a new terminal window via `wvc --resume <id>`.
                #[unsafe(method(openSession:))]
                fn open_session(&self, sender: &NSMenuItem)
     {
@@ -403,7 +403,7 @@ mod macos {
                    launch_wvc_window(vec!["--resume".to_string(), session_id.to_string()]);
                }
 
-               /// Launch a brand-new jcode session in a new terminal window.
+               /// Launch a brand-new wvc session in a new terminal window.
                #[unsafe(method(newWindow:))]
                fn new_window(&self, _sender: &NSMenuItem) {
                    launch_wvc_window(Vec::new());
@@ -418,13 +418,13 @@ mod macos {
         }
     }
 
-    /// Launch a jcode window off the main thread so slow terminal startup
+    /// Launch a wvc window off the main thread so slow terminal startup
     /// (osascript / `open`) never blocks the menu bar UI.
     fn launch_wvc_window(args: Vec<String>) {
         std::thread::spawn(move || {
             if let Err(err) = crate::setup_hints::launch_wvc_in_macos_terminal(&args) {
                 crate::logging::warn(&format!(
-                    "menubar: failed to launch jcode window ({args:?}): {err}"
+                    "menubar: failed to launch wvc window ({args:?}): {err}"
                 ));
             }
         });
@@ -438,16 +438,16 @@ mod macos {
         // must never paint into the real user's menu bar. The real protection
         // against duplicates is `ensure_menubar_helper_running` (which refuses
         // to spawn from sandboxes) plus the global singleton lock below, but a
-        // stray `jcode menubar` invoked directly inside a test harness should
+        // stray `wvc menubar` invoked directly inside a test harness should
         // still never realize a status item.
-        if super::env_truthy("JCODE_TEST_SESSION") || super::env_truthy("JCODE_TEMP_SERVER") {
+        if super::env_truthy("WVC_TEST_SESSION") || super::env_truthy("WVC_TEMP_SERVER") {
             return;
         }
 
         // Enforce a single live menu bar helper. The pid-file fast path in
         // `ensure_menubar_helper_running` is best-effort and can race or be
-        // bypassed entirely (e.g. a self-dev `target/.../jcode` and the
-        // installed `~/.local/bin/jcode` both spawn helpers, or a reload
+        // bypassed entirely (e.g. a self-dev `target/.../wvc` and the
+        // installed `~/.local/bin/wvc` both spawn helpers, or a reload
         // re-runs startup). Without a hard guard each extra helper creates its
         // own NSStatusItem, so the user ends up with a duplicate menu bar item
         // per spawn. Acquire an exclusive advisory lock here; if another helper
@@ -462,7 +462,7 @@ mod macos {
         // Accessory: no Dock icon, no main menu, just a menu bar item.
         app.setActivationPolicy(NSApplicationActivationPolicy::Accessory);
 
-        // Follow the system's Light/Dark setting explicitly. `jcode` runs as a
+        // Follow the system's Light/Dark setting explicitly. `wvc` runs as a
         // bare Mach-O with no Info.plist app bundle, so AppKit defaults the
         // process to the light Aqua appearance and never auto-adopts macOS Dark
         // Mode. That made the status item's template icon and `labelColor` text
@@ -536,7 +536,7 @@ mod macos {
         let new_window_item = unsafe {
             NSMenuItem::initWithTitle_action_keyEquivalent(
                 NSMenuItem::alloc(mtm),
-                ns_string!("New jcode Window"),
+                ns_string!("New wvc Window"),
                 Some(sel!(newWindow:)),
                 ns_string!("n"),
             )
@@ -548,7 +548,7 @@ mod macos {
         let quit_item = unsafe {
             NSMenuItem::initWithTitle_action_keyEquivalent(
                 NSMenuItem::alloc(mtm),
-                ns_string!("Quit jcode menu bar"),
+                ns_string!("Quit wvc menu bar"),
                 Some(objc2::sel!(terminate:)),
                 ns_string!("q"),
             )
@@ -627,7 +627,7 @@ mod macos {
 
     /// Pin the application's appearance to the system Light/Dark setting.
     ///
-    /// `jcode` runs as a bare executable without an `Info.plist` app bundle, so
+    /// `wvc` runs as a bare executable without an `Info.plist` app bundle, so
     /// AppKit defaults the process to the light `Aqua` appearance and does not
     /// follow the user's macOS Dark Mode preference. With a light appearance the
     /// status item's template SF Symbol and `labelColor` title both resolve to a
@@ -847,9 +847,9 @@ mod tests {
     #[test]
     fn session_menu_item_title_loads_persisted_todo_title() {
         let _guard = crate::storage::lock_test_env();
-        let previous_home = std::env::var_os("JCODE_HOME");
-        let temp = tempfile::tempdir().expect("create temporary JCODE_HOME");
-        crate::env::set_var("JCODE_HOME", temp.path());
+        let previous_home = std::env::var_os("WVC_HOME");
+        let temp = tempfile::tempdir().expect("create temporary WVC_HOME");
+        crate::env::set_var("WVC_HOME", temp.path());
 
         let session_id = "session_buffalo_1781229104969_6d487ff77287de4f";
         let mut session = crate::session::Session::create_with_id(
@@ -881,18 +881,18 @@ mod tests {
         );
 
         if let Some(previous_home) = previous_home {
-            crate::env::set_var("JCODE_HOME", previous_home);
+            crate::env::set_var("WVC_HOME", previous_home);
         } else {
-            crate::env::remove_var("JCODE_HOME");
+            crate::env::remove_var("WVC_HOME");
         }
     }
 
     #[test]
     fn menu_presence_includes_only_user_root_sessions() {
         let _guard = crate::storage::lock_test_env();
-        let previous_home = std::env::var_os("JCODE_HOME");
-        let temp = tempfile::tempdir().expect("create temporary JCODE_HOME");
-        crate::env::set_var("JCODE_HOME", temp.path());
+        let previous_home = std::env::var_os("WVC_HOME");
+        let temp = tempfile::tempdir().expect("create temporary WVC_HOME");
+        crate::env::set_var("WVC_HOME", temp.path());
 
         let mut root = crate::session::Session::create_with_id(
             "session_fox_root".to_string(),
@@ -933,9 +933,9 @@ mod tests {
         debug.mark_closed();
         child.mark_closed();
         if let Some(previous_home) = previous_home {
-            crate::env::set_var("JCODE_HOME", previous_home);
+            crate::env::set_var("WVC_HOME", previous_home);
         } else {
-            crate::env::remove_var("JCODE_HOME");
+            crate::env::remove_var("WVC_HOME");
         }
     }
 
@@ -955,7 +955,7 @@ mod tests {
         use std::ffi::OsStr;
         use std::path::Path;
 
-        let real = Path::new("/Users/me/.jcode");
+        let real = Path::new("/Users/me/.wvc");
 
         // Real user, no override: not a sandbox -> owns the menu bar.
         assert!(!is_menubar_sandbox(false, false, None, Some(real)));
@@ -963,7 +963,7 @@ mod tests {
         assert!(!is_menubar_sandbox(
             false,
             false,
-            Some(OsStr::new("/Users/me/.jcode")),
+            Some(OsStr::new("/Users/me/.wvc")),
             Some(real),
         ));
 
@@ -975,7 +975,7 @@ mod tests {
         assert!(is_menubar_sandbox(
             false,
             false,
-            Some(OsStr::new("/private/tmp/jcode-e2e-home-xyz")),
+            Some(OsStr::new("/private/tmp/wvc-e2e-home-xyz")),
             Some(real),
         ));
 
@@ -983,7 +983,7 @@ mod tests {
         assert!(is_menubar_sandbox(
             false,
             false,
-            Some(OsStr::new("/private/tmp/jcode-e2e-home-xyz")),
+            Some(OsStr::new("/private/tmp/wvc-e2e-home-xyz")),
             None,
         ));
     }

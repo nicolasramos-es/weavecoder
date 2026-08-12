@@ -32,7 +32,7 @@ use crate::*;
 #[test]
 fn named_profile_static_models_survive_live_catalog_refresh() {
     let _lock = ENV_LOCK.lock();
-    let _namespace = EnvVarGuard::remove("JCODE_OPENROUTER_CACHE_NAMESPACE");
+    let _namespace = EnvVarGuard::remove("WVC_OPENROUTER_CACHE_NAMESPACE");
     let _key = EnvVarGuard::set("TEST_NAMED_MERGE_KEY", "test-key");
 
     let profile = wvc_base::config::NamedProviderConfig {
@@ -80,7 +80,7 @@ fn named_profile_static_models_survive_live_catalog_refresh() {
 #[test]
 fn builtin_profile_is_not_treated_as_user_named() {
     let _lock = ENV_LOCK.lock();
-    let _namespace = EnvVarGuard::remove("JCODE_OPENROUTER_CACHE_NAMESPACE");
+    let _namespace = EnvVarGuard::remove("WVC_OPENROUTER_CACHE_NAMESPACE");
     let _key = EnvVarGuard::set("CEREBRAS_API_KEY", "test-key");
 
     let profile = wvc_base::config::NamedProviderConfig {
@@ -101,7 +101,7 @@ fn builtin_profile_is_not_treated_as_user_named() {
 #[test]
 fn profile_shadowing_builtin_name_with_other_base_is_user_named() {
     let _lock = ENV_LOCK.lock();
-    let _namespace = EnvVarGuard::remove("JCODE_OPENROUTER_CACHE_NAMESPACE");
+    let _namespace = EnvVarGuard::remove("WVC_OPENROUTER_CACHE_NAMESPACE");
     let _key = EnvVarGuard::set("TEST_SHADOW_KEY", "test-key");
 
     let profile = wvc_base::config::NamedProviderConfig {
@@ -127,7 +127,7 @@ fn profile_shadowing_builtin_name_with_other_base_is_user_named() {
 #[tokio::test]
 async fn config_toml_models_survive_a_real_catalog_fetch() {
     let _lock = ENV_LOCK.lock();
-    let _namespace = EnvVarGuard::remove("JCODE_OPENROUTER_CACHE_NAMESPACE");
+    let _namespace = EnvVarGuard::remove("WVC_OPENROUTER_CACHE_NAMESPACE");
 
     let api_base = spawn_models_server(
         r#"{
@@ -138,7 +138,7 @@ async fn config_toml_models_survive_a_real_catalog_fetch() {
         }"#,
     );
 
-    // Exactly the shape a user writes in ~/.jcode/config.toml.
+    // Exactly the shape a user writes in ~/.wvc/config.toml.
     let toml_src = format!(
         r#"
 base_url = "{api_base}"
@@ -179,7 +179,7 @@ context_window = 128000
 /// Regression test for issue #607.
 ///
 /// Every `new_named_openai_compatible()` constructor sets the process-global
-/// `JCODE_OPENROUTER_CACHE_NAMESPACE` env var, so with several named profiles
+/// `WVC_OPENROUTER_CACHE_NAMESPACE` env var, so with several named profiles
 /// in one process the last one constructed wins and every profile's foreground
 /// cache read/write collides on a single `<last-profile>_models.json`. The
 /// picker then shows another provider's catalog, or refetches and clobbers it,
@@ -187,9 +187,9 @@ context_window = 128000
 #[test]
 fn named_profiles_keep_distinct_disk_cache_namespaces() {
     let _lock = ENV_LOCK.lock();
-    let temp = tempfile::tempdir().expect("temp jcode home");
-    let _home = EnvVarGuard::set("JCODE_HOME", temp.path().to_str().expect("utf8 temp path"));
-    let _namespace = EnvVarGuard::remove("JCODE_OPENROUTER_CACHE_NAMESPACE");
+    let temp = tempfile::tempdir().expect("temp wvc home");
+    let _home = EnvVarGuard::set("WVC_HOME", temp.path().to_str().expect("utf8 temp path"));
+    let _namespace = EnvVarGuard::remove("WVC_OPENROUTER_CACHE_NAMESPACE");
     let _key = EnvVarGuard::set("TEST_NS_KEY", "test-key");
 
     let make_profile = |base_url: &str| wvc_base::config::NamedProviderConfig {

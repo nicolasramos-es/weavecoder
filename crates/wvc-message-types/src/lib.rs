@@ -39,7 +39,7 @@ impl ToolDefinition {
 
     /// Approximate prompt-token cost of this tool's top-level description.
     ///
-    /// This uses jcode's standard chars/4 heuristic, matching other token
+    /// This uses wvc's standard chars/4 heuristic, matching other token
     /// budget estimates in the codebase.
     pub fn description_token_estimate(&self) -> usize {
         estimate_tokens(&self.description)
@@ -169,7 +169,7 @@ pub enum ContentBlock {
         data: String,
     },
     /// Hidden OpenAI Responses compaction item used to preserve native
-    /// compaction state across turns/saves when jcode explicitly triggers it.
+    /// compaction state across turns/saves when wvc explicitly triggers it.
     OpenAICompaction {
         encrypted_content: String,
     },
@@ -714,7 +714,7 @@ pub enum StreamEvent {
     /// about to retry the same request from the top. Consumers must discard
     /// any partial output accumulated for the current attempt (text, tool
     /// calls, reasoning) so the replayed stream renders cleanly instead of
-    /// duplicating. Safe for jcode HTTP providers because tools only execute
+    /// duplicating. Safe for wvc HTTP providers because tools only execute
     /// after the stream completes, so a partial attempt has no side effects.
     RetryRollback { attempt: u32, max: u32 },
     /// Token usage update
@@ -747,7 +747,7 @@ pub enum StreamEvent {
     },
     /// Upstream provider info (e.g., which provider OpenRouter routed to)
     UpstreamProvider { provider: String },
-    /// Native tool call from a provider bridge that needs execution by jcode
+    /// Native tool call from a provider bridge that needs execution by wvc
     NativeToolCall {
         request_id: String,
         tool_name: String,

@@ -1,7 +1,7 @@
 //! Privacy-preserving onboarding trace telemetry.
 //!
 //! An onboarding session is a traversal of the graph declared in
-//! `jcode-tui::tui::app::onboarding_graph`. The interesting signal is the
+//! `wvc-tui::tui::app::onboarding_graph`. The interesting signal is the
 //! *shape* of that traversal, and a shape is a list of small integers and
 //! closed-vocabulary identifiers. So instead of shipping logs (which contain
 //! error strings, paths, and provider responses), we ship the path.
@@ -170,7 +170,7 @@ impl TraceRecorder {
         }
     }
 
-    /// Exactly the bytes that would be sent, for `jcode telemetry show-last-trace`.
+    /// Exactly the bytes that would be sent, for `wvc telemetry show-last-trace`.
     ///
     /// If a user can read the whole payload in a few lines, trust is cheap.
     pub fn preview_json(&self, outcome: TraceOutcome) -> String {

@@ -1,5 +1,5 @@
 #!/bin/bash
-# End-to-end test script for jcode
+# End-to-end test script for wvc
 
 set -e
 
@@ -10,16 +10,16 @@ run_cargo() {
     (cd "$repo_root" && "$cargo_exec" "$@")
 }
 
-echo "=== E2E Testing Script for jcode ==="
+echo "=== E2E Testing Script for wvc ==="
 echo ""
 
 # Test 1: Check binary exists and runs
-echo "Test 1: Check jcode binary..."
-if command -v jcode &> /dev/null; then
-    echo "✓ jcode binary found"
-    jcode --version
+echo "Test 1: Check wvc binary..."
+if command -v wvc &> /dev/null; then
+    echo "✓ wvc binary found"
+    wvc --version
 else
-    echo "✗ jcode binary not found"
+    echo "✗ wvc binary not found"
     exit 1
 fi
 
@@ -53,16 +53,16 @@ echo "Test 6: E2E integration tests..."
 run_cargo test --test e2e --quiet
 echo "✓ E2E tests passed"
 
-if [[ "${JCODE_REAL_PROVIDER:-0}" == "1" ]]; then
+if [[ "${WVC_REAL_PROVIDER:-0}" == "1" ]]; then
     echo ""
-    echo "Test 7: Real provider smoke (JCODE_REAL_PROVIDER=1)..."
+    echo "Test 7: Real provider smoke (WVC_REAL_PROVIDER=1)..."
     scripts/real_provider_smoke.sh
     echo "✓ Real provider smoke passed"
 fi
 
-if [[ "${JCODE_REAL_AUTH_TEST:-0}" == "1" ]]; then
+if [[ "${WVC_REAL_AUTH_TEST:-0}" == "1" ]]; then
     echo ""
-    echo "Test 8: Auth E2E validation (JCODE_REAL_AUTH_TEST=1)..."
+    echo "Test 8: Auth E2E validation (WVC_REAL_AUTH_TEST=1)..."
     scripts/test_auth_e2e.sh
     echo "✓ Auth E2E validation passed"
 fi
@@ -71,6 +71,6 @@ echo ""
 echo "=== All tests passed! ==="
 echo ""
 echo "To test interactively:"
-echo "  jcode        # Start TUI mode"
-echo "  jcode server # Start server mode"
-echo "  jcode client # Connect to server"
+echo "  wvc        # Start TUI mode"
+echo "  wvc server # Start server mode"
+echo "  wvc client # Connect to server"

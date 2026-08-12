@@ -134,7 +134,7 @@ fn repeated_failures_do_not_flood_the_page() {
 /// bridge that exited, a bridge that got replaced, and a failed attach.
 #[test]
 fn a_disconnect_names_the_stage_and_the_socket() {
-    let socket = std::path::Path::new("/run/user/1000/jcode-api.sock");
+    let socket = std::path::Path::new("/run/user/1000/wvc-api.sock");
     let replaced = harness::describe_disconnect(
         harness::Stage::Streaming,
         "harness API stream closed",

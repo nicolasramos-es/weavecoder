@@ -543,7 +543,7 @@ pub fn truncate_comm_completion_report(report: &str) -> String {
     if report.chars().count() <= MAX_REPORT_CHARS {
         return report.to_string();
     }
-    let suffix = "\n\n[Report truncated by jcode.]";
+    let suffix = "\n\n[Report truncated by wvc.]";
     let keep = MAX_REPORT_CHARS.saturating_sub(suffix.chars().count());
     let mut out: String = report.chars().take(keep).collect();
     out.push_str(suffix);

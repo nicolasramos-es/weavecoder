@@ -1,7 +1,7 @@
 //! Shared MCP Server Pool
 //!
 //! Manages a global pool of MCP server processes that are shared across
-//! all jcode sessions. Instead of each session spawning its own set of
+//! all wvc sessions. Instead of each session spawning its own set of
 //! MCP servers (N sessions × M servers = N×M processes), sessions share
 //! a single pool (M processes total).
 //!
@@ -33,7 +33,7 @@ enum ConnectAttempt {
 
 /// Global shared pool of MCP server processes.
 ///
-/// Only one pool exists per jcode daemon. It owns the child processes
+/// Only one pool exists per wvc daemon. It owns the child processes
 /// and hands out cheap `McpHandle` clones to sessions.
 pub struct SharedMcpPool {
     clients: Mutex<HashMap<String, McpClient>>,
@@ -446,7 +446,7 @@ mod tests {
         config.servers.insert(
             "owned-only".to_string(),
             crate::mcp::protocol::McpServerConfig {
-                command: "/nonexistent/jcode-test-mcp-557".to_string(),
+                command: "/nonexistent/wvc-test-mcp-557".to_string(),
                 args: vec![],
                 env: Default::default(),
                 shared: false,

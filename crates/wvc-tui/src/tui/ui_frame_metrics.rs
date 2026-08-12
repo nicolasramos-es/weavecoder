@@ -445,7 +445,7 @@ pub(crate) fn wall_clock_ms() -> u64 {
 fn slow_frame_threshold_ms() -> f64 {
     static THRESHOLD_MS: OnceLock<f64> = OnceLock::new();
     *THRESHOLD_MS.get_or_init(|| {
-        std::env::var("JCODE_TUI_SLOW_FRAME_MS")
+        std::env::var("WVC_TUI_SLOW_FRAME_MS")
             .ok()
             .and_then(|raw| raw.trim().parse::<f64>().ok())
             .filter(|value| value.is_finite() && *value > 0.0)
@@ -463,7 +463,7 @@ fn flicker_detection_enabled() -> bool {
     {
         static ENABLED: OnceLock<bool> = OnceLock::new();
         *ENABLED.get_or_init(|| {
-            std::env::var("JCODE_TUI_FLICKER_DETECTION")
+            std::env::var("WVC_TUI_FLICKER_DETECTION")
                 .ok()
                 .map(|raw| {
                     matches!(
@@ -1244,7 +1244,7 @@ pub(crate) fn recent_flicker_ui_notice() -> Option<FlickerUiNotice> {
 
     let log_hint = crate::logging::log_path()
         .map(|path| abbreviate_flicker_log_path(&path))
-        .unwrap_or_else(|| "~/.jcode/logs/".to_string());
+        .unwrap_or_else(|| "~/.wvc/logs/".to_string());
     let summary = format!("⚠ flicker detected ({})", flicker_event_label(&event.kind));
     let hint = format!("logs: {} · debug: client:flicker-frames 32", log_hint);
     Some(FlickerUiNotice { summary, hint })

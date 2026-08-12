@@ -331,16 +331,16 @@ fn test_side_panel_snapshot(page_id: &str, title: &str) -> crate::side_panel::Si
     }
 }
 
-/// Point `JCODE_HOME` at a per-process scratch directory if nothing set one.
+/// Point `WVC_HOME` at a per-process scratch directory if nothing set one.
 ///
 /// This runs from `create_test_app`, so roughly 570 tests call it, and it
 /// mutates a process-global that Rust's parallel test threads all share. Tests
-/// that scope their own `JCODE_HOME` restore it by *removing* the variable, so
+/// that scope their own `WVC_HOME` restore it by *removing* the variable, so
 /// without serialization this function would observe the gap and repoint
-/// `JCODE_HOME` at the shared scratch home while that test was still running.
-/// That is the race behind jcode-tui's intermittent failures in unrelated
+/// `WVC_HOME` at the shared scratch home while that test was still running.
+/// That is the race behind wvc-tui's intermittent failures in unrelated
 /// ambient, header, and model-picker tests, which all read files under
-/// `JCODE_HOME` mid-assertion.
+/// `WVC_HOME` mid-assertion.
 ///
 /// Taking the same lock those tests use makes the check-then-set atomic with
 /// respect to them. The lock is released on return, which is correct: it only
@@ -358,22 +358,22 @@ fn ensure_test_wvc_home_if_unset() {
 
     static TEST_HOME: OnceLock<std::path::PathBuf> = OnceLock::new();
 
-    if std::env::var_os("JCODE_HOME").is_some() {
+    if std::env::var_os("WVC_HOME").is_some() {
         return;
     }
 
     // Serialize the unset -> set transition against tests that scope their
-    // own JCODE_HOME under `lock_test_env`. The mutex is not reentrant and
+    // own WVC_HOME under `lock_test_env`. The mutex is not reentrant and
     // several tests hold it while calling `create_test_app` (e.g. the
     // pinned-todo-band test), so a blocking `lock_test_env()` here would
-    // self-deadlock whenever a preceding test removed JCODE_HOME on drop.
+    // self-deadlock whenever a preceding test removed WVC_HOME on drop.
     // `try_lock` keeps the serialization when the lock is free and degrades
     // to the caller's own exclusion when this thread already holds it: if
     // try_lock fails because *we* hold the lock, no other thread can race
     // this read-modify-write anyway.
     let _env_lock = crate::storage::test_env_lock().try_lock();
 
-    if std::env::var_os("JCODE_HOME").is_some() {
+    if std::env::var_os("WVC_HOME").is_some() {
         return;
     }
 
@@ -382,7 +382,7 @@ fn ensure_test_wvc_home_if_unset() {
         let _ = std::fs::create_dir_all(&path);
         path
     });
-    crate::env::set_var("JCODE_HOME", path);
+    crate::env::set_var("WVC_HOME", path);
 }
 
 fn clear_persisted_test_ui_state() {
@@ -400,8 +400,8 @@ fn clear_persisted_test_ui_state() {
 fn with_temp_wvc_home<T>(f: impl FnOnce() -> T) -> T {
     let _guard = crate::storage::lock_test_env();
     let temp = tempfile::tempdir().expect("tempdir");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    crate::env::set_var("JCODE_HOME", temp.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    crate::env::set_var("WVC_HOME", temp.path());
     crate::auth::claude::set_active_account_override(None);
     crate::auth::codex::set_active_account_override(None);
     crate::auth::AuthStatus::invalidate_cache();
@@ -417,9 +417,9 @@ fn with_temp_wvc_home<T>(f: impl FnOnce() -> T) -> T {
     crate::auth::AuthStatus::invalidate_cache();
     crate::tui::app::helpers::clear_ambient_info_cache_for_tests();
     if let Some(prev_home) = prev_home {
-        crate::env::set_var("JCODE_HOME", prev_home);
+        crate::env::set_var("WVC_HOME", prev_home);
     } else {
-        crate::env::remove_var("JCODE_HOME");
+        crate::env::remove_var("WVC_HOME");
     }
     // Drop any config loaded from the temp home so it cannot leak into the next
     // test, which is process-global state shared across this suite.
@@ -427,7 +427,7 @@ fn with_temp_wvc_home<T>(f: impl FnOnce() -> T) -> T {
     result
 }
 
-/// Run `f` in a hermetic `JCODE_HOME` with reasoning display pinned to
+/// Run `f` in a hermetic `WVC_HOME` with reasoning display pinned to
 /// `current`.
 ///
 /// The reasoning-region tests assert live-then-anchored ("current") behaviour, but

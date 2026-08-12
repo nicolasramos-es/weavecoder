@@ -2,7 +2,7 @@
 name = "wvc-provider-antigravity-runtime"
 version = "0.1.0"
 edition = "2024"
-description = "Antigravity provider runtime (Google Cloud Code multiplexed Gemini/Claude backend) for jcode, kept downstream of wvc-base so provider edits do not rebuild the app spine"
+description = "Antigravity provider runtime (Google Cloud Code multiplexed Gemini/Claude backend) for wvc, kept downstream of wvc-base so provider edits do not rebuild the app spine"
 
 [lib]
 name = "wvc_provider_antigravity_runtime"

@@ -1,4 +1,4 @@
-//! MCP Tool - wraps MCP server tools for jcode's tool system
+//! MCP Tool - wraps MCP server tools for wvc's tool system
 
 use super::manager::McpManager;
 use super::protocol::{ContentBlock, McpToolDef};
@@ -52,7 +52,7 @@ impl Tool for McpTool {
         } else {
             input
         };
-        // `intent` is a jcode-injected display-only parameter (see
+        // `intent` is a wvc-injected display-only parameter (see
         // ensure_intent_in_schema). Strip it before forwarding unless the
         // MCP server's own schema declares an `intent` property.
         let server_declares_intent = self

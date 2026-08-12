@@ -60,7 +60,7 @@ fn classify_osa_error(trimmed: &str, lang: &str) -> String {
     {
         return format!(
             "Accessibility permission required. Run the `setup` action, or grant it in \
-             System Settings > Privacy & Security > Accessibility for your terminal/jcode. \
+             System Settings > Privacy & Security > Accessibility for your terminal/wvc. \
              ({trimmed})"
         );
     }

@@ -132,7 +132,7 @@ fn pending_prompt_transition_invalidates_the_memo() {
 /// Measures the per-frame cost of the suggestion reads while a slash command is
 /// being typed. Run explicitly:
 ///
-///   cargo test -p jcode-tui --lib -- measure_slash_palette_frame_cost \
+///   cargo test -p wvc-tui --lib -- measure_slash_palette_frame_cost \
 ///       --nocapture --ignored
 ///
 /// A frame reads `command_suggestions()` ~8 times (input box, hint line,

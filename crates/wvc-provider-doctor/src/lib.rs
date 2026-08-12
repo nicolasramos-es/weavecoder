@@ -1,8 +1,8 @@
-//! Provider-doctor diagnostics for jcode.
+//! Provider-doctor diagnostics for wvc.
 //!
-//! Sits downstream of `jcode-base` so edits to the doctor cluster do not
+//! Sits downstream of `wvc-base` so edits to the doctor cluster do not
 //! rebuild the base -> app-core -> tui spine:
-//! - [`provider_e2e`]: the strict end-to-end runner behind `jcode
+//! - [`provider_e2e`]: the strict end-to-end runner behind `wvc
 //!   provider-doctor` (offline/catalog/full tiers, native + OpenAI-compatible
 //!   drivers).
 //! - [`live_provider_probes`]: the live HTTP/native-runtime probes the doctor

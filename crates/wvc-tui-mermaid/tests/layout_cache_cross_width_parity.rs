@@ -21,7 +21,7 @@
 //!    MISS, asserted).
 //! 2. `clear_cache()`: clears RENDER_CACHE, the layout tier, and every
 //!    on-disk PNG artifact, so the world is fully cold again. NOTE: this
-//!    wipes the real shared jcode mermaid cache dir, which is fine for an
+//!    wipes the real shared wvc mermaid cache dir, which is fine for an
 //!    explicitly-run probe (the cache is regenerable).
 //! 3. Render at narrow width `NARROW_CELLS` (layout-tier MISS, asserted:
 //!    proves `clear_cache` cleared the layout tier too).
@@ -49,10 +49,10 @@
 //! than a PNG-cache hit (also enforced by the counter assertions).
 //!
 //! `#[ignore]`-d: run explicitly, twice for fresh nonces, and once with the
-//! legacy SVG-retarget backend (`JCODE_MMDR_SIZE_API_DISABLE=1` is a
+//! legacy SVG-retarget backend (`WVC_MMDR_SIZE_API_DISABLE=1` is a
 //! compile-time toggle consumed by build.rs, so it triggers a rebuild):
-//!   cargo test -p jcode-tui-mermaid --test layout_cache_cross_width_parity -- --ignored --nocapture
-//!   JCODE_MMDR_SIZE_API_DISABLE=1 cargo test -p jcode-tui-mermaid --test layout_cache_cross_width_parity -- --ignored --nocapture
+//!   cargo test -p wvc-tui-mermaid --test layout_cache_cross_width_parity -- --ignored --nocapture
+//!   WVC_MMDR_SIZE_API_DISABLE=1 cargo test -p wvc-tui-mermaid --test layout_cache_cross_width_parity -- --ignored --nocapture
 //! The report header prints `render_size_backend` so runs are
 //! distinguishable. Global hit/miss counters are safe to delta-assert because
 //! this binary contains exactly one test.

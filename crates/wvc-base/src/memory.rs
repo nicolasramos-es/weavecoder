@@ -540,7 +540,7 @@ impl MemoryManager {
         }
 
         #[cfg(test)]
-        if std::env::var_os("JCODE_TEST_ALLOW_MEMORY_EMBEDDINGS").is_none() {
+        if std::env::var_os("WVC_TEST_ALLOW_MEMORY_EMBEDDINGS").is_none() {
             return false;
         }
 

@@ -59,8 +59,8 @@ fn merge_cursor_models_deduplicates_dynamic_entries() {
 fn available_models_display_seeds_from_persisted_catalog() {
     let _guard = wvc_base::storage::lock_test_env();
     let temp = tempfile::TempDir::new().expect("tempdir");
-    let prev_home = std::env::var_os("JCODE_HOME");
-    wvc_base::env::set_var("JCODE_HOME", temp.path());
+    let prev_home = std::env::var_os("WVC_HOME");
+    wvc_base::env::set_var("WVC_HOME", temp.path());
 
     let path = CursorCliProvider::persisted_catalog_path().expect("catalog path");
     wvc_base::storage::write_json(
@@ -80,9 +80,9 @@ fn available_models_display_seeds_from_persisted_catalog() {
     );
 
     if let Some(prev_home) = prev_home {
-        wvc_base::env::set_var("JCODE_HOME", prev_home);
+        wvc_base::env::set_var("WVC_HOME", prev_home);
     } else {
-        wvc_base::env::remove_var("JCODE_HOME");
+        wvc_base::env::remove_var("WVC_HOME");
     }
 }
 

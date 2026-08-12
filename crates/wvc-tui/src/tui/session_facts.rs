@@ -22,7 +22,7 @@ pub(crate) fn pretty_model(model: &str) -> String {
     }
 }
 
-/// Home-relative directory label, e.g. `/home/me/jcode` -> `~/jcode`. Does not
+/// Home-relative directory label, e.g. `/home/me/wvc` -> `~/wvc`. Does not
 /// shorten intermediate path segments.
 pub(crate) fn dir_label(path: &str) -> String {
     let trimmed = path.trim().trim_end_matches('/');

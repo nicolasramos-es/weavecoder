@@ -1,12 +1,12 @@
 //! Write the dev-binary source metadata sidecar for the current repo state.
 //!
 //! Self-dev helper: after a direct `scripts/dev_cargo.sh build` (outside the
-//! coordinated build queue), the freshly built `target/selfdev/jcode` has no
+//! coordinated build queue), the freshly built `target/selfdev/wvc` has no
 //! up-to-date `.source.json` sidecar, so `selfdev reload` refuses to publish
 //! it. Run this to stamp the binary with the *current* source state:
 //!
 //! ```sh
-//! cargo run -p jcode-build-support --example write_dev_sidecar
+//! cargo run -p wvc-build-support --example write_dev_sidecar
 //! ```
 fn main() -> anyhow::Result<()> {
     let repo = std::env::current_dir()?;

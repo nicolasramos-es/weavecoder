@@ -1,7 +1,7 @@
 #[test]
 fn test_named_profile_survives_failed_openrouter_switch_then_transitions_on_success() {
     with_clean_provider_test_env(|| {
-        let wvc_home = std::env::var_os("JCODE_HOME").expect("test JCODE_HOME should be set");
+        let wvc_home = std::env::var_os("WVC_HOME").expect("test WVC_HOME should be set");
         std::fs::write(
             std::path::PathBuf::from(wvc_home).join("config.toml"),
             r#"

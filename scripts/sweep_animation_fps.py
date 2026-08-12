@@ -49,19 +49,19 @@ def cpu_seconds(pid: int) -> float | None:
 def run(binary: str, session: str, fps: int | None, window_s: float,
         rows: int, cols: int) -> dict:
     flick.ROWS, flick.COLS = rows, cols
-    runtime = Path(os.environ.get("JCODE_RUNTIME_DIR")
+    runtime = Path(os.environ.get("WVC_RUNTIME_DIR")
                    or f"/run/user/{os.getuid()}")
     env = os.environ.copy()
-    env["JCODE_SOCKET"] = env.get("JCODE_SOCKET") or str(runtime / "jcode.sock")
-    env["JCODE_DEBUG_CONTROL"] = "1"
-    env["JCODE_THEME"] = "dark"
+    env["WVC_SOCKET"] = env.get("WVC_SOCKET") or str(runtime / "wvc.sock")
+    env["WVC_DEBUG_CONTROL"] = "1"
+    env["WVC_THEME"] = "dark"
     if fps is None:
-        env["JCODE_IDLE_ANIMATION"] = "false"
+        env["WVC_IDLE_ANIMATION"] = "false"
     else:
-        env["JCODE_ANIMATION_FPS"] = str(fps)
+        env["WVC_ANIMATION_FPS"] = str(fps)
 
-    scratch = Path(os.environ.get("JCODE_SCRATCH_DIR") or tempfile.gettempdir())
-    root = Path(tempfile.mkdtemp(prefix="jcode-fps-", dir=str(scratch)))
+    scratch = Path(os.environ.get("WVC_SCRATCH_DIR") or tempfile.gettempdir())
+    root = Path(tempfile.mkdtemp(prefix="wvc-fps-", dir=str(scratch)))
     cmd_path, resp_path = root / "client_cmd", root / "client_resp"
 
     client = None
@@ -127,7 +127,7 @@ def run(binary: str, session: str, fps: int | None, window_s: float,
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--binary",
-                    default=str(REPO_ROOT / "target" / "selfdev" / "jcode"))
+                    default=str(REPO_ROOT / "target" / "selfdev" / "wvc"))
     ap.add_argument("--session", default=None)
     ap.add_argument("--fps", type=int, nargs="*", default=[60, 30, 20, 12])
     ap.add_argument("--window-s", type=float, default=5.0)
@@ -136,9 +136,9 @@ def main() -> int:
     args = ap.parse_args()
 
     binary = str(Path(args.binary).resolve())
-    runtime = Path(os.environ.get("JCODE_RUNTIME_DIR")
+    runtime = Path(os.environ.get("WVC_RUNTIME_DIR")
                    or f"/run/user/{os.getuid()}")
-    session = args.session or recent_session(runtime / "jcode-debug.sock",
+    session = args.session or recent_session(runtime / "wvc-debug.sock",
                                              str(REPO_ROOT))
     if not session:
         print("could not resolve a session")

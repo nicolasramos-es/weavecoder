@@ -1472,7 +1472,7 @@ impl Drop for RenderStateTestGuard {
 /// unlocked ones (`create_test_app`, used by ~570 tests). Acquiring
 /// unconditionally would deadlock the former; not acquiring at all lets the
 /// latter wipe state from under the former, which is the race behind
-/// jcode-tui's intermittent layout failures.
+/// wvc-tui's intermittent layout failures.
 ///
 /// Tracking ownership per thread lets one function serve both: the outermost
 /// holder owns the guard, and nested calls become no-ops.

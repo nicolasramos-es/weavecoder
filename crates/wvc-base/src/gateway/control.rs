@@ -1,4 +1,4 @@
-//! Shared control logic behind the `/remote` command and `jcode pair`.
+//! Shared control logic behind the `/remote` command and `wvc pair`.
 //!
 //! The WebSocket gateway already speaks the full session protocol, so making a
 //! session reachable from another machine is only ever three questions: is the
@@ -171,7 +171,7 @@ impl RemoteStatus {
         if self.enabled && self.host_unknown {
             out.push_str(
                 "\nCould not determine a reachable address for this machine. \
-                 Set `JCODE_GATEWAY_HOST` to a hostname or IP the other machine can reach.\n",
+                 Set `WVC_GATEWAY_HOST` to a hostname or IP the other machine can reach.\n",
             );
         }
 
@@ -430,11 +430,11 @@ mod tests {
     }
 
     /// Environment-mutating tests must not run concurrently with each other.
-    /// These tests mutate the process-global `JCODE_HOME`, so they must
+    /// These tests mutate the process-global `WVC_HOME`, so they must
     /// serialize against *every* other test that does, not just against each
     /// other. A module-private lock only excluded the three tests below, which
     /// left them racing the config and provider suites: a test here would swap
-    /// `JCODE_HOME` out from under a provider test mid-assertion, failing it
+    /// `WVC_HOME` out from under a provider test mid-assertion, failing it
     /// intermittently whenever the two modules happened to interleave.
     fn lock_env() -> std::sync::MutexGuard<'static, ()> {
         crate::storage::lock_test_env()
@@ -449,8 +449,8 @@ mod tests {
         fn new(config_body: &str) -> Self {
             let temp = tempfile::tempdir().expect("temp dir");
             std::fs::write(temp.path().join("config.toml"), config_body).expect("write config");
-            let previous = std::env::var_os("JCODE_HOME");
-            crate::env::set_var("JCODE_HOME", temp.path());
+            let previous = std::env::var_os("WVC_HOME");
+            crate::env::set_var("WVC_HOME", temp.path());
             crate::config::Config::invalidate_cache();
             Self {
                 previous,
@@ -466,8 +466,8 @@ mod tests {
     impl Drop for HomeGuard {
         fn drop(&mut self) {
             match &self.previous {
-                Some(prev) => crate::env::set_var("JCODE_HOME", prev),
-                None => crate::env::remove_var("JCODE_HOME"),
+                Some(prev) => crate::env::set_var("WVC_HOME", prev),
+                None => crate::env::remove_var("WVC_HOME"),
             }
             crate::config::Config::invalidate_cache();
         }

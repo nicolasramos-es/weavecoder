@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
 pub fn socket_path() -> PathBuf {
-    if let Ok(custom) = std::env::var("JCODE_SOCKET") {
+    if let Ok(custom) = std::env::var("WVC_SOCKET") {
         return PathBuf::from(custom);
     }
     crate::storage::runtime_dir().join("wvc.sock")
@@ -56,7 +56,7 @@ pub async fn connect_socket(path: &std::path::Path) -> Result<Stream> {
         Ok(stream) => Ok(stream),
         Err(err) if err.kind() == std::io::ErrorKind::ConnectionRefused && path.exists() => {
             anyhow::bail!(
-                "Socket exists but refused the connection at {}. Retry, or remove it after confirming no jcode server is running.",
+                "Socket exists but refused the connection at {}. Retry, or remove it after confirming no wvc server is running.",
                 path.display()
             )
         }
@@ -93,7 +93,7 @@ pub(super) async fn socket_has_live_listener(path: &std::path::Path) -> bool {
 /// path present but cannot connect/handshake gets wedged into a connect-retry
 /// loop and never recovers on its own (see issues #277 and #291).
 ///
-/// Safety: a live daemon holds an exclusive `flock` on `jcode-daemon.lock` for
+/// Safety: a live daemon holds an exclusive `flock` on `wvc-daemon.lock` for
 /// its entire lifetime. So if (a) the socket has no live listener AND (b) we can
 /// acquire that exclusive lock, then no daemon is running and the socket is
 /// provably stale. Only then do we unlink the socket pair (main + debug) and the
@@ -129,7 +129,7 @@ pub async fn reap_stale_socket_if_dead(path: &std::path::Path) -> bool {
     }
 
     crate::logging::warn(&format!(
-        "Reaping stale jcode socket with no live listener at {}",
+        "Reaping stale wvc socket with no live listener at {}",
         path.display()
     ));
     cleanup_socket_pair(path);
@@ -205,7 +205,7 @@ pub(super) fn acquire_daemon_lock() -> Result<DaemonLockGuard> {
     let path = daemon_lock_path();
     try_acquire_daemon_lock(&path)?.ok_or_else(|| {
         anyhow::anyhow!(
-            "Another jcode server process is already running for runtime dir {}",
+            "Another wvc server process is already running for runtime dir {}",
             crate::storage::runtime_dir().display()
         )
     })
@@ -221,13 +221,13 @@ pub(super) fn mark_close_on_exec<T: std::os::fd::AsRawFd>(io: &T) {
 }
 
 pub fn set_socket_path(path: &str) {
-    crate::env::set_var("JCODE_SOCKET", path);
+    crate::env::set_var("WVC_SOCKET", path);
 }
 
 /// Spawn a server child process and wait until it signals readiness.
 ///
 /// Creates an anonymous pipe, passes the write-end fd to the child via
-/// `JCODE_READY_FD`, and awaits a single byte on the read end. The server
+/// `WVC_READY_FD`, and awaits a single byte on the read end. The server
 /// calls `signal_ready_fd()` once its accept loops are spawned, so the future
 /// resolves only after the daemon can start servicing client requests.
 ///
@@ -268,7 +268,7 @@ pub async fn spawn_server_notify(cmd: &mut std::process::Command) -> Result<std:
             Ok(())
         });
     }
-    cmd.env("JCODE_READY_FD", write_fd.to_string());
+    cmd.env("WVC_READY_FD", write_fd.to_string());
 
     let mut child = cmd.spawn()?;
 
@@ -379,7 +379,7 @@ pub(super) fn take_server_start_stderr(child: &mut std::process::Child) -> Strin
 
 #[cfg(unix)]
 pub(super) fn server_start_matches_existing_server(stderr_output: &str) -> bool {
-    stderr_output.contains("Another jcode server process is already running")
+    stderr_output.contains("Another wvc server process is already running")
         || stderr_output.contains("Refusing to replace active server socket")
 }
 
@@ -402,7 +402,7 @@ pub(super) fn format_server_start_error(
 ) -> String {
     if stderr_output.trim().is_empty() {
         format!(
-            "Server exited before signalling ready ({}). Check logs at ~/.jcode/logs/",
+            "Server exited before signalling ready ({}). Check logs at ~/.wvc/logs/",
             status
         )
     } else {
@@ -433,7 +433,7 @@ pub(super) async fn handle_server_start_exit(
     anyhow::bail!(format_server_start_error(status, &stderr_output));
 }
 
-/// Write a single byte to the fd in `JCODE_READY_FD` and close it.
+/// Write a single byte to the fd in `WVC_READY_FD` and close it.
 /// Called after startup plumbing is ready so the parent process knows the
 /// server can accept and service client requests. The env var is cleared so child
 /// processes (e.g. tool subprocesses) don't inherit a stale fd.
@@ -442,8 +442,8 @@ pub(super) fn signal_ready_fd() {
     {
         use std::os::unix::io::FromRawFd;
 
-        if let Ok(fd_str) = std::env::var("JCODE_READY_FD") {
-            crate::env::remove_var("JCODE_READY_FD");
+        if let Ok(fd_str) = std::env::var("WVC_READY_FD") {
+            crate::env::remove_var("WVC_READY_FD");
             if let Ok(fd) = fd_str.parse::<i32>() {
                 let mut file = unsafe { std::fs::File::from_raw_fd(fd) };
                 let _ = std::io::Write::write_all(&mut file, b"R");

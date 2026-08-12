@@ -32,7 +32,7 @@ impl App {
             | "provider test coverage"
             | "model-status"
             | "model status" => {
-                "/provider-test-coverage\nShow jcode live verification evidence for the current provider/model.\n\n/provider-test-coverage <provider> <model>\nLook up a specific provider/model pair in the live-test coverage ledger.\n\nThe report shows last-tested time, jcode build, passed/missing checkpoints, readiness gaps, and a caveat that missing evidence is not a provider failure."
+                "/provider-test-coverage\nShow wvc live verification evidence for the current provider/model.\n\n/provider-test-coverage <provider> <model>\nLook up a specific provider/model pair in the live-test coverage ledger.\n\nThe report shows last-tested time, wvc build, passed/missing checkpoints, readiness gaps, and a caveat that missing evidence is not a provider failure."
             }
             "refresh-model-list" => {
                 "/refresh-model-list\nForce-refresh provider model catalogs, update /model, and persist the refreshed cache."
@@ -41,7 +41,7 @@ impl App {
                 "/agents\nOpen the agent-model config picker.\n\n/agents <swarm|review|judge|memory|ambient>\nJump straight to that agent role's saved model override."
             }
             "swarm-prompt" => {
-                "/swarm-prompt\nOpen the active swarm routing prompt in $VISUAL or $EDITOR.\n\nJcode uses a nonblank project override at ./.jcode/swarm-prompt.md when present, then ~/.jcode/swarm-prompt.md, then the built-in default. If no editable override exists, this command creates the global file from the built-in default. Restart or reload Jcode after editing because running agent tool registries cache the prompt."
+                "/swarm-prompt\nOpen the active swarm routing prompt in $VISUAL or $EDITOR.\n\nWeavecoder uses a nonblank project override at ./.wvc/swarm-prompt.md when present, then ~/.wvc/swarm-prompt.md, then the built-in default. If no editable override exists, this command creates the global file from the built-in default. Restart or reload Weavecoder after editing because running agent tool registries cache the prompt."
             }
             "subagent" => {
                 "/subagent <prompt>\nLaunch a subagent immediately.\n\nOptional flags:\n  --type <kind>         sets the subagent type (default general)\n  --model <name>        overrides the subagent model for this run\n  --continue <id>       resumes an existing subagent session"
@@ -74,7 +74,7 @@ impl App {
                 "/remote-release\nSame as /commit-push, then push the release tag without running any local build.\n\nThe agent picks the semver bump, updates Cargo.toml/Cargo.lock and the changelog, commits and pushes, then runs scripts/quick-release.sh --remote. GitHub Actions builds, signs, checksums, and publishes every platform; the release remains a draft until the remote gates pass."
             }
             "triage" => {
-                "/triage [focus]\nTriage open GitHub issues for the current repo, then autonomously fix the safe ones.\n\nThe agent lists untriaged issues with gh, classifies each (auto-fix, needs-info, needs-human, duplicate, question), applies existing labels, fixes and verifies the clear-cut bugs, and reports back with a summary table. Every public comment is clearly signed as the Jcode agent, and issues are never closed as wontfix/invalid without your confirmation.\n\nOptional focus text narrows the triage, for example /triage only crash reports."
+                "/triage [focus]\nTriage open GitHub issues for the current repo, then autonomously fix the safe ones.\n\nThe agent lists untriaged issues with gh, classifies each (auto-fix, needs-info, needs-human, duplicate, question), applies existing labels, fixes and verifies the clear-cut bugs, and reports back with a summary table. Every public comment is clearly signed as the Weavecoder agent, and issues are never closed as wontfix/invalid without your confirmation.\n\nOptional focus text narrows the triage, for example /triage only crash reports."
             }
             "catchup" => {
                 "/catchup\nOpen the Catch Up picker for finished sessions that need attention.\n\n/catchup next\nTeleport to the next session needing attention and open a Catch Up brief in the side panel.\n\n/catchup list\nAlias for opening the picker."
@@ -105,7 +105,7 @@ impl App {
             }
             "memory" => "/memory [on|off|status]\nToggle memory features for this session.",
             "log" => {
-                "/log mark [note]\nWrite a distinctive JCODE_LOG_MARK line to ~/.jcode/logs/jcode-YYYY-MM-DD.log with the current session, provider, model, working directory, and optional note. Use this to mark a spot for agents to inspect later."
+                "/log mark [note]\nWrite a distinctive WVC_LOG_MARK line to ~/.wvc/logs/wvc-YYYY-MM-DD.log with the current session, provider, model, working directory, and optional note. Use this to mark a spot for agents to inspect later."
             }
             "goals" => {
                 "/goals\nOpen the goals overview in the side panel.\n\n/goals resume\nResume the most relevant active goal for this session/project.\n\n/goals show <id>\nOpen a specific goal in the side panel."
@@ -115,12 +115,12 @@ impl App {
                 "/overnight <hours>[h|m] [mission]\nStart one overnight coordinator with a target wake/report time. The coordinator prioritizes verifiable, low-risk work, maintains structured logs, updates review notes, and generates a review HTML page.\n\n/overnight status\nShow the latest overnight run status.\n\n/overnight log\nShow recent overnight events.\n\n/overnight review\nOpen the generated review page.\n\n/overnight cancel\nRequest cancellation after the current coordinator turn reaches a safe boundary."
             }
             "dictate" | "dictation" => {
-                "/dictate\nRun the configured external speech-to-text command and inject the transcript into jcode.\n\nConfigure [dictation] in ~/.jcode/config.toml:\n  command       shell command that prints transcript to stdout,\n                for example ~/.local/bin/my-whisper-script --grammar-target code\n  mode          insert|append|replace|send\n  key           optional hotkey (for example alt+;)\n  timeout_secs  max wait time"
+                "/dictate\nRun the configured external speech-to-text command and inject the transcript into wvc.\n\nConfigure [dictation] in ~/.wvc/config.toml:\n  command       shell command that prints transcript to stdout,\n                for example ~/.local/bin/my-whisper-script --grammar-target code\n  mode          insert|append|replace|send\n  key           optional hotkey (for example alt+;)\n  timeout_secs  max wait time"
             }
             "poke" => {
                 "/poke [on|off|status]\nPoke the model to resume when it has stopped with incomplete todos.\n\n\
                 Auto-poke now starts enabled by default, and Ctrl+P toggles it on/off.\n\
-                Set auto_poke = false under [features] in ~/.jcode/config.toml to start with it disabled.\n\
+                Set auto_poke = false under [features] in ~/.wvc/config.toml to start with it disabled.\n\
                 /poke or /poke on arms auto-poke and immediately pokes if work remains.\n\
                 /poke off disarms auto-poke and clears any queued poke follow-ups.\n\
                 /poke status shows whether auto-poke is currently armed.\n\
@@ -129,7 +129,7 @@ impl App {
                 finish the work, update the todo list to reflect what is done, or ask for user input if genuinely blocked."
             }
             "transfer" => {
-                "/transfer\nCompact the current session into a summary-only handoff, copy the current todo list to a fresh session, and open that transferred session in a new window.\n\nIf a turn is currently running, jcode first soft-pauses the current session at the next safe point, then performs the transfer."
+                "/transfer\nCompact the current session into a summary-only handoff, copy the current todo list to a fresh session, and open that transferred session in a new window.\n\nIf a turn is currently running, wvc first soft-pauses the current session at the next safe point, then performs the transfer."
             }
             "plan" => {
                 "/plan [goal]\nDraft a plan without implementing anything. The model inspects the repo, then presents a structured plan (Goal, Scope, Approach, Validation, Open questions) as a dedicated plan card in the conversation.\n\nNothing is edited: it stops after presenting the plan. Once you approve, it converts the plan into a todo list and starts the work.\n\n/plan with no goal plans the task currently in focus."
@@ -144,16 +144,16 @@ impl App {
                 "/reload\nReload into the newest available binary if one is ready. This is fast and does not rebuild."
             }
             "restart" => {
-                "/restart\nRestart jcode with the current binary. Session is preserved.\nUseful after config changes, MCP server updates, or env var changes."
+                "/restart\nRestart wvc with the current binary. Session is preserved.\nUseful after config changes, MCP server updates, or env var changes."
             }
             "rebuild" => {
-                "/rebuild\nRun git pull --ff-only, cargo build --release, and release tests in the background. jcode stays usable and reloads automatically when the build is ready."
+                "/rebuild\nRun git pull --ff-only, cargo build --release, and release tests in the background. wvc stays usable and reloads automatically when the build is ready."
             }
             "selfdev" => {
-                "/selfdev\nSpawn a new self-dev jcode session in a separate terminal.\n\n/selfdev <prompt>\nSpawn a new self-dev session and auto-deliver the prompt to it.\n\n/selfdev status\nShow current self-dev/build status."
+                "/selfdev\nSpawn a new self-dev wvc session in a separate terminal.\n\n/selfdev <prompt>\nSpawn a new self-dev session and auto-deliver the prompt to it.\n\n/selfdev status\nShow current self-dev/build status."
             }
             "fork" | "split" => {
-                "/fork\nFork the current session into a new terminal pane or window. Clones the full conversation history so both sessions continue from the same point. Inside tmux, jcode automatically opens a right-side pane.\n\n/fork <prompt>\nFork the session and start the new pane/window by answering the prompt. The original session keeps working uninterrupted.\n\n/split\nAlias for /fork."
+                "/fork\nFork the current session into a new terminal pane or window. Clones the full conversation history so both sessions continue from the same point. Inside tmux, wvc automatically opens a right-side pane.\n\n/fork <prompt>\nFork the session and start the new pane/window by answering the prompt. The original session keeps working uninterrupted.\n\n/split\nAlias for /fork."
             }
             "resume" | "sessions" => {
                 "/resume\nOpen the interactive session picker. Browse and search all sessions, preview conversation history, and resume the highlighted session. By default, Enter resumes in the current terminal and Ctrl+Enter opens a new terminal; keybindings.session_picker_enter can swap those actions.{resume_shortcut}\n\nPress Esc to return to your current session."
@@ -166,14 +166,14 @@ impl App {
                 "/usage\nFetch and display usage limits for connected providers. This command only reports real connected-provider usage windows and reset times."
             }
             "subscription" => {
-                "/subscription\nShow curated jcode subscription status for this session, including router config, runtime mode, curated models, and planned tier budget scaffolding."
+                "/subscription\nShow curated wvc subscription status for this session, including router config, runtime mode, curated models, and planned tier budget scaffolding."
             }
             "subscribe" => {
-                "/subscribe\nWhy subscribe to jcode: more tokens on curated frontier models, one browser sign-in with no API keys, failover routing, and funding open-source development. Lists plans and prices, then start with /login jcode."
+                "/subscribe\nWhy subscribe to wvc: more tokens on curated frontier models, one browser sign-in with no API keys, failover routing, and funding open-source development. Lists plans and prices, then start with /login wvc."
             }
-            "version" => "/version\nShow jcode version/build details.",
+            "version" => "/version\nShow wvc version/build details.",
             "changelog" => "/changelog\nShow recent changes embedded in this build.",
-            "quit" => "/quit\nExit jcode.",
+            "quit" => "/quit\nExit wvc.",
             "config" => {
                 "/config\nShow active configuration.\n\n/config init\nCreate default config file.\n\n/config edit\nOpen config in $EDITOR."
             }
@@ -190,7 +190,7 @@ impl App {
                 "/tool-call-details\nShow whether the dimmed technical detail (command, path, args) renders next to the model-provided intent on tool rows.\n\n/tool-call-details on\nShow the technical detail after the intent, e.g. `bash · Run tests · $ cargo test`.\n\n/tool-call-details off\nShow only the intent on tool rows that have one. Rows without an intent still show the technical detail, and error summaries always render."
             }
             "auth" | "login" => {
-                "/auth\nShow authentication status for all providers.\n\n/login\nInteractive provider selection - pick a provider to log into.\n\n/login <provider>\nStart login flow directly for any provider shown by /login or the /login completions.\n\nUse /login jcode for curated jcode subscription access via your router, not OpenRouter BYOK."
+                "/auth\nShow authentication status for all providers.\n\n/login\nInteractive provider selection - pick a provider to log into.\n\n/login <provider>\nStart login flow directly for any provider shown by /login or the /login completions.\n\nUse /login wvc for curated wvc subscription access via your router, not OpenRouter BYOK."
             }
             "account" | "accounts" => {
                 "/account\nOpen the inline account picker showing both Claude and OpenAI accounts together. It lists saved accounts plus new/replace actions for each provider.\n\n/account claude  or  /account openai\nOpen the inline picker filtered to that provider.\n\n/account <provider> settings\nShow provider-specific account/settings details.\n\n/account <provider> login\nStart or refresh credentials for a provider.\n\n/account claude add  or  /account openai add\nCreate the next numbered OAuth account directly.\n\n/account <provider> switch <label>\nSwitch the active account for multi-account providers.\n\n/account <provider> remove <label>\nRemove a saved account.\n\n/account default-provider <provider|auto>\nSet the preferred default provider for future sessions.\n\n/account default-model <model|clear>\nSet the preferred default model for future sessions.\n\nOpenAI-specific settings:\n  /account openai transport ...\n  /account openai effort ...\n  /account openai fast on|off\n\nCustom provider settings:\n  /account openai-compatible api-base ...\n  /account openai-compatible api-key-name ...\n  /account openai-compatible env-file ...\n  /account openai-compatible default-model ..."

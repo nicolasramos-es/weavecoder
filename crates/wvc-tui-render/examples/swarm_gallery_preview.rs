@@ -1,6 +1,6 @@
 //! Visual preview of the swarm gallery layout against mock streams.
 //!
-//! Run with: `cargo run --profile selfdev -p jcode-tui-render --example swarm_gallery_preview`
+//! Run with: `cargo run --profile selfdev -p wvc-tui-render --example swarm_gallery_preview`
 
 use ratatui::prelude::*;
 use wvc_tui_render::swarm_gallery::{
@@ -51,7 +51,7 @@ fn main() {
             &[
                 "Searching the codebase for the auth flow...",
                 "Found 12 candidate files.",
-                "Reading crates/jcode-app-core/src/auth.rs",
+                "Reading crates/wvc-app-core/src/auth.rs",
                 "The OAuth callback is handled in handle_login()",
                 "Now cross-referencing the token refresh path.",
             ],
@@ -61,7 +61,7 @@ fn main() {
             None,
             "running",
             &[
-                "Editing crates/jcode-base/src/config.rs",
+                "Editing crates/wvc-base/src/config.rs",
                 "Added swarm_spawn_mode = inline",
                 "Running cargo check...",
                 "warning: unused import `Foo`",

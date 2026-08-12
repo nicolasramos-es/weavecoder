@@ -12,7 +12,7 @@ use wvc_harness_api::{
     write_frame,
 };
 use wvc_sdk::{
-    ConnectOptions, GlobalEventsOptions, JcodeClient, LaunchOptions, inherit_credentials,
+    ConnectOptions, GlobalEventsOptions, WeavecoderClient, LaunchOptions, inherit_credentials,
 };
 
 fn session(id: &str) -> SessionInfo {
@@ -82,8 +82,8 @@ impl UnixHarness {
         }
     }
 
-    fn connect(&self) -> JcodeClient {
-        JcodeClient::connect(ConnectOptions {
+    fn connect(&self) -> WeavecoderClient {
+        WeavecoderClient::connect(ConnectOptions {
             socket_path: Some(self.socket_path.clone()),
             ensure_runtime: false,
             request_timeout: Some(Duration::from_secs(2)),
@@ -267,7 +267,7 @@ fn missing_launch_binary_is_typed_and_cleans_up_its_temporary_home() {
                 .starts_with("wvc-sdk-instance-")
         })
         .count();
-    let error = match JcodeClient::launch(LaunchOptions {
+    let error = match WeavecoderClient::launch(LaunchOptions {
         binary: Some(PathBuf::from("wvc-definitely-not-installed-sdk-test")),
         inherit_logins: false,
         startup_timeout: Duration::from_millis(100),

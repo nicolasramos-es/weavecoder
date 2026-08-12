@@ -273,7 +273,7 @@ fn test_render_swarm_message_centered_mode_keeps_file_activity_preview_centered_
 
     let msg = DisplayMessage::swarm(
         "File activity · rose",
-        "`…/jcode/src/server/comm_sync.rs`
+        "`…/wvc/src/server/comm_sync.rs`
 
 Modified via apply_patch
 
@@ -369,7 +369,7 @@ fn test_render_memory_tiles_allows_boxes_below_other_boxes() {
         ),
         (
             "preference".to_string(),
-            "User prefers quick verification that jcode is up-to-date.".to_string(),
+            "User prefers quick verification that wvc is up-to-date.".to_string(),
         ),
         ("fact".to_string(), "Jeremy".to_string()),
         (
@@ -629,7 +629,7 @@ fn test_light_theme_adapted_frame_has_readable_contrast() {
 
 /// End-to-end proof that `[display.colors]` reaches a real rendered frame.
 ///
-/// The unit tests in `jcode-tui-style` cover the substitution in isolation, but
+/// The unit tests in `wvc-tui-style` cover the substitution in isolation, but
 /// the thing a user actually cares about is whether configuring a color changes
 /// what the TUI paints. This renders a real frame through `ui::draw`, so it also
 /// guards the hook's presence and its ordering relative to the light/dark pass.

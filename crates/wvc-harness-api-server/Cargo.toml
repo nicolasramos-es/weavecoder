@@ -3,7 +3,7 @@ name = "wvc-harness-api-server"
 version = "0.1.0"
 edition = "2024"
 publish = false
-description = "Harness API endpoint: bridges versioned API clients onto the internal jcode protocol"
+description = "Harness API endpoint: bridges versioned API clients onto the internal wvc protocol"
 
 [dependencies]
 anyhow = "1"
