@@ -9,16 +9,30 @@ CLI de coding agent en **Rust** con Agent Swarm nativo para múltiples peticione
 
 </div>
 
+## Estado actual
+
+```text
+$ wvc --version
+wvc v0.67.0-dev (1b226b4a8)
+```
+
+```text
+$ wvc version
+version		v0.67.0-dev (1b226b4a8)
+semver		0.67.0
+git_hash	1b226b4a8
+release_build	false
+```
+
 ## Features
 
-- **Agent Swarm** — múltiples peticiones en paralelo, orquestadas de forma nativa
-- **Modelos locales primero** — Ollama, LM Studio, oMLX/llama.cpp, o cualquier endpoint OpenAI-compatible
+- **Agent Swarm** — múltiples peticiones en paralelo, orquestadas de forma nativa (`wvc-swarm-core`)
+- **Modelos locales primero** — Ollama, LM Studio, oMLX/llama.cpp, o cualquier endpoint OpenAI-compatible (ver la lista completa de proveedores en `wvc --help`)
 - **Code Knowledge Graph (CKG)** — indexa símbolos y relaciones del código con tree-sitter:
-  - `wvc init` — escanea el proyecto, extrae funciones/clases/imports/calls y los almacena en SQLite + FTS5
-  - `wvc code-search <query>` — búsqueda híbrida (FTS5 + embeddings + grafo de dependencias)
-  - Graph traversal: "quién llama a X", "de qué depende Y"
-  - Indexación incremental: solo re-indexa los archivos modificados
-- **Embeddings locales** (all-MiniLM-L6-v2) para búsqueda semántica por significado
+  - `wvc init <proyecto>` — escanea el proyecto, extrae funciones/clases/métodos/variables con tree-sitter (Go, Python, TypeScript/TSX, Rust) y los almacena en SQLite + FTS5
+  - `wvc code-search <query>` — búsqueda híbrida sobre el grafo (FTS5 + enriquecimiento por grafo de dependencias, fusionado con Reciprocal Rank Fusion)
+  - Indexación incremental: solo re-indexa los archivos modificados (hash SHA-256 + mtime + tamaño)
+- **Embeddings locales** (all-MiniLM-L6-v2, 384 dimensiones, inferencia ONNX vía `tract-onnx`) para búsqueda semántica por significado, disponibles a través de la librería (`wvc-code-graph` / `wvc-embedding`)
 
 ## Installation
 
@@ -39,8 +53,6 @@ irm https://weavecoder.sh/install.ps1 | iex
 > ```bash
 > curl -fsSL https://raw.githubusercontent.com/nicolasramos/weavecoder/main/install.sh | bash
 > ```
-
-Need Homebrew, source builds, provider setup, or want an agent to set it up for you? Sigue leyendo — [Quick Start](#quick-start) y [Desde fuente](#desde-fuente).
 
 ### Desde fuente
 
@@ -66,17 +78,61 @@ wvc init /ruta/al/proyecto --db ckg.db
 wvc code-search "parseConfig" --db ckg.db
 ```
 
+### Ejemplo real (wvc v0.67.0-dev)
+
+Indexado de un proyecto de prueba con 3 archivos (Python, Rust, TypeScript):
+
+```text
+$ wvc init /tmp/weavecoder-demo --db /tmp/weavecoder-demo/ckg.db
+🔍 Initializing code graph for: /tmp/weavecoder-demo
+🔍 Scanning project at: "/tmp/weavecoder-demo"
+   Found 3 source files
+   Extracted 11 symbols (3 files new/modified, 0 unchanged, 0 deleted)
+   Stored 11 symbols in database
+   Extracted 2 relations
+✅ Code graph initialized:
+   Files scanned: 3
+   Symbols found: 11
+   Relations found: 0
+   Time: 4ms
+```
+
+Segunda ejecución: la indexación incremental detecta que nada cambió y no re-indexa:
+
+```text
+$ wvc init /tmp/weavecoder-demo --db /tmp/weavecoder-demo/ckg.db
+🔍 Initializing code graph for: /tmp/weavecoder-demo
+🔍 Scanning project at: "/tmp/weavecoder-demo"
+   Found 3 source files
+   ✅ No changes — index is up to date (3 files unchanged)
+✅ Code graph initialized:
+   Files scanned: 3
+   Symbols found: 11
+   Relations found: 0
+   Time: 0ms
+```
+
+Búsqueda híbrida:
+
+```text
+$ wvc code-search "getUser" --db /tmp/weavecoder-demo/ckg.db
+🔎 Searching code graph (/tmp/weavecoder-demo/ckg.db) for: getUser
+  1. getUser (function) — /tmp/weavecoder-demo/src/app.ts:6 — score=0.067 [fts]
+```
+
 ## Arquitectura
 
 | Crate | Responsabilidad |
 |---|---|
-| `wvc-code-graph` | Code Knowledge Graph: tree-sitter (Go/Py/TS/Rust), SQLite+FTS5, embeddings, grafo petgraph, búsqueda híbrida |
-| `wvc-embedding` | Embeddings locales (all-MiniLM-L6-v2, tract-onnx) |
+| `wvc-code-graph` | Code Knowledge Graph: tree-sitter (Go/Python/TS/Rust), SQLite+FTS5, embeddings, grafo `petgraph`, búsqueda híbrida (RRF) e indexación incremental |
+| `wvc-embedding` | Embeddings locales (all-MiniLM-L6-v2, tract-onnx + tokenizers) |
 | `wvc-swarm-core` | Orquestación de enjambres de agentes |
 | `wvc-app-core` | Núcleo del agente (tools, sesiones, servidor) |
+
+Documentación de arquitectura del CKG: [docs/architecture/ckg.md](docs/architecture/ckg.md).
 
 ## Licencia
 
 MIT — ver [LICENSE](LICENSE).
 
-Este proyecto parte del trabajo excepcional de [Jeremy Huang](https://github.com/1jehuang) (wvc, MIT), sobre el que hemos construido, añadido funcionalidades nuevas y mejorado el producto. El aviso de copyright del original se conserva íntegro en LICENSE.
+Este proyecto parte del trabajo excepcional de [Jeremy Huang](https://github.com/1jehuang) (MIT), sobre el que hemos construido, añadido funcionalidades nuevas y mejorado el producto. El aviso de copyright del original se conserva íntegro en LICENSE.
