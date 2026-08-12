@@ -16,16 +16,21 @@ command -v curl >/dev/null 2>&1 || err "curl is required but not found in PATH"
 # --- GitHub auth helper for private repos ---
 GITHUB_TOKEN="${GITHUB_TOKEN:-${GH_TOKEN:-}}"
 
-gh_curl() {
-  # Usage: gh_curl <url> [output_file]
-  # Wraps curl with GitHub auth when a token is available.
-  local url="$1"
-  local outfile="${2:-}"
-  if [ -n "$GITHUB_TOKEN" ]; then
-    curl -fsSL -H "Authorization: token ${GITHUB_TOKEN}" "$url" ${outfile:+-o "$outfile"}
-  else
-    curl -fsSL "$url" ${outfile:+-o "$outfile"}
+# Download a release asset. Uses `gh release download` when a token is available
+# (GitHub CDN requires cookie-based auth, not just a header). Falls back to
+# plain curl for public repos.
+download_asset() {
+  local asset_name="$1"
+  local dest="$2"
+  if [ -n "$GITHUB_TOKEN" ] && command -v gh >/dev/null 2>&1; then
+    gh release download "$VERSION" --repo "${REPO}" -D "$(dirname "$dest")" -p "${asset_name}" 2>/dev/null
+    if [ $? -eq 0 ] && [ -f "$(dirname "$dest")/${asset_name}" ]; then
+      mv "$(dirname "$dest")/${asset_name}" "$dest"
+      return 0
+    fi
   fi
+  # Fallback: plain curl (works for public repos)
+  curl -fsSL "https://github.com/${REPO}/releases/download/${VERSION}/${asset_name}" -o "$dest"
 }
 
 # Detect OS + arch
@@ -48,7 +53,11 @@ ASSET="wvc-${OS_NAME}-${ARCH_NAME}"
 
 # Resolve latest release tag if requested
 if [ "$VERSION" = "latest" ]; then
-  VERSION="$(gh_curl "https://api.github.com/repos/${REPO}/releases/latest" | grep -o '"tag_name": *"[^"]*"' | cut -d'"' -f4)"
+  if [ -n "$GITHUB_TOKEN" ] && command -v gh >/dev/null 2>&1; then
+    VERSION="$(gh release list --repo "${REPO}" --limit 1 --json tagName --jq '.[0].tagName')"
+  else
+    VERSION="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" | grep -o '"tag_name": *"[^"]*"' | cut -d'"' -f4)"
+  fi
   [ -n "$VERSION" ] || err "Could not resolve latest release"
 fi
 
@@ -65,13 +74,18 @@ TMP="$(mktemp)"
 trap 'rm -f "$TMP"' EXIT
 
 info "Downloading..."
-gh_curl "$URL" "$TMP" || err "Download failed: $URL"
+download_asset "$ASSET" "$TMP" || err "Download failed: $URL"
 chmod +x "$TMP"
 
 # --- SHA-256 checksum verification ---
 # Fetch the release JSON and extract the digest for this asset.
-RELEASE_JSON="$(gh_curl "https://api.github.com/repos/${REPO}/releases/tags/${VERSION}")"
-EXPECTED_DIGEST="$(printf '%s' "$RELEASE_JSON" | grep -o '"digest": *"[^"]*"' | head -1 || true)"
+if [ -n "$GITHUB_TOKEN" ] && command -v gh >/dev/null 2>&1; then
+  RELEASE_JSON="$(gh release view "$VERSION" --repo "${REPO}" --json assets --jq '.assets[] | select(.name == "'"$ASSET"'") | .digest // empty')"
+else
+  RELEASE_JSON="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/tags/${VERSION}" | grep -o '"digest": *"[^"]*"' | head -1 || true)"
+fi
+
+EXPECTED_DIGEST="$RELEASE_JSON"
 
 if [ -z "$EXPECTED_DIGEST" ]; then
   err "Could not obtain SHA-256 digest for $ASSET from release ${VERSION}; aborting for safety"
