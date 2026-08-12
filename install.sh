@@ -13,6 +13,23 @@ err()  { printf '\033[1;31merror: %s\033[0m\n' "$*" >&2; exit 1; }
 # --- Pre-flight: curl is required ---
 command -v curl >/dev/null 2>&1 || err "curl is required but not found in PATH"
 
+# --- GitHub auth helper for private repos ---
+GITHUB_TOKEN="${GITHUB_TOKEN:-${GH_TOKEN:-}}"
+GITHUB_AUTH_HEADER=""
+if [ -n "$GITHUB_TOKEN" ]; then
+  GITHUB_AUTH_HEADER="-H \"Authorization: token ${GITHUB_TOKEN}\""
+fi
+
+gh_curl() {
+  # Usage: gh_curl <url> [output_file]
+  # Wraps curl with GitHub auth when a token is available.
+  if [ -n "$GITHUB_AUTH_HEADER" ]; then
+    curl -fsSL $GITHUB_AUTH_HEADER "$1" ${2:+-o "$2"}
+  else
+    curl -fsSL "$1" ${2:+-o "$2"}
+  fi
+}
+
 # Detect OS + arch
 OS="$(uname -s)"
 ARCH="$(uname -m)"
@@ -33,7 +50,7 @@ ASSET="wvc-${OS_NAME}-${ARCH_NAME}"
 
 # Resolve latest release tag if requested
 if [ "$VERSION" = "latest" ]; then
-  VERSION="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" | grep -o '"tag_name": *"[^"]*"' | cut -d'"' -f4)"
+  VERSION="$(gh_curl "https://api.github.com/repos/${REPO}/releases/latest" | grep -o '"tag_name": *"[^"]*"' | cut -d'"' -f4)"
   [ -n "$VERSION" ] || err "Could not resolve latest release"
 fi
 
@@ -50,13 +67,13 @@ TMP="$(mktemp)"
 trap 'rm -f "$TMP"' EXIT
 
 info "Downloading..."
-curl -fsSL "$URL" -o "$TMP" || err "Download failed: $URL"
+gh_curl "$URL" "$TMP" || err "Download failed: $URL"
 chmod +x "$TMP"
 
 # --- SHA-256 checksum verification ---
 # Fetch the release JSON and extract the digest for this asset.
-RELEASE_JSON="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/tags/${VERSION}")"
-EXPECTED_DIGEST="$(printf '%s' "$RELEASE_JSON" | grep -o "\"digest\": *\"sha256:[a-f0-9]*\"" | grep -o '"sha256:[a-f0-9]*"' | head -1 || true)"
+RELEASE_JSON="$(gh_curl "https://api.github.com/repos/${REPO}/releases/tags/${VERSION}")"
+EXPECTED_DIGEST="$(printf '%s' "$RELEASE_JSON" | grep -o '"digest": *"[^"]*"' | head -1 || true)"
 
 if [ -z "$EXPECTED_DIGEST" ]; then
   err "Could not obtain SHA-256 digest for $ASSET from release ${VERSION}; aborting for safety"

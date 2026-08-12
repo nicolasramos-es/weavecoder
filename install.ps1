@@ -6,6 +6,18 @@ $ErrorActionPreference = "Stop"
 $Repo = "nicolasramos/weavecoder"
 $Version = if ($env:WVC_VERSION) { $env:WVC_VERSION } else { "latest" }
 
+# --- GitHub auth helper for private repos ---
+$ghToken = $env:GITHUB_TOKEN ?? $env:GH_TOKEN ?? ""
+$headers = @{}
+if ($ghToken) {
+    $headers["Authorization"] = "token $ghToken"
+}
+
+function Invoke-GhRest {
+    param([string]$Uri)
+    Invoke-RestMethod -Uri $Uri -Headers $headers -UseBasicParsing
+}
+
 function Get-Arch {
     $arch = $env:PROCESSOR_ARCHITECTURE
     if ($arch -eq "AMD64") { return "x86_64" }
@@ -18,7 +30,7 @@ $archName = Get-Arch
 $asset = "wvc-$osName-$archName.exe"
 
 if ($Version -eq "latest") {
-    $release = Invoke-RestMethod "https://api.github.com/repos/$Repo/releases/latest"
+    $release = Invoke-GhRest "https://api.github.com/repos/$Repo/releases/latest"
     $Version = $release.tag_name
 }
 
@@ -33,11 +45,11 @@ Write-Host "  Version: $Version"
 Write-Host "  URL:     $url"
 
 Write-Host "Downloading..."
-Invoke-RestMethod -Uri $url -OutFile $out -UseBasicParsing
+Invoke-RestMethod -Uri $url -Headers $headers -OutFile $out -UseBasicParsing
 
 # --- SHA-256 checksum verification ---
 # Fetch the release JSON and extract the digest for this asset.
-$releaseJson = Invoke-RestMethod "https://api.github.com/repos/$Repo/releases/tags/$Version"
+$releaseJson = Invoke-GhRest "https://api.github.com/repos/$Repo/releases/tags/$Version"
 $digests = $releaseJson.assets | Where-Object { $_.digest } | ForEach-Object { $_.digest }
 $expectedDigest = $null
 foreach ($d in $digests) {
