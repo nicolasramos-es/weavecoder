@@ -95,12 +95,12 @@ impl HybridSearch {
             .unwrap_or_default();
         let mut scored: Vec<(i64, f64)> = Vec::new();
         for s in symbols {
-            if let Some(blob) = &s.embedding {
-                if let Some(vec) = crate::embedding::deserialize_embedding(blob) {
-                    let sim = wvc_embedding::cosine_similarity(query_embedding, &vec);
-                    if sim > 0.0 {
-                        scored.push((s.id, sim as f64));
-                    }
+            if let Some(blob) = &s.embedding
+                && let Some(vec) = crate::embedding::deserialize_embedding(blob)
+            {
+                let sim = wvc_embedding::cosine_similarity(query_embedding, &vec);
+                if sim > 0.0 {
+                    scored.push((s.id, sim as f64));
                 }
             }
         }

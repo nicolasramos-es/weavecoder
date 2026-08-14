@@ -372,14 +372,13 @@ impl CodeGraph {
         let conn = self.conn.as_ref().unwrap();
         let fts_query = query.build_fts_query();
 
-        let sql = format!(
-            "SELECT s.id, s.name, s.kind, s.file_path, s.line, s.col, s.language, s.doc,
+        let sql = "SELECT s.id, s.name, s.kind, s.file_path, s.line, s.col, s.language, s.doc,
                     s.embedding, rank
              FROM symbols_fts f
              JOIN symbols s ON s.id = f.rowid
              WHERE symbols_fts MATCH ?1
-             ORDER BY rank",
-        );
+             ORDER BY rank"
+            .to_string();
 
         let mut stmt = conn.prepare(&sql)?;
         let rows = stmt.query_map(params![fts_query], |row| {

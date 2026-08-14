@@ -59,10 +59,10 @@ fn is_supported_extension(path: &Path) -> bool {
         .and_then(|e| e.to_str())
         .map(|s| s.to_lowercase());
 
-    match ext.as_deref() {
-        Some(ext) if SUPPORTED_EXTENSIONS.contains(&ext) => true,
-        _ => false,
-    }
+    matches!(
+        ext.as_deref(),
+        Some(ext) if SUPPORTED_EXTENSIONS.contains(&ext)
+    )
 }
 
 /// Recursively walk a directory.
@@ -80,14 +80,12 @@ fn walk_dir(dir: &Path, files: &mut Vec<PathBuf>) -> Result<()> {
 
     // Skip common generated/third-party directories
     let dir_name = dir.file_name().and_then(|n| n.to_str());
-    match dir_name {
-        Some(
-            "node_modules" | "target" | ".venv" | "vendor" | ".git" | "__pycache__" | ".tox"
-            | ".mypy_cache" | ".pytest_cache" | "dist" | "build",
-        ) => {
-            return Ok(());
-        }
-        _ => {}
+    if let Some(
+        "node_modules" | "target" | ".venv" | "vendor" | ".git" | "__pycache__" | ".tox"
+        | ".mypy_cache" | ".pytest_cache" | "dist" | "build",
+    ) = dir_name
+    {
+        return Ok(());
     }
 
     // Read directory entries
@@ -175,36 +173,34 @@ fn extract_symbols_from_node(
         // This handles the Go pattern for extracting struct/type/enum names
         "type_declaration" => {
             for i in 0..node.named_child_count() {
-                if let Some(child) = node.named_child(i) {
-                    if child.kind() == "type_spec" {
-                        // type_spec has name (identifier) and value (struct_type, enum_type, etc.)
-                        for j in 0..child.child_count() {
-                            if let Some(ns) = child.child(j) {
-                                if ns.kind() == "identifier" || ns.kind() == "type_identifier" {
-                                    let name = ns.utf8_text(source).ok().unwrap_or_default();
-                                    // Determine kind based on what type_spec points to
-                                    let kind = match child.named_child(1) {
-                                        Some(v) => match v.kind() {
-                                            "struct_type" | "enum_declaration"
-                                            | "enum_definition" | "enum_spec" => {
-                                                SymbolKind::Other("type".to_string())
-                                            }
-                                            _ => SymbolKind::Other("type".to_string()),
-                                        },
-                                        None => SymbolKind::Other("type".to_string()),
-                                    };
-                                    symbols.push(SymbolInsert {
-                                        name: name.to_string(),
-                                        kind: kind.to_string(),
-                                        file_path: file_path.to_string(),
-                                        line: child.start_position().row as i64 + 1,
-                                        col: child.start_position().column as i64 + 1,
-                                        language: detect_lang_from_file(file_path),
-                                        doc: None,
-                                        embedding: None,
-                                    });
-                                }
-                            }
+                if let Some(child) = node.named_child(i)
+                    && child.kind() == "type_spec"
+                {
+                    // type_spec has name (identifier) and value (struct_type, enum_type, etc.)
+                    for j in 0..child.child_count() {
+                        if let Some(ns) = child.child(j)
+                            && (ns.kind() == "identifier" || ns.kind() == "type_identifier")
+                        {
+                            let name = ns.utf8_text(source).ok().unwrap_or_default();
+                            // Determine kind based on what type_spec points to
+                            let kind = match child.named_child(1) {
+                                Some(v) => match v.kind() {
+                                    "struct_type" | "enum_declaration" | "enum_definition"
+                                    | "enum_spec" => SymbolKind::Other("type".to_string()),
+                                    _ => SymbolKind::Other("type".to_string()),
+                                },
+                                None => SymbolKind::Other("type".to_string()),
+                            };
+                            symbols.push(SymbolInsert {
+                                name: name.to_string(),
+                                kind: kind.to_string(),
+                                file_path: file_path.to_string(),
+                                line: child.start_position().row as i64 + 1,
+                                col: child.start_position().column as i64 + 1,
+                                language: detect_lang_from_file(file_path),
+                                doc: None,
+                                embedding: None,
+                            });
                         }
                     }
                 }
@@ -345,22 +341,21 @@ fn extract_relations_from_node(
     let mut relations = Vec::new();
 
     // Detect calls: `foo()` or `self.foo()` patterns
-    if node.kind() == "call_expression" || node.kind() == "field_expression" {
-        if let Some(callee_name) = find_callee_name(node, source) {
-            // Only create relation if the callee is a known symbol
-            if symbol_names.contains(&callee_name) {
-                relations.push(("self".to_string(), callee_name));
-            }
+    if (node.kind() == "call_expression" || node.kind() == "field_expression")
+        && let Some(callee_name) = find_callee_name(node, source)
+    {
+        // Only create relation if the callee is a known symbol
+        if symbol_names.contains(&callee_name) {
+            relations.push(("self".to_string(), callee_name));
         }
     }
 
     // Detect extends/implements: `extends Foo`, `implements Bar`
-    if matches!(node.kind(), "super_class" | "implements_clause" | "implies") {
-        if let Some(parent_name) = find_fn_name(node, source) {
-            if symbol_names.contains(&parent_name) {
-                relations.push(("self".to_string(), parent_name));
-            }
-        }
+    if matches!(node.kind(), "super_class" | "implements_clause" | "implies")
+        && let Some(parent_name) = find_fn_name(node, source)
+        && symbol_names.contains(&parent_name)
+    {
+        relations.push(("self".to_string(), parent_name));
     }
 
     // Recurse into children
@@ -385,10 +380,10 @@ fn extract_relations_from_node(
 fn find_fn_name(node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
     // Common patterns: name is first named child with kind "identifier" or "name"
     for i in 0..node.named_child_count() {
-        if let Some(child) = node.named_child(i) {
-            if matches!(child.kind(), "identifier" | "name" | "type_identifier") {
-                return child.utf8_text(source).ok().map(|s| s.to_string());
-            }
+        if let Some(child) = node.named_child(i)
+            && matches!(child.kind(), "identifier" | "name" | "type_identifier")
+        {
+            return child.utf8_text(source).ok().map(|s| s.to_string());
         }
     }
     None
@@ -396,13 +391,12 @@ fn find_fn_name(node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
 
 fn find_ident_name(node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
     for i in 0..node.child_count() {
-        if let Some(child) = node.child(i) {
-            if child.kind() == "identifier"
+        if let Some(child) = node.child(i)
+            && (child.kind() == "identifier"
                 || child.kind() == "name"
-                || child.kind() == "type_identifier"
-            {
-                return child.utf8_text(source).ok().map(|s| s.to_string());
-            }
+                || child.kind() == "type_identifier")
+        {
+            return child.utf8_text(source).ok().map(|s| s.to_string());
         }
     }
     None
@@ -420,13 +414,13 @@ fn find_callee_name(node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
                 // Member expression like: fmt.Sprintf("Hello", name)
                 find_fn_name(&callee, source).or_else(|| {
                     for i in 0..callee.named_child_count() {
-                        if let Some(child) = callee.named_child(i) {
-                            if matches!(
+                        if let Some(child) = callee.named_child(i)
+                            && matches!(
                                 child.kind(),
                                 "property_identifier" | "identifier" | "type_identifier"
-                            ) {
-                                return child.utf8_text(source).ok().map(|s| s.to_string());
-                            }
+                            )
+                        {
+                            return child.utf8_text(source).ok().map(|s| s.to_string());
                         }
                     }
                     None
@@ -438,10 +432,10 @@ fn find_callee_name(node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
         // scoped_identifier like: Config::new(...)
         "scoped_identifier" => {
             // Get the last segment (the actual function/method name)
-            if let Some(last) = node.named_child(node.named_child_count() - 1) {
-                if matches!(last.kind(), "identifier" | "type_identifier") {
-                    return last.utf8_text(source).ok().map(|s| s.to_string());
-                }
+            if let Some(last) = node.named_child(node.named_child_count() - 1)
+                && matches!(last.kind(), "identifier" | "type_identifier")
+            {
+                return last.utf8_text(source).ok().map(|s| s.to_string());
             }
             None
         }
@@ -585,7 +579,7 @@ pub fn run_init(config: InitConfig) -> Result<InitSummary> {
     }
 
     // Deleted: was indexed before but no longer on disk.
-    for (path_str, _) in &previous {
+    for path_str in previous.keys() {
         if !current_paths.contains_key(path_str) {
             let removed = graph.delete_symbols_for_file(path_str)?;
             graph.delete_snapshot(path_str)?;
@@ -632,11 +626,8 @@ pub fn run_init(config: InitConfig) -> Result<InitSummary> {
     // Step 6: Parse again and extract relations (need full context)
     let mut call_pairs: Vec<(String, String)> = Vec::new();
     for file_path in &new_or_modified {
-        match parse_file_for_relations(file_path) {
-            Ok((tree, source)) => {
-                call_pairs.extend(extract_relations(&tree, &source, &symbol_names));
-            }
-            Err(_) => {} // Skip files that fail re-parsing
+        if let Ok((tree, source)) = parse_file_for_relations(file_path) {
+            call_pairs.extend(extract_relations(&tree, &source, &symbol_names));
         }
     }
 
