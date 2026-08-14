@@ -27,11 +27,7 @@ const OPENAI_API_BASE: &str = "https://api.openai.com/v1";
 /// A `/responses` suffix is not expected here (it is appended by callers),
 /// so a trailing `/responses` is trimmed to avoid `.../responses/responses`.
 pub fn resolve_api_base() -> String {
-    const OVERRIDE_VARS: [&str; 3] = [
-        "WVC_OPENAI_API_BASE",
-        "OPENAI_BASE_URL",
-        "OPENAI_API_BASE",
-    ];
+    const OVERRIDE_VARS: [&str; 3] = ["WVC_OPENAI_API_BASE", "OPENAI_BASE_URL", "OPENAI_API_BASE"];
     for var in OVERRIDE_VARS {
         let Ok(raw) = std::env::var(var) else {
             continue;

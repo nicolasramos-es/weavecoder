@@ -2778,9 +2778,11 @@ impl App {
         // Single recovered session that could not get a new terminal: resume it
         // in the current terminal instead of forcing a manual command (#203).
         if spawned == 0 && recovered.len() == 1 && failed.len() == 1 {
-            self.handle_session_picker_current_terminal_selection(&[ResumeTarget::WeavecoderSession {
-                session_id: recovered[0].clone(),
-            }]);
+            self.handle_session_picker_current_terminal_selection(&[
+                ResumeTarget::WeavecoderSession {
+                    session_id: recovered[0].clone(),
+                },
+            ]);
             return;
         }
         if spawned > 0 && failed.is_empty() {

@@ -350,9 +350,7 @@ pub(crate) fn gnome_binding(chord: &KeyChord) -> Option<String> {
 /// The dconf path for wvc's Nth GNOME custom keybinding. Slot-stable so
 /// re-installs overwrite rather than accumulate.
 pub(crate) fn gnome_keybinding_path(index: usize) -> String {
-    format!(
-        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/wvc-launch-{index}/"
-    )
+    format!("/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/wvc-launch-{index}/")
 }
 
 /// One GNOME custom keybinding ready to apply via gsettings.
@@ -886,9 +884,7 @@ mod tests {
         assert!(updated.contains("[services][firefox.desktop]"));
         assert!(updated.contains("_launch=Meta+F"));
         assert_eq!(
-            updated
-                .matches("[services][wvc-launch-0.desktop]")
-                .count(),
+            updated.matches("[services][wvc-launch-0.desktop]").count(),
             1
         );
         assert!(updated.contains("_launch=Meta+;"));

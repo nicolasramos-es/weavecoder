@@ -28,11 +28,10 @@ pub fn parse_file(path: &Path) -> Result<Tree, String> {
         .map(|s| s.to_lowercase())
         .ok_or("file has no extension")?;
 
-    let lang = detect_language(&ext)
-        .ok_or_else(|| format!("unsupported file extension: .{ext}"))?;
+    let lang =
+        detect_language(&ext).ok_or_else(|| format!("unsupported file extension: .{ext}"))?;
 
-    let source = std::fs::read_to_string(path)
-        .map_err(|e| format!("failed to read file: {e}"))?;
+    let source = std::fs::read_to_string(path).map_err(|e| format!("failed to read file: {e}"))?;
 
     parse_str(&source, lang)
 }

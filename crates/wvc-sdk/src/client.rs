@@ -1188,7 +1188,11 @@ fn discover_global_sessions(
     }
 }
 
-fn start_global_child(parent: &WeavecoderClient, control: &Arc<GlobalEventControl>, session_id: String) {
+fn start_global_child(
+    parent: &WeavecoderClient,
+    control: &Arc<GlobalEventControl>,
+    session_id: String,
+) {
     if control
         .children
         .lock()

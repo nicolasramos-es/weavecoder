@@ -547,7 +547,10 @@ mod tests {
         let me: SubscriptionMe = serde_json::from_str(json).expect("parse");
         assert_eq!(me.parsed_tier(), Some(WeavecoderTier::Flagship));
         assert!(me.has_active_paid_plan());
-        assert_eq!(me.manage_url.as_deref(), Some("https://weavecoder.sh/account"));
+        assert_eq!(
+            me.manage_url.as_deref(),
+            Some("https://weavecoder.sh/account")
+        );
     }
 
     #[test]

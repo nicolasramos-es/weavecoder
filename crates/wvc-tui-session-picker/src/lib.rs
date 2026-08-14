@@ -275,7 +275,11 @@ mod tests {
             SessionSource::Weavecoder,
             Some("openai/codex-mini")
         ));
-        assert!(session_is_pi(SessionSource::Weavecoder, Some("pi-main"), None));
+        assert!(session_is_pi(
+            SessionSource::Weavecoder,
+            Some("pi-main"),
+            None
+        ));
         assert!(session_is_pi(
             SessionSource::Weavecoder,
             None,

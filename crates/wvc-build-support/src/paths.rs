@@ -638,10 +638,7 @@ mod tests {
         let cases = [
             (SelfDevBuildTarget::Tui, vec!["-p wvc "]),
             (SelfDevBuildTarget::Desktop2, vec!["-p wvc-desktop2 "]),
-            (
-                SelfDevBuildTarget::All,
-                vec!["-p wvc ", "-p wvc-desktop2 "],
-            ),
+            (SelfDevBuildTarget::All, vec!["-p wvc ", "-p wvc-desktop2 "]),
         ];
         for (target, expected) in cases {
             let command = selfdev_build_command_for_target(repo.path(), target);

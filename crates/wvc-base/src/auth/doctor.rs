@@ -115,10 +115,9 @@ pub fn recommended_actions(
 ) -> Vec<String> {
     let mut actions = Vec::new();
     match assessment.state {
-        AuthState::NotConfigured => actions.push(format!(
-            "Connect it: wvc login --provider {}",
-            provider.id
-        )),
+        AuthState::NotConfigured => {
+            actions.push(format!("Connect it: wvc login --provider {}", provider.id))
+        }
         AuthState::Expired
             if matches!(
                 assessment.refresh_support,

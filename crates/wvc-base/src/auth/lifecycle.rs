@@ -1435,10 +1435,7 @@ mod tests {
                 std::env::var("WVC_RUNTIME_PROVIDER").as_deref(),
                 Ok(runtime)
             );
-            assert_eq!(
-                std::env::var("WVC_ACTIVE_PROVIDER").as_deref(),
-                Ok(active)
-            );
+            assert_eq!(std::env::var("WVC_ACTIVE_PROVIDER").as_deref(), Ok(active));
             assert_eq!(
                 std::env::var("WVC_INITIAL_PROVIDER_EXPLICIT").as_deref(),
                 Ok("1")
@@ -1533,10 +1530,7 @@ mod tests {
                 std::env::var("WVC_RUNTIME_PROVIDER").as_deref(),
                 Ok(runtime)
             );
-            assert_eq!(
-                std::env::var("WVC_ACTIVE_PROVIDER").as_deref(),
-                Ok(active)
-            );
+            assert_eq!(std::env::var("WVC_ACTIVE_PROVIDER").as_deref(), Ok(active));
             assert_eq!(
                 std::env::var("WVC_INITIAL_PROVIDER_EXPLICIT").as_deref(),
                 Ok("1")

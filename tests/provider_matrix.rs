@@ -323,9 +323,7 @@ fn assert_runtime_profile_env(profile: OpenAiCompatibleProfile, context: &str) {
         "runtime api base mismatch for {context}"
     );
     assert_eq!(
-        std::env::var("WVC_OPENROUTER_API_KEY_NAME")
-            .ok()
-            .as_deref(),
+        std::env::var("WVC_OPENROUTER_API_KEY_NAME").ok().as_deref(),
         Some(resolved.api_key_env.as_str()),
         "runtime api key env mismatch for {context}"
     );
@@ -372,10 +370,7 @@ fn assert_no_compatible_runtime_profile_env(context: &str) {
 }
 
 fn assert_no_active_compatible_profile_lock(context: &str) {
-    for key in [
-        "WVC_PROVIDER_PROFILE_ACTIVE",
-        "WVC_PROVIDER_PROFILE_NAME",
-    ] {
+    for key in ["WVC_PROVIDER_PROFILE_ACTIVE", "WVC_PROVIDER_PROFILE_NAME"] {
         assert!(
             std::env::var_os(key).is_none(),
             "{key} should not stay locked for {context}; value={:?}",
@@ -704,9 +699,7 @@ fn provider_matrix_openai_compatible_auth_state_space_material_states_preserve_l
                         "runtime api base mismatch for {state_label}"
                     );
                     assert_eq!(
-                        std::env::var("WVC_OPENROUTER_API_KEY_NAME")
-                            .ok()
-                            .as_deref(),
+                        std::env::var("WVC_OPENROUTER_API_KEY_NAME").ok().as_deref(),
                         Some(resolved.api_key_env.as_str()),
                         "runtime api key env mismatch for {state_label}"
                     );
@@ -786,9 +779,7 @@ fn provider_matrix_env_credentials_activate_openrouter_runtime() -> Result<()> {
             Some(resolved.api_base.as_str())
         );
         assert_eq!(
-            std::env::var("WVC_OPENROUTER_API_KEY_NAME")
-                .ok()
-                .as_deref(),
+            std::env::var("WVC_OPENROUTER_API_KEY_NAME").ok().as_deref(),
             Some(resolved.api_key_env.as_str())
         );
         assert_eq!(
@@ -880,9 +871,7 @@ fn provider_matrix_custom_compat_overrides_flow_into_runtime() -> Result<()> {
         Some("https://api.groq.com/openai/v1")
     );
     assert_eq!(
-        std::env::var("WVC_OPENROUTER_API_KEY_NAME")
-            .ok()
-            .as_deref(),
+        std::env::var("WVC_OPENROUTER_API_KEY_NAME").ok().as_deref(),
         Some("GROQ_API_KEY")
     );
     assert_eq!(

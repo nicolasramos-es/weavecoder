@@ -832,10 +832,7 @@ fn max_tokens_env_overrides_profile_default() {
 fn test_configured_api_base_accepts_https() {
     let _lock = ENV_LOCK.lock();
     let prev = std::env::var("WVC_OPENROUTER_API_BASE").ok();
-    wvc_base::env::set_var(
-        "WVC_OPENROUTER_API_BASE",
-        "https://api.groq.com/openai/v1/",
-    );
+    wvc_base::env::set_var("WVC_OPENROUTER_API_BASE", "https://api.groq.com/openai/v1/");
     assert_eq!(configured_api_base(), "https://api.groq.com/openai/v1");
     if let Some(value) = prev {
         wvc_base::env::set_var("WVC_OPENROUTER_API_BASE", value);
@@ -1400,8 +1397,8 @@ async fn live_openrouter_unified_reasoning_smoke() -> Result<()> {
     };
 
     let models = live_openrouter_models();
-    let effort = std::env::var("WVC_LIVE_OPENROUTER_REASONING_EFFORT")
-        .unwrap_or_else(|_| "low".to_string());
+    let effort =
+        std::env::var("WVC_LIVE_OPENROUTER_REASONING_EFFORT").unwrap_or_else(|_| "low".to_string());
     let max_tokens = std::env::var("WVC_LIVE_OPENROUTER_MAX_TOKENS")
         .ok()
         .and_then(|value| value.trim().parse::<u32>().ok())

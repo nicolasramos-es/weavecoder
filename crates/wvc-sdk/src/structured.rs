@@ -5,7 +5,7 @@
 //! bounded number of correction opportunities when parsing or validation
 //! fails.
 
-use crate::{ApiEvent, Error, WeavecoderClient, RunOptions, ToolCall, TurnResult, Usage};
+use crate::{ApiEvent, Error, RunOptions, ToolCall, TurnResult, Usage, WeavecoderClient};
 use jsonschema::Validator;
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};

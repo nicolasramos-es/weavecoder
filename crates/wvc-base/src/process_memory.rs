@@ -655,11 +655,7 @@ pub fn release_retained_heap_if_excessive(
 /// (in MiB), falling back to [`DEFAULT_RETENTION_TRIM_THRESHOLD_BYTES`].
 /// `0` disables retention-triggered trimming (returns `u64::MAX`).
 pub fn retention_trim_threshold_bytes() -> u64 {
-    parse_retention_trim_threshold(
-        std::env::var("WVC_HEAP_RETENTION_TRIM_MB")
-            .ok()
-            .as_deref(),
-    )
+    parse_retention_trim_threshold(std::env::var("WVC_HEAP_RETENTION_TRIM_MB").ok().as_deref())
 }
 
 fn parse_retention_trim_threshold(value: Option<&str>) -> u64 {

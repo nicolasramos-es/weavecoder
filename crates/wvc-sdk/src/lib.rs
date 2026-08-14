@@ -32,8 +32,8 @@ mod parity_tests;
 
 pub use client::{
     ConnectOptions, EventStream, FileContent, FileStatus, GlobalEventStream, GlobalEventsOptions,
-    WeavecoderClient, RunOptions, RuntimeInfo, SearchTextOptions, ToolCall, Transport, TurnResult,
-    UnixTransport, Usage,
+    RunOptions, RuntimeInfo, SearchTextOptions, ToolCall, Transport, TurnResult, UnixTransport,
+    Usage, WeavecoderClient,
 };
 pub use diagnostics::{SocketState, Stage, describe_disconnect, explain, human_duration};
 pub use errors::{Error, ErrorKind, Result};

@@ -322,8 +322,7 @@ fn the_ledger_only_names_real_daemon_requests() {
 
 /// Variant names of the daemon's wire `Request` enum.
 fn protocol_request_variants() -> Option<BTreeSet<String>> {
-    let path =
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../wvc-protocol/src/wire.rs");
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../wvc-protocol/src/wire.rs");
     let source = std::fs::read_to_string(path).ok()?;
     let start = source.find("pub enum Request {")?;
     let body = &source[start..];

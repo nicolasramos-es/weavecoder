@@ -1711,9 +1711,7 @@ impl App {
             .unwrap_or_else(|| std::path::PathBuf::from("."));
         match super::spawn_fresh_session_in_new_terminal(&cwd) {
             Ok(true) => self.set_status_notice("↗ New terminal opened"),
-            Ok(false) => {
-                self.set_status_notice("No supported terminal found; run `wvc` manually")
-            }
+            Ok(false) => self.set_status_notice("No supported terminal found; run `wvc` manually"),
             Err(error) => self.set_status_notice(format!("New terminal failed: {}", error)),
         }
     }

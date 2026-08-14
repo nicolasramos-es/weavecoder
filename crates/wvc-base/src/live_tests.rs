@@ -1863,7 +1863,9 @@ pub fn format_strict_live_provider_model_coverage_summary(
         summary.coverage_percent,
         stage_count,
     ));
-    out.push_str("A pair is READY only after every stage below passes in a real Weavecoder runtime.\n");
+    out.push_str(
+        "A pair is READY only after every stage below passes in a real Weavecoder runtime.\n",
+    );
     out.push_str("Anything short of READY is work-in-progress, not necessarily broken -- the\n");
     out.push_str("list below shows exactly how far each pair got and what to run next.\n\n");
 
@@ -2145,9 +2147,7 @@ pub fn format_strict_live_provider_model_coverage_summary(
     out.push_str("Next steps:\n");
     out.push_str("  Drive any OpenAI-compatible pair through the pipeline (records evidence):\n");
     out.push_str("    wvc provider-doctor <provider> --tier full   # spends balance\n");
-    out.push_str(
-        "    wvc provider-doctor <provider> --tier offline # wiring only, no key/spend\n",
-    );
+    out.push_str("    wvc provider-doctor <provider> --tier offline # wiring only, no key/spend\n");
     out.push_str("  See docs/PROVIDER_DOCTOR.md for the full guide.\n");
     out.push_str(&format!("\nLedger: {}\n", summary.coverage_source));
 

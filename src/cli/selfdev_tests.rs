@@ -260,10 +260,7 @@ fn test_launcher_dir_uses_trimmed_install_dir_before_wvc_home() {
     let (_lock, _env, temp) = isolated_launcher_env();
     let install_dir = temp.path().join("install bin");
     let wvc_home = temp.path().join("wvc-home");
-    set_var(
-        "WVC_INSTALL_DIR",
-        format!("  {}  ", install_dir.display()),
-    );
+    set_var("WVC_INSTALL_DIR", format!("  {}  ", install_dir.display()));
     set_var("WVC_HOME", &wvc_home);
 
     assert_eq!(build::launcher_dir().expect("launcher dir"), install_dir);
@@ -322,11 +319,7 @@ fn test_selfdev_build_command_can_target_all() {
     let build =
         build::selfdev_build_command_for_target(temp.path(), build::SelfDevBuildTarget::All);
     assert!(build.display.contains("-p wvc --bin wvc"));
-    assert!(
-        build
-            .display
-            .contains("-p wvc-desktop2 --bin wvc-desktop2")
-    );
+    assert!(build.display.contains("-p wvc-desktop2 --bin wvc-desktop2"));
 }
 
 #[test]
@@ -344,9 +337,5 @@ fn test_selfdev_build_command_can_target_desktop_only() {
     let build =
         build::selfdev_build_command_for_target(temp.path(), build::SelfDevBuildTarget::Desktop2);
     assert!(!build.display.contains("-p wvc --bin wvc"));
-    assert!(
-        build
-            .display
-            .contains("-p wvc-desktop2 --bin wvc-desktop2")
-    );
+    assert!(build.display.contains("-p wvc-desktop2 --bin wvc-desktop2"));
 }

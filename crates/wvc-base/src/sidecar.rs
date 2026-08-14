@@ -1301,8 +1301,7 @@ mod tests {
     #[test]
     fn test_anthropic_sidecar_prefers_api_key_respects_pinned_mode() {
         // Pinning the runtime to API-key mode must make the sidecar prefer the key.
-        let _g =
-            EnvVarGuard::set_path("WVC_RUNTIME_PROVIDER", std::path::Path::new("claude-api"));
+        let _g = EnvVarGuard::set_path("WVC_RUNTIME_PROVIDER", std::path::Path::new("claude-api"));
         assert!(
             anthropic_sidecar_prefers_api_key(),
             "claude-api runtime => prefer API key"

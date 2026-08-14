@@ -864,10 +864,7 @@ fn save_openai_compat_setting(app: &mut App, setting: OpenAiCompatSetting, value
                 ));
                 return;
             }
-            (
-                "WVC_OPENAI_COMPAT_ENV_FILE",
-                value.map(ToString::to_string),
-            )
+            ("WVC_OPENAI_COMPAT_ENV_FILE", value.map(ToString::to_string))
         }
         OpenAiCompatSetting::DefaultModel => (
             "WVC_OPENAI_COMPAT_DEFAULT_MODEL",

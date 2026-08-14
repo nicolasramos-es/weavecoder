@@ -113,7 +113,8 @@ impl App {
             } else {
                 ""
             };
-            let tier_suffix = if model.min_tier == crate::subscription_catalog::WeavecoderTier::Plus {
+            let tier_suffix = if model.min_tier == crate::subscription_catalog::WeavecoderTier::Plus
+            {
                 String::new()
             } else {
                 format!(" [{}]", model.min_tier.display_name())
@@ -130,7 +131,10 @@ impl App {
         }
 
         message.push_str("\nTiers\n\n");
-        for tier in crate::subscription_catalog::WeavecoderTier::ALL.iter().copied() {
+        for tier in crate::subscription_catalog::WeavecoderTier::ALL
+            .iter()
+            .copied()
+        {
             message.push_str(&format!(
                 "  - {} - ${}/mo retail, about ${:.2} usable inference budget\n",
                 tier.display_name(),
@@ -2340,8 +2344,7 @@ impl App {
                         let model_hint = effective_default_model
                             .map(|m| format!("\nSuggested default model: {}", m))
                             .unwrap_or_default();
-                        let guidance = if key_name == crate::subscription_catalog::WVC_API_KEY_ENV
-                        {
+                        let guidance = if key_name == crate::subscription_catalog::WVC_API_KEY_ENV {
                             format!(
                                 "Use /login wvc to access curated models via your router. If the model list looks stale, run /refresh-model-list.\nDocs: {}",
                                 docs_url

@@ -48,9 +48,7 @@ pub fn requested() -> bool {
 }
 
 fn marker_path() -> Option<std::path::PathBuf> {
-    Some(
-        std::path::PathBuf::from(std::env::var_os("HOME")?).join(".wvc/selfdev/desktop2-current"),
-    )
+    Some(std::path::PathBuf::from(std::env::var_os("HOME")?).join(".wvc/selfdev/desktop2-current"))
 }
 
 /// Start the activated build with this process's environment and working

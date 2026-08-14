@@ -1,7 +1,7 @@
 //! Unit tests for language detection and parsing.
 
-use crate::{detect_language, parse_str, Language};
 use crate::language::detect_language_enum;
+use crate::{Language, detect_language, parse_str};
 
 // ── Language detection tests ──────────────────────────────────────────
 
@@ -87,7 +87,10 @@ fn test_parse_typescript_snippet() {
     assert!(tree.is_ok(), "TypeScript parsing should succeed");
     let tree = tree.unwrap();
     let root = tree.root_node();
-    assert!(!root.has_error(), "TypeScript parse tree should have no errors");
+    assert!(
+        !root.has_error(),
+        "TypeScript parse tree should have no errors"
+    );
 }
 
 #[test]
