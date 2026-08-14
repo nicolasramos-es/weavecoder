@@ -434,22 +434,22 @@ impl<'a> MathLayoutEngine<'a> {
             && let Some(ch) = text.chars().next()
             && let Some(glyph) = self.face.display_variant(ch)
         {
-                    let size = context.size(&self.constants);
-                    let axis = self.constants.axis_height * size;
-                    let half = (glyph.ascent - glyph.descent) / 2.0 * size;
-                    let shift = half - axis;
-                    let boxed = LayoutBox {
-                        width: glyph.advance * size,
-                        ascent: glyph.ascent * size - shift,
-                        descent: glyph.descent * size + shift,
-                        items: vec![Item::Glyph(PlacedGlyph {
-                            id: glyph.id,
-                            x: 0.0,
-                            y: shift,
-                            size,
-                        })],
-                    };
-                    return Atom { class, boxed };
+            let size = context.size(&self.constants);
+            let axis = self.constants.axis_height * size;
+            let half = (glyph.ascent - glyph.descent) / 2.0 * size;
+            let shift = half - axis;
+            let boxed = LayoutBox {
+                width: glyph.advance * size,
+                ascent: glyph.ascent * size - shift,
+                descent: glyph.descent * size + shift,
+                items: vec![Item::Glyph(PlacedGlyph {
+                    id: glyph.id,
+                    x: 0.0,
+                    y: shift,
+                    size,
+                })],
+            };
+            return Atom { class, boxed };
         }
         Atom {
             class,
