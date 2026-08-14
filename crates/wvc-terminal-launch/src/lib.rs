@@ -231,7 +231,7 @@ fn detected_resume_terminal_with_client_env(
         }
         let term_program = terminal_env_value(client_terminal_env, "TERM_PROGRAM")
             .map(|value| value.to_ascii_lowercase());
-        return match term_program.as_deref() {
+        match term_program.as_deref() {
             Some("ghostty") => Some("ghostty".to_string()),
             Some("kitty") => Some("kitty".to_string()),
             Some("wezterm") => Some("wezterm".to_string()),
@@ -239,7 +239,7 @@ fn detected_resume_terminal_with_client_env(
             Some("iterm.app") | Some("iterm2") => Some("iterm2".to_string()),
             Some("apple_terminal") | Some("terminal") => Some("terminal".to_string()),
             _ => None,
-        };
+        }
     }
 
     #[cfg(not(target_os = "macos"))]
