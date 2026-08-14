@@ -1,0 +1,28 @@
+{
+  "total": 63,
+  "tracked_files": {
+    "crates/wvc-app-core/src/session_launch.rs": 1,
+    "crates/wvc-app-core/src/tool/communicate.rs": 1,
+    "crates/wvc-app-core/src/tool/computer/win.rs": 3,
+    "crates/wvc-base/src/auth/oauth.rs": 3,
+    "crates/wvc-base/src/hooks.rs": 1,
+    "crates/wvc-desktop2/src/cli.rs": 1,
+    "crates/wvc-desktop2/src/main.rs": 2,
+    "crates/wvc-desktop2/src/scroll_bench.rs": 1,
+    "crates/wvc-desktop2/src/states.rs": 1,
+    "crates/wvc-desktop2/src/transcript.rs": 1,
+    "crates/wvc-harness-api/examples/harness_repl.rs": 15,
+    "crates/wvc-plan/src/dag/ops.rs": 1,
+    "crates/wvc-provider-doctor/src/lifecycle_driver.rs": 2,
+    "crates/wvc-render-core/src/math.rs": 4,
+    "crates/wvc-render-core/src/preprocess.rs": 2,
+    "crates/wvc-telemetry-core/src/lib.rs": 2,
+    "crates/wvc-terminal-launch/src/lib.rs": 1,
+    "crates/wvc-tui-core/src/stream_buffer.rs": 3,
+    "crates/wvc-tui-style/examples/light_bench.rs": 1,
+    "crates/wvc-tui/src/tui/session_picker.rs": 2,
+    "src/bin/memory_recall_bench.rs": 14,
+    "src/cli/commands/menubar.rs": 1
+  },
+  "version": 1
+}

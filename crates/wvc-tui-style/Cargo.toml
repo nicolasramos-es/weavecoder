@@ -1,0 +1,9 @@
+[package]
+name = "wvc-tui-style"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+wvc-logging = { path = "../wvc-logging" }
+ratatui = "0.30"

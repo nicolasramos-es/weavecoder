@@ -1,0 +1,21 @@
+{
+  "total": 16,
+  "files": {
+    "crates/wvc-app-core/src/lib.rs": 1,
+    "crates/wvc-app-core/src/setup_hints.rs": 1,
+    "crates/wvc-base/src/env.rs": 1,
+    "crates/wvc-base/src/id.rs": 1,
+    "crates/wvc-base/src/lib.rs": 1,
+    "crates/wvc-base/src/logging.rs": 1,
+    "crates/wvc-base/src/memory_types.rs": 1,
+    "crates/wvc-base/src/plan.rs": 1,
+    "crates/wvc-base/src/protocol.rs": 1,
+    "crates/wvc-base/src/provider_catalog.rs": 1,
+    "crates/wvc-base/src/stdin_detect.rs": 1,
+    "crates/wvc-base/src/storage.rs": 1,
+    "crates/wvc-base/src/util.rs": 1,
+    "crates/wvc-tui/src/lib.rs": 1,
+    "crates/wvc-tui/src/tui/mod.rs": 1,
+    "src/lib.rs": 1
+  }
+}
