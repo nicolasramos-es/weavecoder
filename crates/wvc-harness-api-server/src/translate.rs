@@ -10,6 +10,9 @@ use wvc_harness_api::{
     ApiEvent, ErrorCode, HistoryMessage, ModelRouteInfo, ServerFrame, SessionInfo, TextMatch,
 };
 
+type SessionFileStatus = (bool, String, Option<u64>, Option<u64>);
+type SessionFileStatusResult = Result<SessionFileStatus, (ErrorCode, String)>;
+
 /// Default number of messages a `peek_session` returns. A preview is a glance,
 /// so this is a tail rather than a transcript: enough to recognise which
 /// conversation it is, few enough that peeking a dozen sessions stays cheap.
@@ -1738,7 +1741,7 @@ impl BridgeState {
     fn session_file_status(
         session_id: &str,
         relative: &str,
-    ) -> Result<(bool, String, Option<u64>, Option<u64>), (ErrorCode, String)> {
+    ) -> SessionFileStatusResult {
         let path = Self::safe_session_path(session_id, relative)?;
         let Ok(meta) = path.metadata() else {
             return Ok((false, "missing".into(), None, None));

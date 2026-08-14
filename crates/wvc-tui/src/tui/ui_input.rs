@@ -2552,7 +2552,7 @@ fn right_fact_cell_is_blank(cell: &ratatui::buffer::Cell) -> bool {
     cell.symbol().trim().is_empty()
         && cell.bg == Color::Reset
         && cell.modifier.is_empty()
-        && !cell.skip
+        && cell.diff_option != ratatui::buffer::CellDiffOption::Skip
 }
 
 pub(super) fn draw_input(
