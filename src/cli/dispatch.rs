@@ -16,11 +16,12 @@ use crate::{
 };
 
 use super::{
-    account, acp, code_search, commands, debug, hot_exec, login, output, provider_init, selfdev,
-    terminal, tui_launch,
+    account, acp, commands, debug, hot_exec, login, output, provider_init, selfdev, terminal,
+    tui_launch,
 };
 use provider_init::ProviderChoice;
 
+#[cfg(any(target_os = "linux", test))]
 fn is_file_controlled_debug_client() -> bool {
     std::env::var_os("WVC_DEBUG_CMD_PATH").is_some()
 }
