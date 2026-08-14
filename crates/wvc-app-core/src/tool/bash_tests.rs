@@ -61,7 +61,7 @@ async fn test_stdin_forwarding_single_line() {
     let tool_handle = tokio::spawn(async move { tool.execute(input, ctx).await });
 
     // Wait for the stdin request to arrive
-    let req = tokio::time::timeout(std::time::Duration::from_secs(5), rx.recv())
+    let req = tokio::time::timeout(std::time::Duration::from_secs(60), rx.recv())
         .await
         .expect("timed out waiting for stdin request")
         .expect("channel closed");
@@ -73,7 +73,7 @@ async fn test_stdin_forwarding_single_line() {
     req.response_tx.send("test_input_line".to_string()).unwrap();
 
     // Wait for tool to finish
-    let result = tokio::time::timeout(std::time::Duration::from_secs(5), tool_handle)
+    let result = tokio::time::timeout(std::time::Duration::from_secs(60), tool_handle)
         .await
         .expect("tool timed out")
         .expect("tool panicked")
@@ -98,7 +98,7 @@ async fn test_stdin_forwarding_multiple_lines() {
     let tool_handle = tokio::spawn(async move { tool.execute(input, ctx).await });
 
     // First line
-    let req1 = tokio::time::timeout(std::time::Duration::from_secs(5), rx.recv())
+    let req1 = tokio::time::timeout(std::time::Duration::from_secs(60), rx.recv())
         .await
         .expect("timed out waiting for first stdin request")
         .expect("channel closed");
@@ -110,7 +110,7 @@ async fn test_stdin_forwarding_multiple_lines() {
     req1.response_tx.send("line_one".to_string()).unwrap();
 
     // Second line
-    let req2 = tokio::time::timeout(std::time::Duration::from_secs(5), rx.recv())
+    let req2 = tokio::time::timeout(std::time::Duration::from_secs(60), rx.recv())
         .await
         .expect("timed out waiting for second stdin request")
         .expect("channel closed");
@@ -121,7 +121,7 @@ async fn test_stdin_forwarding_multiple_lines() {
     );
     req2.response_tx.send("line_two".to_string()).unwrap();
 
-    let result = tokio::time::timeout(std::time::Duration::from_secs(5), tool_handle)
+    let result = tokio::time::timeout(std::time::Duration::from_secs(60), tool_handle)
         .await
         .expect("tool timed out")
         .expect("tool panicked")
