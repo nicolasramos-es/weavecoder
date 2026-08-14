@@ -172,11 +172,11 @@ pub fn launch_instance(options: &LaunchOptions) -> Result<LaunchedInstance> {
             remove_ephemeral_home(&wvc_home, Duration::ZERO);
         }
     };
-    if options.inherit_logins {
-        if let Err(error) = inherit_credentials(&user_wvc_home(), &wvc_home) {
-            cleanup_on_error();
-            return Err(error);
-        }
+    if options.inherit_logins
+        && let Err(error) = inherit_credentials(&user_wvc_home(), &wvc_home)
+    {
+        cleanup_on_error();
+        return Err(error);
     }
 
     let binary = options
@@ -613,7 +613,7 @@ fn home_dir() -> PathBuf {
 pub fn user_app_config_dir() -> PathBuf {
     #[cfg(target_os = "macos")]
     {
-        return home_dir().join("Library/Application Support/wvc");
+        home_dir().join("Library/Application Support/wvc")
     }
     #[cfg(target_os = "windows")]
     {

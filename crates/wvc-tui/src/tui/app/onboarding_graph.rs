@@ -1,5 +1,10 @@
 //! The onboarding state-space graph, as data.
 //!
+//! The graph vocabulary, invariant checks, keystroke minimizers, and rendering
+//! props are architecture written ahead of the flows that consume every part;
+//! several items are exercised by tests but not yet wired to a live flow.
+#![allow(dead_code)]
+//!
 //! Onboarding is not one flow: it is a product of independent state spaces (UI
 //! phase x per-provider credential state x environment capability x import
 //! candidates). Historically only the UI phase was explicit, so cross-axis bugs
