@@ -934,9 +934,9 @@ async fn test_system_prompt_no_claude_code_identity() -> Result<()> {
         identity_portion
     );
 
-    // Should identify as wvc
+    // Should identify as wvc/Weavecoder
     assert!(
-        lower_identity.contains("wvc"),
+        lower_identity.contains("wvc") || lower_identity.contains("weavecoder"),
         "System prompt should identify as wvc. Found: {}",
         identity_portion
     );
