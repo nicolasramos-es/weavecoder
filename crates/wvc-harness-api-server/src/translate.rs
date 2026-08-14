@@ -1738,10 +1738,7 @@ impl BridgeState {
         Ok(matches)
     }
 
-    fn session_file_status(
-        session_id: &str,
-        relative: &str,
-    ) -> SessionFileStatusResult {
+    fn session_file_status(session_id: &str, relative: &str) -> SessionFileStatusResult {
         let path = Self::safe_session_path(session_id, relative)?;
         let Ok(meta) = path.metadata() else {
             return Ok((false, "missing".into(), None, None));
