@@ -141,8 +141,10 @@ fn test_list_symbols_filter_kind() {
         .insert_symbol(make_symbol("MyClass", "class", "src/b.rs", 2))
         .unwrap();
 
-    let mut query = SymbolQuery::default();
-    query.kind = Some("function".to_string());
+    let query = SymbolQuery {
+        kind: Some("function".to_string()),
+        ..Default::default()
+    };
     let results = graph.list_symbols(query).unwrap();
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].name, "func");
@@ -158,8 +160,10 @@ fn test_list_symbols_filter_file() {
         .insert_symbol(make_symbol("b", "function", "src/b.rs", 2))
         .unwrap();
 
-    let mut query = SymbolQuery::default();
-    query.file_path = Some("src/a.rs".to_string());
+    let query = SymbolQuery {
+        file_path: Some("src/a.rs".to_string()),
+        ..Default::default()
+    };
     let results = graph.list_symbols(query).unwrap();
     assert_eq!(results.len(), 1);
 }
@@ -178,8 +182,10 @@ fn test_list_symbols_limit() {
             .unwrap();
     }
 
-    let mut query = SymbolQuery::default();
-    query.limit = Some(3);
+    let query = SymbolQuery {
+        limit: Some(3),
+        ..Default::default()
+    };
     let results = graph.list_symbols(query).unwrap();
     assert_eq!(results.len(), 3);
 }
@@ -405,7 +411,7 @@ fn test_batch_insert() {
 #[test]
 fn test_symbol_with_embedding() {
     let mut graph = CodeGraph::open_memory().unwrap();
-    let embedding = vec![0.1f32, 0.2, 0.3, 0.4, 0.5];
+    let embedding = [0.1f32, 0.2, 0.3, 0.4, 0.5];
     let bytes: Vec<u8> = unsafe {
         std::slice::from_raw_parts(
             embedding.as_ptr() as *const u8,

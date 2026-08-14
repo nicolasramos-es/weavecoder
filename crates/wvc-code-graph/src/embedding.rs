@@ -39,7 +39,7 @@ pub fn serialize_embedding(vec: &[f32]) -> Vec<u8> {
 /// Deserialize a little-endian byte slice back to `Vec<f32>`.
 /// Accepts any multiple-of-4 byte length; returns None if not divisible by 4.
 pub fn deserialize_embedding(bytes: &[u8]) -> Option<Vec<f32>> {
-    if bytes.is_empty() || bytes.len() % 4 != 0 {
+    if bytes.is_empty() || !bytes.len().is_multiple_of(4) {
         return None;
     }
     let floats: Vec<f32> = bytes
