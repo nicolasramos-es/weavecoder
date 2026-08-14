@@ -340,10 +340,8 @@ mod tests {
         assert!(cmd.contains("'/usr/local/bin/wvc' '--resume' 'session_fox_123_abc';"));
 
         // Single quotes in args must be escaped, not break out of quoting.
-        let cmd = super::paused_wvc_shell_command_with_args(
-            "/usr/local/bin/wvc",
-            &["it's".to_string()],
-        );
+        let cmd =
+            super::paused_wvc_shell_command_with_args("/usr/local/bin/wvc", &["it's".to_string()]);
         assert!(cmd.contains(r#"'it'\''s'"#));
 
         // No args matches the plain command.

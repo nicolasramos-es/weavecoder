@@ -125,10 +125,7 @@ fn full_and_fast_auth_status_match_for_shared_probe_fields() {
     crate::env::set_var("WVC_HOME", temp.path().join("wvc-home"));
     crate::env::set_var("XDG_CONFIG_HOME", &xdg);
     crate::env::set_var("HOME", &home);
-    crate::env::set_var(
-        crate::subscription_catalog::WVC_API_KEY_ENV,
-        "wvc-test-key",
-    );
+    crate::env::set_var(crate::subscription_catalog::WVC_API_KEY_ENV, "wvc-test-key");
     crate::env::set_var("ANTHROPIC_API_KEY", "anthropic-test-key");
     crate::env::set_var("OPENAI_API_KEY", "openai-test-key");
     crate::env::set_var("OPENROUTER_API_KEY", "openrouter-test-key");

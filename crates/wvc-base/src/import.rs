@@ -602,7 +602,9 @@ pub fn import_session(session_id: &str) -> Result<Session> {
 
 pub fn imported_session_id_for_target(target: &wvc_session_types::ResumeTarget) -> Option<String> {
     match target {
-        wvc_session_types::ResumeTarget::WeavecoderSession { session_id } => Some(session_id.clone()),
+        wvc_session_types::ResumeTarget::WeavecoderSession { session_id } => {
+            Some(session_id.clone())
+        }
         wvc_session_types::ResumeTarget::ClaudeCodeSession { session_id, .. } => {
             Some(imported_claude_code_session_id(session_id))
         }

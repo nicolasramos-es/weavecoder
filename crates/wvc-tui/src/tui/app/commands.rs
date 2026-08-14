@@ -1195,7 +1195,8 @@ Weavecoder will ask for the SSH target, then use your system SSH client for auth
                     .to_string(),
             );
             lines.push("".to_string());
-            lines.push("Security: Weavecoder stores targets only, never SSH passwords.".to_string());
+            lines
+                .push("Security: Weavecoder stores targets only, never SSH passwords.".to_string());
             app.push_display_message(DisplayMessage::system(lines.join("\n")));
         }
         Err(error) => app.push_display_message(DisplayMessage::error(format!(

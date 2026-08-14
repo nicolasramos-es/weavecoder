@@ -375,10 +375,7 @@ mod tests {
             }
         }
         let reset = EnvReset(vec![
-            (
-                "WVC_HOOK_PRE_TOOL",
-                std::env::var_os("WVC_HOOK_PRE_TOOL"),
-            ),
+            ("WVC_HOOK_PRE_TOOL", std::env::var_os("WVC_HOOK_PRE_TOOL")),
             (
                 "WVC_HOOK_PRE_TOOL_TIMEOUT_MS",
                 std::env::var_os("WVC_HOOK_PRE_TOOL_TIMEOUT_MS"),

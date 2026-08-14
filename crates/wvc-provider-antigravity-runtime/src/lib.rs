@@ -81,8 +81,7 @@ impl AntigravityProvider {
     }
 
     pub fn new() -> Self {
-        let model =
-            std::env::var("WVC_ANTIGRAVITY_MODEL").unwrap_or_else(|_| DEFAULT_MODEL.into());
+        let model = std::env::var("WVC_ANTIGRAVITY_MODEL").unwrap_or_else(|_| DEFAULT_MODEL.into());
 
         let provider = Self {
             client: wvc_provider_core::shared_http_client(),

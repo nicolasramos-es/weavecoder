@@ -375,10 +375,7 @@ pub(super) fn draw_help_overlay(frame: &mut Frame, area: Rect, scroll: usize, ap
         "/subscription",
         "Inspect wvc subscription scaffold",
     ));
-    lines.push(help_entry(
-        "/subscribe",
-        "Why and how to subscribe to wvc",
-    ));
+    lines.push(help_entry("/subscribe", "Why and how to subscribe to wvc"));
 
     lines.push(Line::from(""));
     lines.push(separator());
@@ -604,10 +601,7 @@ pub(super) fn draw_help_overlay(frame: &mut Frame, area: Rect, scroll: usize, ap
         lines.push(key_entry(&label, "Open the /resume session picker"));
     }
     if let Some(label) = crate::tui::keybind::load_new_terminal_key().label {
-        lines.push(key_entry(
-            &label,
-            "Spawn new wvc session in a new terminal",
-        ));
+        lines.push(key_entry(&label, "Spawn new wvc session in a new terminal"));
     }
 
     lines.push(Line::from(""));

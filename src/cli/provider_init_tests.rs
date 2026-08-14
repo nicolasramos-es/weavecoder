@@ -576,9 +576,7 @@ fn apply_login_provider_profile_env_keeps_an_explicit_named_profile() {
     apply_login_provider_profile_env(provider_catalog::OPENCODE_GO_LOGIN_PROVIDER);
 
     assert_eq!(
-        std::env::var("WVC_NAMED_PROVIDER_PROFILE")
-            .ok()
-            .as_deref(),
+        std::env::var("WVC_NAMED_PROVIDER_PROFILE").ok().as_deref(),
         Some("company-gateway"),
         "explicit named profile must survive the auth-test probe setup"
     );
@@ -628,9 +626,7 @@ fn apply_login_provider_profile_env_preserves_compatible_profile_for_auto_spawn(
         Some("https://opencode.ai/zen/go/v1")
     );
     assert_eq!(
-        std::env::var("WVC_OPENROUTER_API_KEY_NAME")
-            .ok()
-            .as_deref(),
+        std::env::var("WVC_OPENROUTER_API_KEY_NAME").ok().as_deref(),
         Some("OPENCODE_GO_API_KEY")
     );
     assert_eq!(
@@ -638,9 +634,7 @@ fn apply_login_provider_profile_env_preserves_compatible_profile_for_auto_spawn(
         Some("opencode-go.env")
     );
     assert_eq!(
-        std::env::var("WVC_PROVIDER_PROFILE_ACTIVE")
-            .ok()
-            .as_deref(),
+        std::env::var("WVC_PROVIDER_PROFILE_ACTIVE").ok().as_deref(),
         Some("1")
     );
 
@@ -648,9 +642,7 @@ fn apply_login_provider_profile_env_preserves_compatible_profile_for_auto_spawn(
     // active marker present, auto init must not erase the selected profile env.
     provider_catalog::apply_openai_compatible_profile_env(None);
     assert_eq!(
-        std::env::var("WVC_OPENROUTER_API_KEY_NAME")
-            .ok()
-            .as_deref(),
+        std::env::var("WVC_OPENROUTER_API_KEY_NAME").ok().as_deref(),
         Some("OPENCODE_GO_API_KEY")
     );
 
@@ -658,15 +650,11 @@ fn apply_login_provider_profile_env_preserves_compatible_profile_for_auto_spawn(
     // still replace the active profile instead of being blocked by the marker.
     apply_login_provider_profile_env(provider_catalog::OPENCODE_LOGIN_PROVIDER);
     assert_eq!(
-        std::env::var("WVC_OPENROUTER_API_KEY_NAME")
-            .ok()
-            .as_deref(),
+        std::env::var("WVC_OPENROUTER_API_KEY_NAME").ok().as_deref(),
         Some("OPENCODE_API_KEY")
     );
     assert_eq!(
-        std::env::var("WVC_PROVIDER_PROFILE_ACTIVE")
-            .ok()
-            .as_deref(),
+        std::env::var("WVC_PROVIDER_PROFILE_ACTIVE").ok().as_deref(),
         Some("1")
     );
 
@@ -718,9 +706,7 @@ async fn init_provider_for_ollama_reapplies_local_compat_runtime_env_after_disab
         Some("http://localhost:11434/v1")
     );
     assert_eq!(
-        std::env::var("WVC_OPENROUTER_API_KEY_NAME")
-            .ok()
-            .as_deref(),
+        std::env::var("WVC_OPENROUTER_API_KEY_NAME").ok().as_deref(),
         Some("OLLAMA_API_KEY")
     );
     assert_eq!(

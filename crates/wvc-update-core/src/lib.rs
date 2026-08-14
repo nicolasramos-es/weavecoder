@@ -564,7 +564,8 @@ mod tests {
 
     #[test]
     fn checksum_verification_rejects_mismatch() {
-        let sums = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa  wvc-linux-x86_64\n";
+        let sums =
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa  wvc-linux-x86_64\n";
         let err = verify_asset_checksum_text(sums, "wvc-linux-x86_64", b"hello")
             .unwrap_err()
             .to_string();

@@ -658,9 +658,18 @@ mod tests {
         assert_eq!(WeavecoderTier::parse("PLUS"), Some(WeavecoderTier::Plus));
         assert_eq!(WeavecoderTier::parse(" Pro "), Some(WeavecoderTier::Pro));
         assert_eq!(WeavecoderTier::parse("MAX"), Some(WeavecoderTier::Max));
-        assert_eq!(WeavecoderTier::parse(" ultra "), Some(WeavecoderTier::Ultra));
-        assert_eq!(WeavecoderTier::parse(" Flagship "), Some(WeavecoderTier::Flagship));
-        assert_eq!(WeavecoderTier::parse(" Solo "), Some(WeavecoderTier::Flagship));
+        assert_eq!(
+            WeavecoderTier::parse(" ultra "),
+            Some(WeavecoderTier::Ultra)
+        );
+        assert_eq!(
+            WeavecoderTier::parse(" Flagship "),
+            Some(WeavecoderTier::Flagship)
+        );
+        assert_eq!(
+            WeavecoderTier::parse(" Solo "),
+            Some(WeavecoderTier::Flagship)
+        );
         assert_eq!(WeavecoderTier::parse("starter"), None);
     }
 

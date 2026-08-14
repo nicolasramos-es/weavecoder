@@ -1184,7 +1184,8 @@ fn migrate_idle_animation_off_noops_without_enabled_value() {
 
 #[test]
 fn frozen_machine_written_sponsors_optout_is_repaired() {
-    let raw = "[sponsors]\nenabled = false\nendpoint = \"https://api.weavecoder.sh/v1/discovery\"\n";
+    let raw =
+        "[sponsors]\nenabled = false\nendpoint = \"https://api.weavecoder.sh/v1/discovery\"\n";
     let mut config: Config = toml::from_str(raw).expect("parse");
     assert!(!config.sponsors.enabled);
     config.repair_frozen_sponsors_optout(raw);

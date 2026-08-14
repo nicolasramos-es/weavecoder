@@ -1,6 +1,5 @@
 use wvc_code_graph::{
-    CodeGraph, SymbolInsert, SymbolQuery, RelationInsert, FtsQuery,
-    SCHEMA_VERSION,
+    CodeGraph, FtsQuery, RelationInsert, SCHEMA_VERSION, SymbolInsert, SymbolQuery,
 };
 
 fn make_symbol(name: &str, kind: &str, file: &str, line: i64) -> SymbolInsert {
@@ -118,9 +117,15 @@ fn test_upsert_update() {
 #[test]
 fn test_list_symbols_all() {
     let mut graph = CodeGraph::open_memory().unwrap();
-    graph.insert_symbol(make_symbol("a", "function", "src/a.rs", 1)).unwrap();
-    graph.insert_symbol(make_symbol("b", "class", "src/b.rs", 2)).unwrap();
-    graph.insert_symbol(make_symbol("c", "function", "src/c.rs", 3)).unwrap();
+    graph
+        .insert_symbol(make_symbol("a", "function", "src/a.rs", 1))
+        .unwrap();
+    graph
+        .insert_symbol(make_symbol("b", "class", "src/b.rs", 2))
+        .unwrap();
+    graph
+        .insert_symbol(make_symbol("c", "function", "src/c.rs", 3))
+        .unwrap();
 
     let all = graph.list_symbols(SymbolQuery::default()).unwrap();
     assert_eq!(all.len(), 3);
@@ -129,8 +134,12 @@ fn test_list_symbols_all() {
 #[test]
 fn test_list_symbols_filter_kind() {
     let mut graph = CodeGraph::open_memory().unwrap();
-    graph.insert_symbol(make_symbol("func", "function", "src/a.rs", 1)).unwrap();
-    graph.insert_symbol(make_symbol("MyClass", "class", "src/b.rs", 2)).unwrap();
+    graph
+        .insert_symbol(make_symbol("func", "function", "src/a.rs", 1))
+        .unwrap();
+    graph
+        .insert_symbol(make_symbol("MyClass", "class", "src/b.rs", 2))
+        .unwrap();
 
     let mut query = SymbolQuery::default();
     query.kind = Some("function".to_string());
@@ -142,8 +151,12 @@ fn test_list_symbols_filter_kind() {
 #[test]
 fn test_list_symbols_filter_file() {
     let mut graph = CodeGraph::open_memory().unwrap();
-    graph.insert_symbol(make_symbol("a", "function", "src/a.rs", 1)).unwrap();
-    graph.insert_symbol(make_symbol("b", "function", "src/b.rs", 2)).unwrap();
+    graph
+        .insert_symbol(make_symbol("a", "function", "src/a.rs", 1))
+        .unwrap();
+    graph
+        .insert_symbol(make_symbol("b", "function", "src/b.rs", 2))
+        .unwrap();
 
     let mut query = SymbolQuery::default();
     query.file_path = Some("src/a.rs".to_string());
@@ -155,7 +168,14 @@ fn test_list_symbols_filter_file() {
 fn test_list_symbols_limit() {
     let mut graph = CodeGraph::open_memory().unwrap();
     for i in 0..10 {
-        graph.insert_symbol(make_symbol(&format!("sym_{i}"), "function", "src/a.rs", i as i64)).unwrap();
+        graph
+            .insert_symbol(make_symbol(
+                &format!("sym_{i}"),
+                "function",
+                "src/a.rs",
+                i as i64,
+            ))
+            .unwrap();
     }
 
     let mut query = SymbolQuery::default();
@@ -167,22 +187,38 @@ fn test_list_symbols_limit() {
 #[test]
 fn test_insert_relation() {
     let mut graph = CodeGraph::open_memory().unwrap();
-    let src = graph.insert_symbol(make_symbol("caller", "function", "src/a.rs", 1)).unwrap();
-    let tgt = graph.insert_symbol(make_symbol("callee", "function", "src/b.rs", 5)).unwrap();
+    let src = graph
+        .insert_symbol(make_symbol("caller", "function", "src/a.rs", 1))
+        .unwrap();
+    let tgt = graph
+        .insert_symbol(make_symbol("callee", "function", "src/b.rs", 5))
+        .unwrap();
 
-    graph.insert_relation(make_relation(src, tgt, "calls")).unwrap();
+    graph
+        .insert_relation(make_relation(src, tgt, "calls"))
+        .unwrap();
     assert_eq!(graph.relation_count().unwrap(), 1);
 }
 
 #[test]
 fn test_get_relations() {
     let mut graph = CodeGraph::open_memory().unwrap();
-    let src = graph.insert_symbol(make_symbol("parent", "class", "src/a.rs", 1)).unwrap();
-    let child1 = graph.insert_symbol(make_symbol("child1", "class", "src/b.rs", 10)).unwrap();
-    let child2 = graph.insert_symbol(make_symbol("child2", "class", "src/c.rs", 20)).unwrap();
+    let src = graph
+        .insert_symbol(make_symbol("parent", "class", "src/a.rs", 1))
+        .unwrap();
+    let child1 = graph
+        .insert_symbol(make_symbol("child1", "class", "src/b.rs", 10))
+        .unwrap();
+    let child2 = graph
+        .insert_symbol(make_symbol("child2", "class", "src/c.rs", 20))
+        .unwrap();
 
-    graph.insert_relation(make_relation(src, child1, "inherits")).unwrap();
-    graph.insert_relation(make_relation(src, child2, "inherits")).unwrap();
+    graph
+        .insert_relation(make_relation(src, child1, "inherits"))
+        .unwrap();
+    graph
+        .insert_relation(make_relation(src, child2, "inherits"))
+        .unwrap();
 
     let rels = graph.get_relations(src).unwrap();
     assert_eq!(rels.len(), 2);
@@ -194,32 +230,49 @@ fn test_get_relations() {
 #[test]
 fn test_relation_with_metadata() {
     let mut graph = CodeGraph::open_memory().unwrap();
-    let src = graph.insert_symbol(make_symbol("mod_a", "module", "src/a.rs", 1)).unwrap();
-    let tgt = graph.insert_symbol(make_symbol("fn_b", "function", "src/b.rs", 5)).unwrap();
+    let src = graph
+        .insert_symbol(make_symbol("mod_a", "module", "src/a.rs", 1))
+        .unwrap();
+    let tgt = graph
+        .insert_symbol(make_symbol("fn_b", "function", "src/b.rs", 5))
+        .unwrap();
 
-    graph.insert_relation(RelationInsert {
-        source_symbol_id: src,
-        target_symbol_id: tgt,
-        kind: "contains".to_string(),
-        metadata: Some(r#"{"visibility": "pub"}"#.to_string()),
-    }).unwrap();
+    graph
+        .insert_relation(RelationInsert {
+            source_symbol_id: src,
+            target_symbol_id: tgt,
+            kind: "contains".to_string(),
+            metadata: Some(r#"{"visibility": "pub"}"#.to_string()),
+        })
+        .unwrap();
 
     let rels = graph.get_relations(src).unwrap();
     assert_eq!(rels.len(), 1);
-    assert_eq!(rels[0].metadata, Some(r#"{"visibility": "pub"}"#.to_string()));
+    assert_eq!(
+        rels[0].metadata,
+        Some(r#"{"visibility": "pub"}"#.to_string())
+    );
 }
 
 #[test]
 fn test_fts_basic_search() {
     let mut graph = CodeGraph::open_memory().unwrap();
-    graph.insert_symbol(make_symbol("get_user", "function", "src/users.rs", 10)).unwrap();
-    graph.insert_symbol(make_symbol("create_user", "function", "src/users.rs", 20)).unwrap();
-    graph.insert_symbol(make_symbol("delete_user", "function", "src/users.rs", 30)).unwrap();
+    graph
+        .insert_symbol(make_symbol("get_user", "function", "src/users.rs", 10))
+        .unwrap();
+    graph
+        .insert_symbol(make_symbol("create_user", "function", "src/users.rs", 20))
+        .unwrap();
+    graph
+        .insert_symbol(make_symbol("delete_user", "function", "src/users.rs", 30))
+        .unwrap();
 
-    let results = graph.search_fts(FtsQuery {
-        query: "get_user".to_string(),
-        limit: None,
-    }).unwrap();
+    let results = graph
+        .search_fts(FtsQuery {
+            query: "get_user".to_string(),
+            limit: None,
+        })
+        .unwrap();
 
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].name, "get_user");
@@ -228,14 +281,22 @@ fn test_fts_basic_search() {
 #[test]
 fn test_fts_prefix_search() {
     let mut graph = CodeGraph::open_memory().unwrap();
-    graph.insert_symbol(make_symbol("fn_name", "function", "src/a.rs", 1)).unwrap();
-    graph.insert_symbol(make_symbol("fn_named", "function", "src/b.rs", 2)).unwrap();
-    graph.insert_symbol(make_symbol("other_fn", "function", "src/c.rs", 3)).unwrap();
+    graph
+        .insert_symbol(make_symbol("fn_name", "function", "src/a.rs", 1))
+        .unwrap();
+    graph
+        .insert_symbol(make_symbol("fn_named", "function", "src/b.rs", 2))
+        .unwrap();
+    graph
+        .insert_symbol(make_symbol("other_fn", "function", "src/c.rs", 3))
+        .unwrap();
 
-    let results = graph.search_fts(FtsQuery {
-        query: "fn_name*".to_string(),
-        limit: None,
-    }).unwrap();
+    let results = graph
+        .search_fts(FtsQuery {
+            query: "fn_name*".to_string(),
+            limit: None,
+        })
+        .unwrap();
 
     assert!(results.len() >= 2);
 }
@@ -243,14 +304,22 @@ fn test_fts_prefix_search() {
 #[test]
 fn test_fts_substring_search() {
     let mut graph = CodeGraph::open_memory().unwrap();
-    graph.insert_symbol(make_symbol("calculate_total", "function", "src/math.rs", 1)).unwrap();
-    graph.insert_symbol(make_symbol("total_price", "function", "src/math.rs", 10)).unwrap();
-    graph.insert_symbol(make_symbol("subtotal", "function", "src/math.rs", 20)).unwrap();
+    graph
+        .insert_symbol(make_symbol("calculate_total", "function", "src/math.rs", 1))
+        .unwrap();
+    graph
+        .insert_symbol(make_symbol("total_price", "function", "src/math.rs", 10))
+        .unwrap();
+    graph
+        .insert_symbol(make_symbol("subtotal", "function", "src/math.rs", 20))
+        .unwrap();
 
-    let results = graph.search_fts(FtsQuery {
-        query: "total".to_string(),
-        limit: None,
-    }).unwrap();
+    let results = graph
+        .search_fts(FtsQuery {
+            query: "total".to_string(),
+            limit: None,
+        })
+        .unwrap();
 
     assert!(results.len() >= 2);
 }
@@ -269,10 +338,12 @@ fn test_fts_with_doc_search() {
         embedding: None,
     });
 
-    let results = graph.search_fts(FtsQuery {
-        query: "input stream".to_string(),
-        limit: None,
-    }).unwrap();
+    let results = graph
+        .search_fts(FtsQuery {
+            query: "input stream".to_string(),
+            limit: None,
+        })
+        .unwrap();
 
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].name, "process_data");
@@ -282,13 +353,22 @@ fn test_fts_with_doc_search() {
 fn test_fts_limit_results() {
     let mut graph = CodeGraph::open_memory().unwrap();
     for i in 0..20 {
-        graph.insert_symbol(make_symbol(&format!("func_{i}"), "function", "src/a.rs", i as i64)).unwrap();
+        graph
+            .insert_symbol(make_symbol(
+                &format!("func_{i}"),
+                "function",
+                "src/a.rs",
+                i as i64,
+            ))
+            .unwrap();
     }
 
-    let results = graph.search_fts(FtsQuery {
-        query: "func_*".to_string(),
-        limit: Some(5),
-    }).unwrap();
+    let results = graph
+        .search_fts(FtsQuery {
+            query: "func_*".to_string(),
+            limit: Some(5),
+        })
+        .unwrap();
 
     assert_eq!(results.len(), 5);
 }
@@ -296,12 +376,16 @@ fn test_fts_limit_results() {
 #[test]
 fn test_fts_no_match() {
     let mut graph = CodeGraph::open_memory().unwrap();
-    graph.insert_symbol(make_symbol("alpha", "function", "src/a.rs", 1)).unwrap();
+    graph
+        .insert_symbol(make_symbol("alpha", "function", "src/a.rs", 1))
+        .unwrap();
 
-    let results = graph.search_fts(FtsQuery {
-        query: "nonexistent_xyz".to_string(),
-        limit: None,
-    }).unwrap();
+    let results = graph
+        .search_fts(FtsQuery {
+            query: "nonexistent_xyz".to_string(),
+            limit: None,
+        })
+        .unwrap();
 
     assert!(results.is_empty());
 }
@@ -326,7 +410,8 @@ fn test_symbol_with_embedding() {
         std::slice::from_raw_parts(
             embedding.as_ptr() as *const u8,
             embedding.len() * std::mem::size_of::<f32>(),
-        ).to_vec()
+        )
+        .to_vec()
     };
 
     let sym = SymbolInsert {
@@ -352,7 +437,9 @@ fn test_persistent_database() {
 
     {
         let mut graph = CodeGraph::open(&db_path).unwrap();
-        graph.insert_symbol(make_symbol("persisted", "function", "src/main.rs", 1)).unwrap();
+        graph
+            .insert_symbol(make_symbol("persisted", "function", "src/main.rs", 1))
+            .unwrap();
         assert_eq!(graph.symbol_count().unwrap(), 1);
     }
 

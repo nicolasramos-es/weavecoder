@@ -315,12 +315,8 @@ mod tests {
             Some("file-value")
         );
 
-        save_env_value_to_env_file(
-            "WVC_PROVIDER_ENV_TEST_VALUE",
-            "provider-env-test.env",
-            None,
-        )
-        .expect("remove file value");
+        save_env_value_to_env_file("WVC_PROVIDER_ENV_TEST_VALUE", "provider-env-test.env", None)
+            .expect("remove file value");
         assert_eq!(
             load_env_value_from_env_or_config(
                 "WVC_PROVIDER_ENV_TEST_VALUE",

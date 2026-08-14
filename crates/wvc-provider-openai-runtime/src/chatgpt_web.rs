@@ -140,9 +140,8 @@ impl ChatGptWebState {
         match (result, cleanup) {
             (Ok(response), Ok(())) => Ok(response),
             (Err(err), Ok(())) => Err(err),
-            (Ok(_), Err(cleanup_err)) => Err(cleanup_err.context(
-                "GPT-5.6 Pro answered, but wvc could not securely close its browser tab",
-            )),
+            (Ok(_), Err(cleanup_err)) => Err(cleanup_err
+                .context("GPT-5.6 Pro answered, but wvc could not securely close its browser tab")),
             (Err(err), Err(cleanup_err)) => {
                 Err(err.context(format!("Browser tab cleanup also failed: {cleanup_err:#}")))
             }

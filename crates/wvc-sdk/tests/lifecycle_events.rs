@@ -12,7 +12,7 @@ use wvc_harness_api::{
     write_frame,
 };
 use wvc_sdk::{
-    ConnectOptions, GlobalEventsOptions, WeavecoderClient, LaunchOptions, inherit_credentials,
+    ConnectOptions, GlobalEventsOptions, LaunchOptions, WeavecoderClient, inherit_credentials,
 };
 
 fn session(id: &str) -> SessionInfo {

@@ -632,9 +632,7 @@ fn named_provider_profile_maps_to_openai_compatible_runtime_env() {
         Some("https://llm.example.com/v1")
     );
     assert_eq!(
-        std::env::var("WVC_OPENROUTER_API_KEY_NAME")
-            .ok()
-            .as_deref(),
+        std::env::var("WVC_OPENROUTER_API_KEY_NAME").ok().as_deref(),
         Some("MY_GATEWAY_API_KEY")
     );
     assert_eq!(
@@ -666,9 +664,7 @@ fn named_provider_profile_maps_to_openai_compatible_runtime_env() {
         Some("opaque/model@id\nanother-local-id")
     );
     assert_eq!(
-        std::env::var("WVC_OPENROUTER_AUTH_HEADER")
-            .ok()
-            .as_deref(),
+        std::env::var("WVC_OPENROUTER_AUTH_HEADER").ok().as_deref(),
         Some("api-key")
     );
     assert_eq!(
@@ -678,9 +674,7 @@ fn named_provider_profile_maps_to_openai_compatible_runtime_env() {
         Some("x-api-key")
     );
     assert_eq!(
-        std::env::var("WVC_NAMED_PROVIDER_PROFILE")
-            .ok()
-            .as_deref(),
+        std::env::var("WVC_NAMED_PROVIDER_PROFILE").ok().as_deref(),
         Some("my-gateway")
     );
 }
@@ -712,9 +706,7 @@ fn named_provider_inline_api_key_is_private_runtime_fallback() {
     apply_named_provider_profile_env_from_config("my-gateway", &cfg).expect("apply profile");
 
     assert_eq!(
-        std::env::var("WVC_OPENROUTER_API_KEY_NAME")
-            .ok()
-            .as_deref(),
+        std::env::var("WVC_OPENROUTER_API_KEY_NAME").ok().as_deref(),
         Some("WVC_PROVIDER_MY_GATEWAY_API_KEY")
     );
     assert_eq!(
@@ -1146,9 +1138,7 @@ fn minimax_default_provider_applies_openai_api_key_env_not_openrouter() {
     apply_openai_compatible_profile_env(selection);
 
     assert_eq!(
-        std::env::var("WVC_OPENROUTER_API_KEY_NAME")
-            .ok()
-            .as_deref(),
+        std::env::var("WVC_OPENROUTER_API_KEY_NAME").ok().as_deref(),
         Some("OPENAI_API_KEY"),
         "MiniMax profile must use OPENAI_API_KEY, not OPENROUTER_API_KEY"
     );

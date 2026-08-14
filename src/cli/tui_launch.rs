@@ -585,14 +585,14 @@ pub fn list_sessions() -> Result<()> {
                 let mut warned_no_terminal = false;
 
                 for target in targets {
-                    let resolved_target =
-                        match crate::import::resolve_resume_target_to_wvc(&target) {
-                            Ok(target) => target,
-                            Err(e) => {
-                                eprintln!("Failed to import selected session: {}", e);
-                                continue;
-                            }
-                        };
+                    let resolved_target = match crate::import::resolve_resume_target_to_wvc(&target)
+                    {
+                        Ok(target) => target,
+                        Err(e) => {
+                            eprintln!("Failed to import selected session: {}", e);
+                            continue;
+                        }
+                    };
                     let mut session_cwd = cwd.clone();
                     if let wvc_tui_session_picker::ResumeTarget::WeavecoderSession { session_id } =
                         &resolved_target

@@ -2049,10 +2049,7 @@ mod tests {
             lower.contains("x-wvc-discovery-request-id: aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee"),
             "{request}"
         );
-        assert!(
-            lower.contains("x-wvc-discovery-benchmark: 1"),
-            "{request}"
-        );
+        assert!(lower.contains("x-wvc-discovery-benchmark: 1"), "{request}");
         assert!(request.contains("\"suggestion_kind\":\"known_product\""));
         assert!(request.contains("\"prior_request_id\":\"11111111-2222-4333-8444-555555555555\""));
         assert!(request.contains("\"product_name\":\"Stripe sandbox MCP\""));

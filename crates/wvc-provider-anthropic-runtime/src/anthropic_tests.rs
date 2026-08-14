@@ -692,8 +692,8 @@ async fn live_anthropic_reasoning_smoke() -> Result<()> {
     let model = std::env::var("WVC_LIVE_ANTHROPIC_MODEL")
         .or_else(|_| std::env::var("WVC_ANTHROPIC_MODEL"))
         .unwrap_or_else(|_| "claude-sonnet-4-6".to_string());
-    let effort = std::env::var("WVC_LIVE_ANTHROPIC_REASONING_EFFORT")
-        .unwrap_or_else(|_| "low".to_string());
+    let effort =
+        std::env::var("WVC_LIVE_ANTHROPIC_REASONING_EFFORT").unwrap_or_else(|_| "low".to_string());
     let prompt = std::env::var("WVC_LIVE_ANTHROPIC_PROMPT")
         .unwrap_or_else(|_| "Live smoke test: answer exactly OK.".to_string());
     let system = std::env::var("WVC_LIVE_ANTHROPIC_SYSTEM").unwrap_or_else(|_| {

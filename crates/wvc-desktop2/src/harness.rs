@@ -14,7 +14,7 @@ use std::path::PathBuf;
 use std::sync::mpsc::{Receiver, Sender, channel};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
-use wvc_sdk::{ApiEvent, ConnectOptions, WeavecoderClient, LaunchOptions};
+use wvc_sdk::{ApiEvent, ConnectOptions, LaunchOptions, WeavecoderClient};
 
 /// Failure wording and connection-stage reporting are the SDK's, so the app
 /// and any other client describe the same failure the same way.

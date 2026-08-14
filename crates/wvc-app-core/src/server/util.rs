@@ -723,11 +723,7 @@ mod pick_newest_candidate_tests {
         // release. The reload target must follow the newer release so the daemon
         // can actually apply the update it advertises.
         let chosen = pick_newest_candidate([
-            entry(
-                "/x/versions/old-selfdev/wvc",
-                "shared-server",
-                Some(t(100)),
-            ),
+            entry("/x/versions/old-selfdev/wvc", "shared-server", Some(t(100))),
             entry("/x/versions/new-release/wvc", "stable", Some(t(200))),
         ])
         .expect("a candidate");

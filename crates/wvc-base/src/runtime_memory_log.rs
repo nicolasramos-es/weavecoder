@@ -575,10 +575,9 @@ pub fn client_logging_config() -> RuntimeMemoryLogConfig {
         env_u64("WVC_CLIENT_RUNTIME_MEMORY_LOG_EVENT_PROCESS_MIN_SPACING_SECS")
             .filter(|value| *value >= MIN_EVENT_PROCESS_MIN_SPACING_SECS)
             .unwrap_or(DEFAULT_CLIENT_EVENT_PROCESS_MIN_SPACING_SECS);
-    let pss_delta_threshold_bytes =
-        env_u64("WVC_CLIENT_RUNTIME_MEMORY_LOG_PSS_DELTA_THRESHOLD_MB")
-            .unwrap_or(DEFAULT_CLIENT_PSS_DELTA_THRESHOLD_MB)
-            .saturating_mul(1024 * 1024);
+    let pss_delta_threshold_bytes = env_u64("WVC_CLIENT_RUNTIME_MEMORY_LOG_PSS_DELTA_THRESHOLD_MB")
+        .unwrap_or(DEFAULT_CLIENT_PSS_DELTA_THRESHOLD_MB)
+        .saturating_mul(1024 * 1024);
     let attribution_json_delta_threshold_bytes =
         env_u64("WVC_CLIENT_RUNTIME_MEMORY_LOG_ATTRIBUTION_JSON_DELTA_THRESHOLD_MB")
             .unwrap_or(DEFAULT_CLIENT_ATTRIBUTION_JSON_DELTA_THRESHOLD_MB)

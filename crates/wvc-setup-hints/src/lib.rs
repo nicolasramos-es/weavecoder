@@ -697,9 +697,7 @@ pub fn run_setup_hotkey(
                 eprintln!("  Press these anywhere, system-wide:");
                 eprintln!("    \x1b[1mCmd+;\x1b[0m       new wvc in your home directory");
                 eprintln!("    \x1b[1mCmd+'\x1b[0m       new wvc in your last project directory");
-                eprintln!(
-                    "    \x1b[1mCmd+Shift+'\x1b[0m new wvc self-dev session (last wvc repo)"
-                );
+                eprintln!("    \x1b[1mCmd+Shift+'\x1b[0m new wvc self-dev session (last wvc repo)");
                 install_cli_launch_hints_notice();
                 return Ok(());
             }
@@ -1059,9 +1057,7 @@ fn run_macos_hotkey_listener() -> Result<()> {
             match spawn_command_in_new_terminal_with(&command, &cwd, |cmd| cmd.spawn().map(|_| ()))
             {
                 Ok(true) => {}
-                Ok(false) => {
-                    macos_hotkey_log("failed to launch wvc: no terminal candidate worked")
-                }
+                Ok(false) => macos_hotkey_log("failed to launch wvc: no terminal candidate worked"),
                 Err(err) => macos_hotkey_log(&format!("failed to launch wvc: {err}")),
             }
         }
@@ -1411,7 +1407,10 @@ fn macos_launch_hotkeys_notice(state: &SetupHintsState) -> Option<StartupHints> 
     Some(StartupHints::with_status_and_display(
         "Launch hotkeys available".to_string(),
         "Launch hotkeys",
-        format!("Configured Weavecoder launch hotkeys:\n{}", lines.join("\n")),
+        format!(
+            "Configured Weavecoder launch hotkeys:\n{}",
+            lines.join("\n")
+        ),
     ))
 }
 

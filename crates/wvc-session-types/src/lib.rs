@@ -1028,10 +1028,7 @@ mod session_search_tests {
             "/tmp/Project/Subdir",
             "/TMP/project"
         ));
-        assert!(session_search_working_dir_matches(
-            "/workspace/wvc",
-            "wvc"
-        ));
+        assert!(session_search_working_dir_matches("/workspace/wvc", "wvc"));
         assert!(!session_search_working_dir_matches(
             "/workspace/wvc",
             "/workspace/other"

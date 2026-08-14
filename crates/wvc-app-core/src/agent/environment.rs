@@ -1,4 +1,4 @@
-use super::{Agent, WVC_REPO_SOURCE_STATE, WORKING_GIT_STATE_CACHE};
+use super::{Agent, WORKING_GIT_STATE_CACHE, WVC_REPO_SOURCE_STATE};
 use crate::logging;
 use crate::session::{EnvSnapshot, GitState};
 use chrono::Utc;

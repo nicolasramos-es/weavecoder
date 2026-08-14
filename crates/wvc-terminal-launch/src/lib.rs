@@ -991,15 +991,14 @@ mod tests {
         unsafe {
             std::env::remove_var("WVC_TERMINAL");
         }
-        let command =
-            TerminalCommand::new("/usr/local/bin/wvc", vec![]).client_terminal_env(vec![
-                (
-                    "TMUX".to_string(),
-                    "/tmp/tmux-1000/default,123,0".to_string(),
-                ),
-                ("TMUX_PANE".to_string(), "%42".to_string()),
-                ("KITTY_PID".to_string(), "1234".to_string()),
-            ]);
+        let command = TerminalCommand::new("/usr/local/bin/wvc", vec![]).client_terminal_env(vec![
+            (
+                "TMUX".to_string(),
+                "/tmp/tmux-1000/default,123,0".to_string(),
+            ),
+            ("TMUX_PANE".to_string(), "%42".to_string()),
+            ("KITTY_PID".to_string(), "1234".to_string()),
+        ]);
         let mut attempts = Vec::new();
 
         let result =
@@ -1205,9 +1204,8 @@ mod tests {
     #[test]
     #[cfg(unix)]
     fn macos_terminal_inner_script_injects_fresh_spawn() {
-        let command =
-            TerminalCommand::new(std::path::PathBuf::from("/usr/local/bin/wvc"), vec![])
-                .fresh_spawn();
+        let command = TerminalCommand::new(std::path::PathBuf::from("/usr/local/bin/wvc"), vec![])
+            .fresh_spawn();
         let script = macos_terminal_inner_script(&command, Path::new("/tmp"));
         assert_eq!(
             script,
@@ -1353,10 +1351,7 @@ mod tests {
 
         let cmd = build_spawn_command("kitty", &command, Path::new("/work/dir"))
             .expect("kitty spawn command should build");
-        assert_eq!(
-            env_value(&cmd, "WVC_SPAWN_KIND").as_deref(),
-            Some("resume")
-        );
+        assert_eq!(env_value(&cmd, "WVC_SPAWN_KIND").as_deref(), Some("resume"));
         assert_eq!(
             env_value(&cmd, "WVC_SPAWN_SESSION_ID").as_deref(),
             Some("ses_abc")

@@ -157,7 +157,10 @@ pub(super) fn subscribe_pitch_markdown() -> String {
     message.push_str("  - Funds wvc development - wvc is open source\n");
 
     message.push_str("\nPlans\n\n");
-    for tier in crate::subscription_catalog::WeavecoderTier::ALL.iter().copied() {
+    for tier in crate::subscription_catalog::WeavecoderTier::ALL
+        .iter()
+        .copied()
+    {
         message.push_str(&format!(
             "  - {} - ${}/mo, about ${:.2} usable inference budget\n",
             tier.display_name(),
@@ -357,7 +360,10 @@ mod tests {
         assert!(pitch.contains("/login wvc"));
         assert!(pitch.contains("/subscription"));
         // Every launched tier appears with its retail price.
-        for tier in crate::subscription_catalog::WeavecoderTier::ALL.iter().copied() {
+        for tier in crate::subscription_catalog::WeavecoderTier::ALL
+            .iter()
+            .copied()
+        {
             assert!(pitch.contains(tier.display_name()));
             assert!(pitch.contains(&format!("${}/mo", tier.retail_price_usd())));
         }
