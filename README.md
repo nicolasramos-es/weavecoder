@@ -39,6 +39,8 @@ irm https://weavecoder.sh/install.ps1 | iex
 > ```bash
 > curl -fsSL https://raw.githubusercontent.com/nicolasramos-es/weavecoder/main/install.sh | bash
 > ```
+>
+> El instalador verifica el **checksum SHA-256** del binario contra el digest publicado en el release antes de instalar, y aborta con un error claro si no coincide. Si el repositorio es privado, exporta `GITHUB_TOKEN` (o `WVC_GITHUB_TOKEN`) antes de ejecutarlo.
 
 Need Homebrew, source builds, provider setup, or want an agent to set it up for you? Sigue leyendo — [Quick Start](#quick-start) y [Desde fuente](#desde-fuente).
 
