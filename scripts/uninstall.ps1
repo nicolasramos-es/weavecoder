@@ -404,7 +404,7 @@ if ($pathUpdate.Changed) {
 }
 
 Write-Info "wvc uninstalled."
-Write-Info "Reinstall with: irm https://weavecoder.sh/install.ps1 | iex"
+Write-Info "Reinstall with: irm https://raw.githubusercontent.com/nicolasramos-es/weavecoder/main/install.ps1 | iex"
 
 
     return 0
