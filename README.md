@@ -5,46 +5,46 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS%20%7C%20Windows-blue?style=flat-square)](https://github.com/nicolasramos-es/weavecoder/releases)
 
-CLI de coding agent en **Rust** con Agent Swarm nativo para múltiples peticiones rápidas en paralelo, priorizando modelos locales, y un **Code Knowledge Graph** embebido (tree-sitter) que indexa todo el código del proyecto.
+A **Rust** coding-agent CLI with a native **Agent Swarm** for multiple fast parallel requests, prioritizing local models, and an embedded **Code Knowledge Graph** (tree-sitter) that indexes your entire project codebase.
 
 </div>
 
 ## Features
 
-- **Agent Swarm** — múltiples peticiones en paralelo, orquestadas de forma nativa
-- **Modelos locales primero** — Ollama, LM Studio, oMLX/llama.cpp, o cualquier endpoint OpenAI-compatible
-- **Code Knowledge Graph (CKG)** — indexa símbolos y relaciones del código con tree-sitter:
-  - `wvc init` — escanea el proyecto, extrae funciones/clases/imports/calls y los almacena en SQLite + FTS5
-  - `wvc code-search <query>` — búsqueda híbrida (FTS5 + embeddings + grafo de dependencias)
-  - Graph traversal: "quién llama a X", "de qué depende Y"
-  - Indexación incremental: solo re-indexa los archivos modificados
-- **Embeddings locales** (all-MiniLM-L6-v2) para búsqueda semántica por significado
+- **Agent Swarm** — multiple requests in parallel, natively orchestrated
+- **Local models first** — Ollama, LM Studio, oMLX/llama.cpp, or any OpenAI-compatible endpoint
+- **Code Knowledge Graph (CKG)** — indexes code symbols and relationships with tree-sitter:
+  - `wvc init` — scans the project, extracts functions/classes/imports/calls, and stores them in SQLite + FTS5
+  - `wvc code-search <query>` — hybrid search (FTS5 + embeddings + dependency graph)
+  - Graph traversal: "who calls X", "what does Y depend on"
+  - Incremental indexing: only re-indexes modified files
+- **Local embeddings** (all-MiniLM-L6-v2) for semantic search by meaning
 
 ## Installation
 
 ### macOS & Linux
 
 ```bash
-curl -fsSL https://weavecoder.sh/install | bash
+curl -fsSL https://weavecoder.nramos.dev/install | bash
 ```
 
 ### Windows 11 (PowerShell 5.1+)
 
 ```powershell
-irm https://weavecoder.sh/install.ps1 | iex
+irm https://weavecoder.nramos.dev/install.ps1 | iex
 ```
 
-> ⚠️ El dominio `weavecoder.sh` está pendiente de registro (NRA-508). Hasta entonces, el instalador funciona directamente desde GitHub Releases:
+> ⚠️ The `weavecoder.nramos.dev` installer endpoints are being rolled out. Until they are live, the installer works directly from GitHub Releases:
 >
 > ```bash
 > curl -fsSL https://raw.githubusercontent.com/nicolasramos-es/weavecoder/main/install.sh | bash
 > ```
 >
-> El instalador verifica el **checksum SHA-256** del binario contra el digest publicado en el release antes de instalar, y aborta con un error claro si no coincide. Si el repositorio es privado, exporta `GITHUB_TOKEN` (o `WVC_GITHUB_TOKEN`) antes de ejecutarlo.
+> The installer verifies the **SHA-256 checksum** of the binary against the digest published in the release and aborts with a clear error if they don't match. If the repository is private, export `GITHUB_TOKEN` (or `WVC_GITHUB_TOKEN`) before running it.
 
-Need Homebrew, source builds, provider setup, or want an agent to set it up for you? Sigue leyendo — [Quick Start](#quick-start) y [Desde fuente](#desde-fuente).
+Need Homebrew, source builds, provider setup, or want an agent to set it up for you? Keep reading — [Quick Start](#quick-start) and [From source](#from-source).
 
-### Desde fuente
+### From source
 
 ```bash
 git clone https://github.com/nicolasramos-es/weavecoder.git
@@ -56,29 +56,29 @@ cargo build --release --bin wvc
 ## Quick Start
 
 ```bash
-# 1. Conecta un modelo local (ej. Ollama)
+# 1. Connect a local model (e.g. Ollama)
 brew install ollama && ollama pull llama3.2
 wvc login --provider ollama
 
-# 2. Conversa con el agente
-wvc --provider ollama --model llama3.2 run 'hola'
+# 2. Chat with the agent
+wvc --provider ollama --model llama3.2 run 'hello'
 
-# 3. Indexa un proyecto y búscalo con el Code Knowledge Graph
-wvc init /ruta/al/proyecto --db ckg.db
+# 3. Index a project and search it with the Code Knowledge Graph
+wvc init /path/to/project --db ckg.db
 wvc code-search "parseConfig" --db ckg.db
 ```
 
-## Arquitectura
+## Architecture
 
-| Crate | Responsabilidad |
+| Crate | Responsibility |
 |---|---|
-| `wvc-code-graph` | Code Knowledge Graph: tree-sitter (Go/Py/TS/Rust), SQLite+FTS5, embeddings, grafo petgraph, búsqueda híbrida |
-| `wvc-embedding` | Embeddings locales (all-MiniLM-L6-v2, tract-onnx) |
-| `wvc-swarm-core` | Orquestación de enjambres de agentes |
-| `wvc-app-core` | Núcleo del agente (tools, sesiones, servidor) |
+| `wvc-code-graph` | Code Knowledge Graph: tree-sitter (Go/Py/TS/Rust), SQLite+FTS5, embeddings, petgraph graph, hybrid search |
+| `wvc-embedding` | Local embeddings (all-MiniLM-L6-v2, tract-onnx) |
+| `wvc-swarm-core` | Agent swarm orchestration |
+| `wvc-app-core` | Agent core (tools, sessions, server) |
 
-## Licencia
+## License
 
-MIT — ver [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).
 
-Este proyecto parte del trabajo excepcional de [Jeremy Huang](https://github.com/nicolasramos/weavecoder) (wvc, MIT), sobre el que hemos construido, añadido funcionalidades nuevas y mejorado el producto. El aviso de copyright del original se conserva íntegro en LICENSE.
+This project builds on the exceptional work of [Jeremy Huang](https://github.com/nicolasramos/weavecoder) (wvc, MIT), on top of which we've added new features and improved the product. The original copyright notice is preserved in full in LICENSE.
