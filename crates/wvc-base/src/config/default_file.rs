@@ -404,7 +404,7 @@ swarm_spawn_mode = "inline"
 # workers free their slots. 0 disables this guard and leaves only the absolute
 # per-swarm hard cap of 1000. Light mode uses a smaller fixed fan-out.
 # Env override: JCODE_SWARM_MAX_CONCURRENT_AGENTS
-swarm_max_concurrent_agents = 32
+swarm_max_concurrent_agents = 10
 #
 # Max percentage (1-90) of the chat height the inline swarm gallery band may use.
 # Unset = built-in default (40%). Lower values keep more transcript visible; set

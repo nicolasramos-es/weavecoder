@@ -596,7 +596,7 @@ pub struct AgentsConfig {
 }
 
 fn default_swarm_max_concurrent_agents() -> usize {
-    32
+    10
 }
 
 fn default_memory_embedding_backend() -> String {
