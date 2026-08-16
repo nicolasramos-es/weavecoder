@@ -40,9 +40,10 @@ project's own changelog, so it aggregates the changes present on `main`.
 ### Changed
 
 - Install domain updated to `weavecoder.nramos.dev` and the README unified to
-  English.
-- Installers always download from GitHub raw content (`raw.githubusercontent.com`),
-  never from a web domain.
+  English. The README install commands point to
+  `raw.githubusercontent.com`; the installer's metadata fallback
+  (`RELEASE_METADATA_BASE` in `scripts/install.sh`) still defaults to a legacy
+  web domain and is tracked in NRA-528.
 - CI: all Linux jobs run on the self-hosted runner; macOS/Windows workflows are
   manual-only (GitHub-hosted) to control costs; CI runs on pull requests only.
 - Clippy `-D warnings` scoped to `wvc-code-graph` (Phase 1 crate); the

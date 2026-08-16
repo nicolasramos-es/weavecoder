@@ -46,9 +46,9 @@ bigger machines is `scripts/dev_cargo.sh`, which sizes parallelism from
 currently-available memory.
 
 > **Note:** `cargo build` alone does not prove behaviour. The long-lived daemon
-> at `~/.weavecoder/builds/shared-server/weavecoder` serves all `wvc run`
+> at `~/.wvc/builds/shared-server/wvc` serves all `wvc run`
 > sessions. Until that symlink is repointed and the daemon restarted
-> (`weavecoder self-dev --build`), a freshly built binary is inert and every
+> (`wvc self-dev --build`), a freshly built binary is inert and every
 > runtime check silently measures the old code.
 >
 > To test a change without disturbing the shared daemon:
@@ -70,8 +70,7 @@ cargo test --workspace
 ### Integration / E2E tests
 
 The project uses a combination of unit tests, integration tests in `tests/`,
-and E2E smoke tests (`tests/e2e/`, `tests/test_e2e.sh`). Run the full suite
-with:
+and E2E smoke tests (`tests/e2e/`). Run the full suite with:
 
 ```bash
 cargo test --workspace
