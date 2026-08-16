@@ -10,6 +10,7 @@ members = [
     ".",
     "crates/wvc-agent-runtime",
     "crates/wvc-app-core",
+    "crates/wvc-agentgrep",
     "crates/wvc-base",
     "crates/wvc-tui",
     "crates/wvc-build-meta",

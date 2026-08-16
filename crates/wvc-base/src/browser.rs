@@ -3,11 +3,7 @@ use std::path::PathBuf;
 
 use crate::{platform, storage};
 
-const GITHUB_API_LATEST: &str =
-    "https://api.github.com/repos//firefox-agent-bridge/releases/latest";
-
 const NATIVE_HOST_NAME: &str = "firefox_agent_bridge";
-const EXTENSION_ID_LISTED: &str = "browser-agent-bridge@.github.io";
 const EXTENSION_ID_LOCAL: &str = "firefox-agent-bridge@local";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -260,20 +256,18 @@ pub async fn ensure_browser_setup() -> Result<String> {
         log.push_str("Browser bridge is not installed yet. Starting setup...\n");
     }
 
-    // Step 1: Check/download browser bridge assets
+    // Step 1: Check browser bridge assets. The bridge (browser CLI, native
+    // host and XPI) is a third-party dependency installed manually; wvc no
+    // longer auto-downloads it from the upstream project's releases.
     if !browser_binary_path().exists()
         || !host_binary_path().exists()
         || !xpi_path().exists()
         || (initial_status.responding && !initial_status.compatible)
     {
-        log.push_str("[1/3] Downloading browser bridge assets... ");
-        match download_browser_binary().await {
-            Ok(()) => log.push_str("done\n"),
-            Err(e) => {
-                log.push_str(&format!("failed: {}\n", e));
-                return Ok(log);
-            }
-        }
+        log.push_str("[1/3] Browser bridge assets are missing. Install the Firefox Agent Bridge manually (browser CLI, native host and XPI) into ");
+        log.push_str(&browser_dir().to_string_lossy());
+        log.push_str(", then re-run `wvc browser setup`.\n");
+        return Ok(log);
     } else {
         log.push_str("[1/3] Browser CLI... already installed\n");
     }
@@ -405,115 +399,6 @@ pub async fn ensure_browser_setup() -> Result<String> {
     Ok(log)
 }
 
-async fn download_browser_binary() -> Result<()> {
-    let asset_name = get_platform_asset_name();
-    let client = wvc_provider_core::shared_http_client();
-
-    let mut request = client
-        .get(GITHUB_API_LATEST)
-        .header(reqwest::header::ACCEPT, "application/vnd.github+json");
-    // Avoid the shared unauthenticated 60 req/h per-IP GitHub bucket when a
-    // token is available (see crate::github).
-    if let Some(token) = crate::github::github_public_api_token() {
-        request = request.bearer_auth(token);
-    }
-    let release_info: serde_json::Value = request
-        .send()
-        .await?
-        .json()
-        .await
-        .context("Failed to fetch latest release info")?;
-
-    let assets = release_info["assets"]
-        .as_array()
-        .context("No assets in release")?;
-
-    // Find the browser CLI binary
-    let browser_asset = assets
-        .iter()
-        .find(|a| a["name"].as_str() == Some(&asset_name))
-        .context(format!("No asset found for platform: {}", asset_name))?;
-
-    let download_url = browser_asset["browser_download_url"]
-        .as_str()
-        .context("No download URL")?;
-
-    // Find the XPI
-    let xpi_asset = assets
-        .iter()
-        .find(|a| {
-            a["name"]
-                .as_str()
-                .map(|n| n.ends_with(".xpi"))
-                .unwrap_or(false)
-        })
-        .context("No XPI asset found in release")?;
-
-    let xpi_url = xpi_asset["browser_download_url"]
-        .as_str()
-        .context("No XPI download URL")?;
-
-    // Find the host binary
-    let host_asset_name = get_host_asset_name();
-    let host_asset = assets
-        .iter()
-        .find(|a| a["name"].as_str() == Some(&host_asset_name))
-        .with_context(|| {
-            let available = assets
-                .iter()
-                .filter_map(|a| a["name"].as_str())
-                .collect::<Vec<_>>()
-                .join(", ");
-            format!(
-                "No native host asset found for platform: {}. Expected release asset '{}' alongside '{}'. Available assets: {}",
-                std::env::consts::OS,
-                host_asset_name,
-                asset_name,
-                available
-            )
-        })?;
-
-    // Download browser CLI
-    let browser_bytes = client
-        .get(download_url)
-        .send()
-        .await?
-        .bytes()
-        .await
-        .context("Failed to download browser binary")?;
-
-    let bin_path = browser_binary_path();
-    write_file_atomically(&bin_path, &browser_bytes, true)?;
-
-    // Download XPI
-    let xpi_bytes = client
-        .get(xpi_url)
-        .send()
-        .await?
-        .bytes()
-        .await
-        .context("Failed to download XPI")?;
-
-    write_file_atomically(&xpi_path(), &xpi_bytes, false)?;
-
-    // Download host binary
-    let host_url = host_asset["browser_download_url"]
-        .as_str()
-        .context("No host download URL")?;
-    let host_bytes = client
-        .get(host_url)
-        .send()
-        .await?
-        .bytes()
-        .await
-        .context("Failed to download host binary")?;
-
-    let host_path = host_binary_path();
-    write_file_atomically(&host_path, &host_bytes, true)?;
-
-    Ok(())
-}
-
 fn write_file_atomically(path: &PathBuf, bytes: &[u8], _executable: bool) -> Result<()> {
     let parent = path
         .parent()
@@ -625,7 +510,6 @@ fn install_native_host_manifest() -> Result<bool> {
         "type": "stdio",
         "allowed_extensions": [
             EXTENSION_ID_LOCAL,
-            EXTENSION_ID_LISTED,
         ]
     });
 

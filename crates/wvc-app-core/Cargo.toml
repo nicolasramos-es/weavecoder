@@ -103,7 +103,7 @@ wvc-tool-types = { path = "../wvc-tool-types" }
 flate2 = "1"
 tar = "0.4"
 tempfile = "3"
-agentgrep = { git = "https://github.com//agentgrep.git", tag = "v0.1.6" }
+agentgrep = { path = "../wvc-agentgrep" }
 
 [features]
 default = ["pdf", "embeddings", "bedrock"]

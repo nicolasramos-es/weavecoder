@@ -20,7 +20,7 @@ KEY_ID = "XJKP4235XC"
 ISSUER = "f1147f07-48fe-4850-9171-f37d4b2dee41"
 KEY_PATH = "/home/jeremy/Downloads/AuthKey_XJKP4235XC.p8"
 BUNDLE_ID = "com.wvc.mobile"
-TESTER_EMAIL = "55555@gmail.com"
+TESTER_EMAIL = "tester@weavecoder.dev"
 GROUP_NAME = "internal"
 API = "https://api.appstoreconnect.apple.com/v1"
 
@@ -114,7 +114,7 @@ def main():
             {
                 "data": {
                     "type": "betaTesters",
-                    "attributes": {"email": TESTER_EMAIL, "firstName": "Jeremy"},
+                    "attributes": {"email": TESTER_EMAIL, "firstName": "Weavecoder"},
                     "relationships": {
                         "betaGroups": {
                             "data": [{"type": "betaGroups", "id": group_id}]
