@@ -92,6 +92,7 @@ members = [
     "crates/wvc-telemetry-core",
     "crates/wvc-tui-workspace",
     "crates/wvc-render-core",
+    "crates/wvc-session-cache",
 ]
 
 [lib]
@@ -204,6 +205,7 @@ wvc-provider-anthropic-runtime = { path = "crates/wvc-provider-anthropic-runtime
 wvc-provider-openai-runtime = { path = "crates/wvc-provider-openai-runtime" }
 wvc-selfdev-types = { path = "crates/wvc-selfdev-types" }
 wvc-code-graph = { path = "crates/wvc-code-graph" }
+wvc-session-cache = { path = "crates/wvc-session-cache" }
 
 # Archive extraction (for auto-update)
 tempfile = "3"
