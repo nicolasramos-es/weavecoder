@@ -22,24 +22,20 @@ A **Rust** coding-agent CLI with a native **Agent Swarm** for multiple fast para
 
 ## Installation
 
+The installer scripts are always fetched from the project repository on GitHub — the single source of truth — never from any web domain.
+
 ### macOS & Linux
 
 ```bash
-curl -fsSL https://weavecoder.nramos.dev/install | bash
+curl -fsSL https://raw.githubusercontent.com/nicolasramos-es/weavecoder/main/install.sh | bash
 ```
 
 ### Windows 11 (PowerShell 5.1+)
 
 ```powershell
-irm https://weavecoder.nramos.dev/install.ps1 | iex
+irm https://raw.githubusercontent.com/nicolasramos-es/weavecoder/main/install.ps1 | iex
 ```
 
-> ⚠️ The `weavecoder.nramos.dev` installer endpoints are being rolled out. Until they are live, the installer works directly from GitHub Releases:
->
-> ```bash
-> curl -fsSL https://raw.githubusercontent.com/nicolasramos-es/weavecoder/main/install.sh | bash
-> ```
->
 > The installer verifies the **SHA-256 checksum** of the binary against the digest published in the release and aborts with a clear error if they don't match. If the repository is private, export `GITHUB_TOKEN` (or `WVC_GITHUB_TOKEN`) before running it.
 
 Need Homebrew, source builds, provider setup, or want an agent to set it up for you? Keep reading — [Quick Start](#quick-start) and [From source](#from-source).
