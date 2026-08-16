@@ -38,6 +38,7 @@ pub(crate) fn initial_title(args: &Args) -> String {
         Some(Command::Permissions) => "wvc permissions".to_string(),
         Some(Command::Transcript { .. }) => "wvc transcript".to_string(),
         Some(Command::Dictate { .. }) => "wvc dictate".to_string(),
+        Some(Command::Swarm { .. }) => "wvc swarm".to_string(),
         Some(Command::SetupHotkey {
             listen_macos_hotkey,
             notify_cli_launch,

@@ -569,6 +569,9 @@ pub(crate) async fn run_main(mut args: Args) -> Result<()> {
         Some(Command::Menubar { once, json }) => {
             commands::run_menubar_command(once, json)?;
         }
+        Some(Command::Swarm { message, worker_profile }) => {
+            super::swarm::run_swarm_command(&args.provider, &message, worker_profile).await?;
+        }
         None => run_default_command(args).await?,
     }
 
