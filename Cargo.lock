@@ -8418,6 +8418,7 @@ dependencies = [
  "wvc-provider-openai-runtime",
  "wvc-provider-openrouter-runtime",
  "wvc-selfdev-types",
+ "wvc-session-cache",
  "wvc-tui",
  "wvc-tui-session-picker",
  "wvc-tui-style",
@@ -10064,6 +10065,18 @@ dependencies = [
  "anyhow",
  "chrono",
  "serde",
+]
+
+[[package]]
+name = "wvc-session-cache"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "hex",
+ "serde",
+ "sha2 0.10.9",
+ "tempfile",
+ "wvc-code-graph",
 ]
 
 [[package]]
