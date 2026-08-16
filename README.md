@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/weavecoder-logotipo.svg" alt="Weavecoder" width="400" />
+
 # Weavecoder
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
