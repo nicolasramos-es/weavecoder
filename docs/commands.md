@@ -60,7 +60,7 @@ Login to a provider via OAuth, API key, or local credentials.
 
 ```bash
 wvc login google
-wvc login --provider openai
+wvc login openai
 ```
 
 | Flag | Description |
@@ -229,13 +229,13 @@ wvc usage --json
 
 ---
 
-### `wvc selfdev` (alias: `self-development`)
+### `wvc self-dev` (alias: `selfdev`)
 
 Self-development mode: run as a canary session on the shared server.
 
 ```bash
-wvc selfdev
-wvc selfdev --build
+wvc self-dev
+wvc self-dev --build
 ```
 
 | Flag | Description |
