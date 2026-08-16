@@ -5,13 +5,13 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS%20%7C%20Windows-blue?style=flat-square)](https://github.com/nicolasramos-es/weavecoder/releases)
 
-A **Rust** coding-agent CLI with a native **Agent Swarm** for multiple fast parallel requests, prioritizing local models, and an embedded **Code Knowledge Graph** (tree-sitter) that indexes your entire project codebase.
+**Weavecoder** (binary `wvc`) is a **Rust** coding-agent CLI with a native **Agent Swarm** for multiple fast parallel requests, **local models first**, and an embedded **Code Knowledge Graph** (tree-sitter) that indexes your entire project codebase.
 
 </div>
 
 ## Features
 
-- **Agent Swarm** — multiple requests in parallel, natively orchestrated
+- **Agent Swarm** — orchestrate multiple requests in parallel, natively, from a single CLI
 - **Local models first** — Ollama, LM Studio, oMLX/llama.cpp, or any OpenAI-compatible endpoint
 - **Code Knowledge Graph (CKG)** — indexes code symbols and relationships with tree-sitter:
   - `wvc init` — scans the project, extracts functions/classes/imports/calls, and stores them in SQLite + FTS5
@@ -19,6 +19,7 @@ A **Rust** coding-agent CLI with a native **Agent Swarm** for multiple fast para
   - Graph traversal: "who calls X", "what does Y depend on"
   - Incremental indexing: only re-indexes modified files
 - **Local embeddings** (all-MiniLM-L6-v2) for semantic search by meaning
+- **Cross-platform** — Linux, macOS, and Windows 11
 
 ## Installation
 
@@ -36,9 +37,7 @@ curl -fsSL https://raw.githubusercontent.com/nicolasramos-es/weavecoder/main/ins
 irm https://raw.githubusercontent.com/nicolasramos-es/weavecoder/main/install.ps1 | iex
 ```
 
-> The installer verifies the **SHA-256 checksum** of the binary against the digest published in the release and aborts with a clear error if they don't match. If the repository is private, export `GITHUB_TOKEN` (or `WVC_GITHUB_TOKEN`) before running it.
-
-Need Homebrew, source builds, provider setup, or want an agent to set it up for you? Keep reading — [Quick Start](#quick-start) and [From source](#from-source).
+> The installer downloads the binary from the latest GitHub **Release** and verifies its **SHA-256 checksum** against the digest published in the release, aborting with a clear error if they don't match. If the repository is private, export `GITHUB_TOKEN` (or `WVC_GITHUB_TOKEN`) before running it.
 
 ### From source
 
@@ -54,7 +53,7 @@ cargo build --release --bin wvc
 ```bash
 # 1. Connect a local model (e.g. Ollama)
 brew install ollama && ollama pull llama3.2
-wvc login --provider ollama
+wvc login ollama
 
 # 2. Chat with the agent
 wvc --provider ollama --model llama3.2 run 'hello'
@@ -63,6 +62,13 @@ wvc --provider ollama --model llama3.2 run 'hello'
 wvc init /path/to/project --db ckg.db
 wvc code-search "parseConfig" --db ckg.db
 ```
+
+## Documentation
+
+- [Installation](docs/installation.md) — installers, platform notes, and common setup
+- [Commands](docs/commands.md) — full CLI reference
+- [Architecture](docs/architecture.md) — crates, data flow, and design decisions
+- [Troubleshooting](docs/troubleshooting.md) — common issues and fixes
 
 ## Architecture
 
@@ -77,4 +83,4 @@ wvc code-search "parseConfig" --db ckg.db
 
 MIT — see [LICENSE](LICENSE).
 
-This project builds on the exceptional work of [Jeremy Huang](https://github.com/nicolasramos/weavecoder) (wvc, MIT), on top of which we've added new features and improved the product. The original copyright notice is preserved in full in LICENSE.
+This project builds on the exceptional work of Jeremy Huang (wvc, MIT), on top of which we've added new features and improved the product. The original copyright notice is preserved in full in LICENSE.
