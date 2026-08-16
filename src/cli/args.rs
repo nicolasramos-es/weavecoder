@@ -574,6 +574,17 @@ pub(crate) enum Command {
         #[arg(long = "api-socket")]
         api_socket: Option<String>,
     },
+
+    /// Spawn a swarm worker with an optional profile that shapes its behavior.
+    Swarm {
+        /// Worker profile that defines system prompt and behavior guidelines:
+        /// coder (default), tester, reviewer, researcher.
+        #[arg(long, value_enum)]
+        worker_profile: Option<WorkerProfileArg>,
+
+        /// The task description for the spawned worker.
+        message: String,
+    },
 }
 
 #[derive(Subcommand, Debug)]
@@ -1035,6 +1046,24 @@ pub(crate) enum AmbientCommand {
     /// Run an ambient cycle in a visible TUI (internal, spawned by the ambient runner)
     #[command(hide = true)]
     RunVisible,
+}
+
+/// Worker profile for swarm tasks. Controls the system prompt injected into spawned workers.
+#[derive(Clone, Debug, Default, PartialEq, Eq, ValueEnum)]
+pub(crate) enum WorkerProfileArg {
+    /// Generates code that compiles and passes lint. Focus on correctness, idiomatic patterns,
+    /// minimal viable implementation. Always verify the code compiles before reporting completion.
+    #[default]
+    Coder,
+    /// Writes and executes tests, reports pass/fail with evidence. Focus on coverage of edge cases,
+    /// failure modes, and integration paths. Report exact test commands run, output, and failures.
+    Tester,
+    /// Reviews code against a spec or PR, produces APPROVED/CHANGES_REQUESTED/REJECTED dictamen
+    /// with file:line citations. Never approve without reading every line of the diff.
+    Reviewer,
+    /// Investigates APIs, dependencies, or design questions. Produces a structured summary with
+    /// sources (URLs, docs links, commit refs). Distinguishes confirmed facts from hypotheses.
+    Researcher,
 }
 
 #[derive(Subcommand, Debug)]
