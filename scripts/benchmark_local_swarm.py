@@ -31,7 +31,6 @@ import json
 import os
 import sys
 import time
-import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
@@ -170,7 +169,7 @@ def create_client(base_url: str) -> OpenAI:
     """Create an OpenAI-compatible client pointing at a local model server."""
     return OpenAI(
         base_url=base_url,
-        api_key="not-needed",  # local servers often don't require auth
+        api_key="",  # local servers often don't require auth
     )
 
 
