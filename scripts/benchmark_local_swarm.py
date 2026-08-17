@@ -11,6 +11,16 @@ Measures:
   - Task decomposition quality (subtask coverage)
   - Result fusion success rate
 
+Design note — ThreadPoolExecutor vs multiprocessing:
+  This benchmark uses ThreadPoolExecutor for worker parallelism. Because Python's
+  GIL means threads share the same process address space, RSS measurements reflect
+  shared memory rather than per-process isolation. This is intentional: local LLM
+  servers (Ollama, OMLX) are external processes — each worker makes an HTTP call
+  to the same server, so the RAM cost is dominated by the server process, not the
+  Python workers. If you need true per-process RAM isolation measurements, switch
+  to multiprocessing (see the TODO comment in run_worker). For benchmarking API
+  call throughput and wall-clock speedup, threads are the right choice.
+
 Usage:
     python scripts/benchmark_local_swarm.py                    # defaults
     python scripts/benchmark_local_swarm.py --workers 10       # 10 workers
