@@ -16,6 +16,49 @@ when you need to confirm which models/routes are actually available.
 - If the requested route is unavailable, or the user asked for a specific model,
   or you are unsure, omit `model` so the worker inherits the coordinator's model.
 
+## Worker Profiles
+
+Workers can be assigned a `worker_profile` (via the `worker_profile` field in
+task specs or the `--worker-profile` CLI flag). Each profile injects a short
+system-prompt block into the worker's task prompt, shaping behavior beyond the
+generic swarm instructions.
+
+### Available profiles
+
+- **`coder`** — Generates code that compiles and passes lint. Focus on
+  correctness, idiomatic patterns, and minimal viable implementation. Always
+  verify the code compiles before reporting completion.
+
+- **`tester`** — Writes and executes tests, reports pass/fail with evidence.
+  Focus on coverage of edge cases, failure modes, and integration paths. Report
+  exact test commands run, output, and any failures with reproduction steps.
+
+- **`reviewer`** — Reviews code against a spec or PR, produces a dictamen:
+  `APPROVED`, `CHANGES_REQUESTED`, or `REJECTED`. Must cite specific file:line
+  references, explain why each finding matters, and provide concrete fix
+  suggestions when requesting changes. Never approve without reading every line
+  of the diff.
+
+- **`researcher`** — Investigates APIs, dependencies, or design questions.
+  Produces a structured summary with sources (URLs, docs links, commit refs).
+  Distinguishes confirmed facts from hypotheses. Cites version numbers and
+  environment constraints.
+
+### Profile injection
+
+When a task spec includes `worker_profile`, the swarm server injects the
+corresponding profile block into the worker's prompt before execution. If no
+profile is specified, workers run with default swarm behavior (no profile block).
+
+### CLI usage
+
+```bash
+wvc swarm spawn --worker-profile coder "Implement the auth middleware"
+wvc swarm spawn --worker-profile tester "Write integration tests for the API"
+wvc swarm spawn --worker-profile reviewer "Review PR #42 changes"
+wvc swarm spawn --worker-profile researcher "Investigate migration path for dependency X"
+```
+
 Structure guidance for spawned swarm agents:
 
 - Always pass `label` when spawning (e.g. `label: "api reviewer"`) so the swarm

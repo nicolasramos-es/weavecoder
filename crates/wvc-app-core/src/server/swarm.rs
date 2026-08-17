@@ -1525,11 +1525,53 @@ pub(super) async fn update_member_status_with_report_tldr(
     }
 }
 
+/// Worker profile guidance injected into spawned task prompts.
+fn worker_profile_guideline(profile: &str) -> Option<String> {
+    let trimmed = profile.trim().to_lowercase();
+    match trimmed.as_str() {
+        "coder" => Some(
+            "# Worker Profile: coder\n\
+             You are operating as a **coder** worker. Generate code that compiles and passes lint.\n\
+             Focus on correctness, idiomatic patterns, and minimal viable implementation.\n\
+             Always verify the code compiles before reporting completion. If you encounter\n\
+             build errors, fix them — do not report a partially working solution."
+            .to_string(),
+        ),
+        "tester" => Some(
+            "# Worker Profile: tester\n\
+             You are operating as a **tester** worker. Write and execute tests, then report\n\
+             pass/fail with evidence. Focus on coverage of edge cases, failure modes, and\n\
+             integration paths. Report exact test commands run, output, and any failures\n\
+             with reproduction steps."
+            .to_string(),
+        ),
+        "reviewer" => Some(
+            "# Worker Profile: reviewer\n\
+             You are operating as a **reviewer** worker. Review code against the provided spec\n\
+             or PR and produce a dictamen: APPROVED, CHANGES_REQUESTED, or REJECTED.\n\
+             Cite specific file:line references. Explain why each finding matters and provide\n\
+             concrete fix suggestions when requesting changes. Never approve without reading\n\
+             every line of the diff."
+            .to_string(),
+        ),
+        "researcher" => Some(
+            "# Worker Profile: researcher\n\
+             You are operating as a **researcher** worker. Investigate APIs, dependencies,\n\
+             or design questions and produce a structured summary with sources (URLs, docs\n\
+             links, commit refs). Distinguish confirmed facts from hypotheses. Cite version\n\
+             numbers and environment constraints."
+            .to_string(),
+        ),
+        _ => None, // Unknown profile — no guidance injected
+    }
+}
+
 pub(super) async fn run_swarm_task(
     agent: Arc<Mutex<Agent>>,
     description: &str,
     subagent_type: &str,
     prompt: &str,
+    worker_profile: Option<&str>,
 ) -> Result<String> {
     let started = Instant::now();
     let (provider, registry, session_id, working_dir, coordinator_model, provider_key, route) = {
@@ -1561,14 +1603,34 @@ pub(super) async fn run_swarm_task(
     }
     session.save()?;
 
+    // Inject worker profile guidance into the task prompt when a profile is specified.
+    let mut full_prompt = if let Some(profile) = worker_profile {
+        if let Some(guideline) = worker_profile_guideline(profile) {
+            format!("{}\n\n{}", guideline, prompt)
+        } else {
+            // Unknown profile — log warning but proceed with original prompt
+            crate::logging::event_warn(
+                "SWARM_LIFECYCLE",
+                vec![
+                    ("phase", "unknown_worker_profile".to_string()),
+                    ("profile", profile.to_string()),
+                ],
+            );
+            prompt.to_string()
+        }
+    } else {
+        prompt.to_string()
+    };
+
     log_swarm_lifecycle(
         "task_start",
         vec![
             ("parent_session_id", parent_session_id.clone()),
             ("child_session_id", child_session_id.clone()),
             ("subagent_type", subagent_type.to_string()),
+            ("worker_profile", worker_profile.unwrap_or("none").to_string()),
             ("description_chars", description.chars().count().to_string()),
-            ("prompt_chars", prompt.chars().count().to_string()),
+            ("prompt_chars", full_prompt.chars().count().to_string()),
         ],
     );
 
@@ -1581,7 +1643,7 @@ pub(super) async fn run_swarm_task(
         .apply_to_allowed_set(&mut allowed);
 
     let mut worker = Agent::new_with_session(provider, registry, session, Some(allowed));
-    match worker.run_once_capture(prompt).await {
+    match worker.run_once_capture(&full_prompt).await {
         Ok(output) => {
             log_swarm_lifecycle(
                 "task_done",
@@ -1644,6 +1706,7 @@ No extra text.\n\nRequest:\n{message}"
             description: "Main task".to_string(),
             prompt: message.to_string(),
             subagent_type: Some("general".to_string()),
+            worker_profile: None,
         });
     }
     log_swarm_lifecycle(
@@ -1663,8 +1726,16 @@ No extra text.\n\nRequest:\n{message}"
             .subagent_type
             .clone()
             .unwrap_or_else(|| "general".to_string());
+        let worker_profile = task.worker_profile.clone();
         async move {
-            let output = run_swarm_task(agent, &description, &subagent_type, &prompt).await?;
+            let output = run_swarm_task(
+                agent,
+                &description,
+                &subagent_type,
+                &prompt,
+                worker_profile.as_deref(),
+            )
+            .await?;
             Ok::<(String, String), anyhow::Error>((description, output))
         }
     });
@@ -1706,6 +1777,10 @@ struct SwarmTaskSpec {
     prompt: String,
     #[serde(default)]
     subagent_type: Option<String>,
+    /// Worker profile that defines system prompt and behavior guidelines.
+    /// Supported values: `coder`, `tester`, `reviewer`, `researcher`.
+    #[serde(default)]
+    worker_profile: Option<String>,
 }
 
 fn parse_swarm_tasks(text: &str) -> Vec<SwarmTaskSpec> {
