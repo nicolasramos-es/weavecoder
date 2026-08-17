@@ -1,6 +1,6 @@
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::borrow::Cow;
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::PathBuf;
 use wvc_plan::PlanItem;
 
@@ -614,11 +614,12 @@ pub fn summarize_plan_items(items: &[PlanItem], max_items: usize) -> String {
     summary
 }
 
-/// Maximum number of diff lines to include in compressed evidence.
-/// When a file's unified diff exceeds this, the output is truncated with an indicator.
+/// Per-file budget of diff lines in compressed evidence. A file whose diff
+/// would push the running total past this budget is skipped with a
+/// `# [truncated: ...]` marker instead of being included.
 pub const MAX_EVIDENCE_DIFF_LINES: usize = 200;
 
-/// Maximum number of diff lines the coordinator expects for a single file's evidence.
+/// Maximum total number of lines in the compressed evidence output (all files).
 /// The acceptance criterion states: 500-line file → ≤80 diff lines.
 pub const MAX_EVIDENCE_DIFF_OUTPUT_LINES: usize = 80;
 
@@ -642,8 +643,6 @@ pub struct FileEvidence {
 /// and groups them by file path. Each group becomes a `FileEvidence` entry
 /// with the first occurrence's hash (if present) and all raw evidence text.
 pub fn extract_file_evidence(report: &str) -> Vec<FileEvidence> {
-    use std::collections::BTreeMap;
-
     let mut by_file: BTreeMap<String, (Option<String>, Vec<String>)> = BTreeMap::new();
 
     for line in report.lines() {
@@ -752,16 +751,12 @@ pub fn generate_unified_diff(
     let mut output = String::new();
 
     // Header with file path and optional hash
-    if let Some(h) = hash {
-        output.push_str(&format!("--- {} (hash: {})\n", file_path, h));
-        output.push_str(&format!("+++ {} (compressed evidence)\n", file_path));
-    } else {
-        output.push_str(&format!("--- {}\n", file_path));
-        output.push_str(&format!("+++ {} (compressed evidence)\n", file_path));
-    }
+    let hash_part = hash.map(|h| format!(" (hash: {h})")).unwrap_or_default();
+    output.push_str(&format!("--- {file_path}{hash_part}\n"));
+    output.push_str(&format!("+++ {file_path} (compressed evidence)\n"));
 
     // Build hunks: find which original lines are in the evidence set
-    let evidence_set: std::collections::HashSet<&str> = evidence_lines.iter().copied().collect();
+    let evidence_set: HashSet<&str> = evidence_lines.iter().copied().collect();
 
     if evidence_set.is_empty() {
         return output;
@@ -786,13 +781,9 @@ pub fn generate_unified_diff(
 
     // For each hunk, generate unified diff format with context lines
     for hunk in &hunks {
-        if hunk.is_empty() {
-            continue;
-        }
-
         // Calculate context range with padding
-        let start = hunk.first().copied().unwrap_or(0);
-        let end = hunk.last().copied().unwrap_or(0);
+        let start = hunk.first().copied().unwrap();
+        let end = hunk.last().copied().unwrap();
 
         let ctx_start = start.saturating_sub(EVIDENCE_DIFF_CONTEXT_LINES);
         let ctx_end = (end + EVIDENCE_DIFF_CONTEXT_LINES).min(original_lines.len().saturating_sub(1));
@@ -803,23 +794,14 @@ pub fn generate_unified_diff(
         let hunk_len = hunk_end - hunk_start + 1;
         output.push_str(&format!("@@ -{},{} +{},{} @@\n", hunk_start, hunk_len, hunk_start, hunk_len));
 
-        // Output context and evidence lines
+        // Output context and evidence lines: evidence lines are marked as
+        // added ('+'), plain context lines are neutral (' ').
         for line_idx in ctx_start..=ctx_end {
-            let line = original_lines[line_idx];
-            if hunk.contains(&line_idx) {
-                // This is an evidence line — mark as added (context from original perspective, it's "new" in the compressed view)
-                output.push('+');
-                output.push_str(line);
-                if line_idx != ctx_end {
-                    output.push('\n');
-                }
-            } else {
-                // Context line — neutral
-                output.push(' ');
-                output.push_str(line);
-                if line_idx != ctx_end {
-                    output.push('\n');
-                }
+            let marker = if hunk.contains(&line_idx) { '+' } else { ' ' };
+            output.push(marker);
+            output.push_str(original_lines[line_idx]);
+            if line_idx != ctx_end {
+                output.push('\n');
             }
         }
     }
@@ -858,14 +840,15 @@ pub fn compress_evidence_to_diff(
             output.push_str(&format!("# Hash: {}\n", h));
         }
 
+        // Evidence lines for this file, as reported by the worker.
+        let ev_lines: Vec<&str> = entry.raw_evidence.lines().collect();
+
         if let Some(ref orig_lines) = original_lines {
-            // Extract evidence lines from the raw evidence for diff generation
-            let ev_lines: Vec<&str> = entry.raw_evidence.lines().collect();
             let diff = generate_unified_diff(&entry.path, entry.hash.as_deref(), orig_lines, &ev_lines);
             let diff_line_count = diff.lines().count();
 
             if total_diff_lines + diff_line_count > MAX_EVIDENCE_DIFF_LINES {
-                // Would exceed the max — truncate this file's contribution
+                // Would exceed the per-file budget — skip this file's contribution
                 output.push_str(&format!(
                     "# [truncated: evidence for {} exceeds budget]\n",
                     entry.path
@@ -877,9 +860,8 @@ pub fn compress_evidence_to_diff(
             total_diff_lines += diff_line_count;
         } else {
             // Fallback: no original lines provided, just list evidence with markers
-            let ev_lines: Vec<&str> = entry.raw_evidence.lines().collect();
             for line in &ev_lines {
-                output.push_str(&format!("+ {}\n", line));
+                output.push_str(&format!("+ {line}\n"));
             }
             total_diff_lines += ev_lines.len();
         }
@@ -894,7 +876,6 @@ pub fn compress_evidence_to_diff(
 
     if line_count > MAX_EVIDENCE_DIFF_OUTPUT_LINES {
         let remaining = MAX_EVIDENCE_DIFF_OUTPUT_LINES - 1; // leave room for indicator
-        let _truncated_count = line_count - remaining;
         let mut result: Vec<String> = output_lines[..remaining].iter().map(|s| s.to_string()).collect();
         result.push(format!(
             "[truncated: {} total lines, showing last {}]",
