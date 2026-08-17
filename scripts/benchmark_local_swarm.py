@@ -649,7 +649,7 @@ Examples:
     parser.add_argument(
         "--task", "-T",
         type=str,
-        default="Refactor the authentication module in /Users/nramos/weavecoder/crates/wvc-base/src/auth/ to support OAuth2 PKCE flow. Identify all files that need changes, propose the modifications, and write the code for the auth provider abstraction layer.",
+        default="Refactor the authentication module to support OAuth2 PKCE flow. Identify all files that need changes, propose the modifications, and write the code for the auth provider abstraction layer.",
         help="Task description (default: a sample refactoring task)",
     )
     parser.add_argument(
