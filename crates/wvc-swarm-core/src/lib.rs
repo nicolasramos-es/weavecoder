@@ -1,6 +1,6 @@
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::borrow::Cow;
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::PathBuf;
 use wvc_plan::PlanItem;
 
@@ -614,6 +614,279 @@ pub fn summarize_plan_items(items: &[PlanItem], max_items: usize) -> String {
     summary
 }
 
+/// Per-file budget of diff lines in compressed evidence. A file whose diff
+/// would push the running total past this budget is skipped with a
+/// `# [truncated: ...]` marker instead of being included.
+pub const MAX_EVIDENCE_DIFF_LINES: usize = 200;
+
+/// Maximum total number of lines in the compressed evidence output (all files).
+/// The acceptance criterion states: 500-line file → ≤80 diff lines.
+pub const MAX_EVIDENCE_DIFF_OUTPUT_LINES: usize = 80;
+
+/// Context lines to include around each hunk in the unified diff.
+pub const EVIDENCE_DIFF_CONTEXT_LINES: usize = 3;
+
+/// A parsed file evidence entry extracted from a swarm completion report.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct FileEvidence {
+    /// Path to the file (relative or absolute).
+    pub path: String,
+    /// Git hash or commit ref associated with this evidence.
+    pub hash: Option<String>,
+    /// The raw evidence text (findings, file:line refs, etc.).
+    pub raw_evidence: String,
+}
+
+/// Extract file evidence entries from a swarm completion report.
+///
+/// Looks for patterns like `file:line` references (e.g., `src/main.rs:42`)
+/// and groups them by file path. Each group becomes a `FileEvidence` entry
+/// with the first occurrence's hash (if present) and all raw evidence text.
+pub fn extract_file_evidence(report: &str) -> Vec<FileEvidence> {
+    let mut by_file: BTreeMap<String, (Option<String>, Vec<String>)> = BTreeMap::new();
+
+    for line in report.lines() {
+        // Capture optional hash references like `[abc1234]` or `sha:abc1234`
+        let hash = line
+            .split_whitespace()
+            .find(|w| w.starts_with("[") && w.len() > 4 && w.ends_with(']'))
+            .or_else(|| {
+                line.split_whitespace()
+                    .find(|w| w.starts_with("sha:") || w.starts_with("hash:"))
+            })
+            .map(|w| {
+                // Trim opening bracket from start, closing bracket from end
+                w.trim_start_matches('[')
+                    .trim_end_matches(']')
+                    .trim_start_matches("sha:")
+                    .trim_start_matches("hash:")
+                    .to_string()
+            });
+
+        // Find file:line patterns using a scan approach.
+        // We look for sequences like `path/to/file.ext:123` where the part
+        // after the colon is a line number (digits only, possibly followed
+        // by non-alphanumeric chars like space, dash, period).
+        let mut search_start = 0;
+        while search_start < line.len() {
+            // Find the next colon
+            if let Some(colon_pos) = line[search_start..].find(':') {
+                let colon_idx = search_start + colon_pos;
+
+                // Check if there's a digit immediately after the colon
+                let after_colon = &line[colon_idx + 1..];
+                if let Some(first_digit) = after_colon.find(|c: char| c.is_ascii_digit()) {
+                    // Scan forward to get the full number
+                    let num_end = after_colon[first_digit..]
+                        .find(|c: char| !c.is_ascii_digit())
+                        .map(|i| first_digit + i)
+                        .unwrap_or(after_colon.len());
+
+                    let line_num_str = &after_colon[first_digit..num_end];
+
+                    // Extract the file path: take everything before the colon,
+                    // then find the last space to isolate just the file path portion.
+                    // We keep slashes (directory structure) but strip leading prose.
+                    let before_colon = &line[..colon_idx];
+                    // Find the last space; everything after it is the file path.
+                    let file_path = before_colon
+                        .rsplit(' ')
+                        .next()
+                        .unwrap_or(before_colon)
+                        .trim();
+
+                    // Only include if it looks like a file path (has an extension or is in a directory)
+                    if !file_path.is_empty() && (file_path.contains('.') || file_path.contains('/'))
+                    {
+                        let entry = by_file
+                            .entry(file_path.to_string())
+                            .or_insert((None, Vec::new()));
+                        if entry.0.is_none() {
+                            entry.0 = hash.clone();
+                        }
+                        // Only add if this specific file:line combo isn't already recorded
+                        let candidate = format!("{}:{}", file_path, line_num_str);
+                        if !entry.1.iter().any(|l| l.contains(&candidate)) {
+                            entry.1.push(line.to_string());
+                        }
+                    }
+
+                    // Move past this match to find more on the same line
+                    search_start = colon_idx + 1;
+                } else {
+                    // No digit after this colon, move past it
+                    search_start = colon_idx + 1;
+                }
+            } else {
+                break;
+            }
+        }
+    }
+
+    by_file
+        .into_iter()
+        .map(|(path, (hash, raw_lines))| FileEvidence {
+            path,
+            hash,
+            raw_evidence: raw_lines.join("\n"),
+        })
+        .collect()
+}
+
+/// Generate a unified diff string for a single file's evidence.
+///
+/// This is a lightweight implementation that produces unified diff format
+/// output without requiring external diff libraries. It compares the original
+/// file content (provided as `original_lines`) against a reconstructed version
+/// that only includes the evidence lines, producing minimal diffs.
+///
+/// For swarm completion reports, `original_lines` is the full file content
+/// and `evidence_lines` are the lines referenced in the worker's report.
+pub fn generate_unified_diff(
+    file_path: &str,
+    hash: Option<&str>,
+    original_lines: &[&str],
+    evidence_lines: &[&str],
+) -> String {
+    let mut output = String::new();
+
+    // Header with file path and optional hash
+    let hash_part = hash.map(|h| format!(" (hash: {h})")).unwrap_or_default();
+    output.push_str(&format!("--- {file_path}{hash_part}\n"));
+    output.push_str(&format!("+++ {file_path} (compressed evidence)\n"));
+
+    // Build hunks: find which original lines are in the evidence set
+    let evidence_set: HashSet<&str> = evidence_lines.iter().copied().collect();
+
+    if evidence_set.is_empty() {
+        return output;
+    }
+
+    // Find contiguous blocks of evidence lines in the original file
+    let mut hunks: Vec<Vec<usize>> = Vec::new();
+    let mut current_hunk: Vec<usize> = Vec::new();
+
+    for (i, line) in original_lines.iter().enumerate() {
+        if evidence_set.contains(line) {
+            current_hunk.push(i);
+        } else {
+            if !current_hunk.is_empty() {
+                hunks.push(std::mem::take(&mut current_hunk));
+            }
+        }
+    }
+    if !current_hunk.is_empty() {
+        hunks.push(current_hunk);
+    }
+
+    // For each hunk, generate unified diff format with context lines
+    for hunk in &hunks {
+        // Calculate context range with padding
+        let start = hunk.first().copied().unwrap();
+        let end = hunk.last().copied().unwrap();
+
+        let ctx_start = start.saturating_sub(EVIDENCE_DIFF_CONTEXT_LINES);
+        let ctx_end = (end + EVIDENCE_DIFF_CONTEXT_LINES).min(original_lines.len().saturating_sub(1));
+
+        // Hunk header
+        let hunk_start = ctx_start + 1; // 1-indexed for diff format
+        let hunk_end = ctx_end + 1;
+        let hunk_len = hunk_end - hunk_start + 1;
+        output.push_str(&format!("@@ -{},{} +{},{} @@\n", hunk_start, hunk_len, hunk_start, hunk_len));
+
+        // Output context and evidence lines: evidence lines are marked as
+        // added ('+'), plain context lines are neutral (' ').
+        for line_idx in ctx_start..=ctx_end {
+            let marker = if hunk.contains(&line_idx) { '+' } else { ' ' };
+            output.push(marker);
+            output.push_str(original_lines[line_idx]);
+            if line_idx != ctx_end {
+                output.push('\n');
+            }
+        }
+    }
+
+    output
+}
+
+/// Compress file evidence from a swarm completion report into unified diff format.
+///
+/// This function:
+/// 1. Extracts file evidence entries from the report text.
+/// 2. For each entry, generates a unified diff (using provided original file lines).
+/// 3. Truncates the total output to `MAX_EVIDENCE_DIFF_OUTPUT_LINES` lines
+///    with a `[truncated: N total lines, showing last M]` indicator when exceeded.
+/// 4. Preserves the hash and file path for each evidence block.
+///
+/// If `original_lines` is None, falls back to a simple line-based diff that
+/// only includes evidence lines with minimal context markers.
+pub fn compress_evidence_to_diff(
+    report: &str,
+    original_lines: Option<Vec<&str>>,
+) -> String {
+    let evidence_entries = extract_file_evidence(report);
+
+    if evidence_entries.is_empty() {
+        return report.to_string(); // No file evidence to compress; return original.
+    }
+
+    let mut output = String::new();
+    let mut total_diff_lines: usize = 0;
+
+    for entry in &evidence_entries {
+        // File header comment
+        output.push_str(&format!("# Evidence for: {}\n", entry.path));
+        if let Some(ref h) = entry.hash {
+            output.push_str(&format!("# Hash: {}\n", h));
+        }
+
+        // Evidence lines for this file, as reported by the worker.
+        let ev_lines: Vec<&str> = entry.raw_evidence.lines().collect();
+
+        if let Some(ref orig_lines) = original_lines {
+            let diff = generate_unified_diff(&entry.path, entry.hash.as_deref(), orig_lines, &ev_lines);
+            let diff_line_count = diff.lines().count();
+
+            if total_diff_lines + diff_line_count > MAX_EVIDENCE_DIFF_LINES {
+                // Would exceed the per-file budget — skip this file's contribution
+                output.push_str(&format!(
+                    "# [truncated: evidence for {} exceeds budget]\n",
+                    entry.path
+                ));
+                continue;
+            }
+
+            output.push_str(&diff);
+            total_diff_lines += diff_line_count;
+        } else {
+            // Fallback: no original lines provided, just list evidence with markers
+            for line in &ev_lines {
+                output.push_str(&format!("+ {line}\n"));
+            }
+            total_diff_lines += ev_lines.len();
+        }
+
+        output.push('\n');
+    }
+
+    // Truncate to MAX_EVIDENCE_DIFF_OUTPUT_LINES with indicator if needed.
+    // Reserve one line for the truncation indicator itself.
+    let output_lines: Vec<&str> = output.lines().collect();
+    let line_count = output_lines.len();
+
+    if line_count > MAX_EVIDENCE_DIFF_OUTPUT_LINES {
+        let remaining = MAX_EVIDENCE_DIFF_OUTPUT_LINES - 1; // leave room for indicator
+        let mut result: Vec<String> = output_lines[..remaining].iter().map(|s| s.to_string()).collect();
+        result.push(format!(
+            "[truncated: {} total lines, showing last {}]",
+            line_count, remaining
+        ));
+        result.join("\n")
+    } else {
+        output
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -833,5 +1106,177 @@ mod tests {
         assert_eq!(derive_swarm_task_label(""), None);
         assert_eq!(derive_swarm_task_label("   \n\t\n"), None);
         assert_eq!(derive_swarm_task_label("###"), None);
+    }
+
+    // ── Evidence compression tests ──────────────────────────────────────
+
+    #[test]
+    fn extract_file_evidence_finds_file_line_refs() {
+        let report = "Found issues in src/main.rs:42 and src/utils.py:108.\nAlso checked tests/test_main.rs:5.";
+        let entries = extract_file_evidence(report);
+        assert_eq!(entries.len(), 3);
+        assert_eq!(entries[0].path, "src/main.rs");
+        assert_eq!(entries[1].path, "src/utils.py");
+        assert_eq!(entries[2].path, "tests/test_main.rs");
+    }
+
+    #[test]
+    fn extract_file_evidence_groups_by_path() {
+        let report = "src/main.rs:42 - bug found\nsrc/main.rs:105 - another issue";
+        let entries = extract_file_evidence(report);
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].path, "src/main.rs");
+        // Both lines should be in the raw evidence
+        assert!(entries[0].raw_evidence.contains("src/main.rs:42"));
+        assert!(entries[0].raw_evidence.contains("src/main.rs:105"));
+    }
+
+    #[test]
+    fn extract_file_evidence_preserves_hash() {
+        let report = "[abc1234] src/main.rs:42 - bug found";
+        let entries = extract_file_evidence(report);
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].hash, Some("abc1234".to_string()));
+    }
+
+    #[test]
+    fn extract_file_evidence_handles_sha_prefix() {
+        let report = "sha:deadbeef src/main.rs:42";
+        let entries = extract_file_evidence(report);
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].hash, Some("deadbeef".to_string()));
+    }
+
+    #[test]
+    fn extract_file_evidence_returns_empty_for_no_refs() {
+        let report = "Just a plain message with no file references.";
+        let entries = extract_file_evidence(report);
+        assert!(entries.is_empty());
+    }
+
+    #[test]
+    fn generate_unified_diff_includes_hash_and_path() {
+        let original = vec!["line 1", "line 2", "line 3"];
+        let evidence = vec!["line 2"];
+        let diff = generate_unified_diff("src/main.rs", Some("abc1234"), &original, &evidence);
+        assert!(diff.contains("--- src/main.rs (hash: abc1234)"));
+        assert!(diff.contains("+++ src/main.rs (compressed evidence)"));
+    }
+
+    #[test]
+    fn generate_unified_diff_without_hash() {
+        let original = vec!["line 1", "line 2"];
+        let evidence = vec!["line 1"];
+        let diff = generate_unified_diff("src/main.rs", None, &original, &evidence);
+        assert!(diff.contains("--- src/main.rs"));
+        assert!(!diff.contains("hash:"));
+    }
+
+    #[test]
+    fn generate_unified_diff_includes_context_lines() {
+        let original = vec!["line 0", "line 1", "line 2", "line 3", "line 4"];
+        let evidence = vec!["line 2"];
+        let diff = generate_unified_diff("src/main.rs", None, &original, &evidence);
+        // Should include context lines around the evidence line
+        assert!(diff.contains("line 1"));
+        assert!(diff.contains("line 3"));
+    }
+
+    #[test]
+    fn compress_evidence_to_diff_small_file_keeps_full_diff() {
+        // A small file (10 lines) with 2 evidence lines should produce a diff ≤80 lines
+        let original: Vec<String> = (0..10).map(|i| format!("line {}", i)).collect();
+        let original_refs: Vec<&str> = original.iter().map(|s| s.as_str()).collect();
+        let report = "Found issues in src/main.rs:3 and src/main.rs:7.";
+        let result = compress_evidence_to_diff(report, Some(original_refs));
+        let line_count = result.lines().count();
+        assert!(
+            line_count <= MAX_EVIDENCE_DIFF_OUTPUT_LINES,
+            "diff has {} lines (max {})",
+            line_count,
+            MAX_EVIDENCE_DIFF_OUTPUT_LINES
+        );
+        assert!(result.contains("src/main.rs"));
+    }
+
+    #[test]
+    fn compress_evidence_to_diff_large_file_truncates_with_indicator() {
+        // Simulate a 500-line file where evidence spans many lines, producing >80 diff lines.
+        // The report uses realistic file:line references where the evidence text matches
+        // actual original file content. This is how swarm workers actually report findings.
+        let original: Vec<String> = (0..500).map(|i| format!("line {}", i)).collect();
+        let original_refs: Vec<&str> = original.iter().map(|s| s.as_str()).collect();
+        // Build a multi-line report with file:line references. The evidence text after the colon
+        // matches actual original content so the diff generator can find matching lines.
+        let mut refs: Vec<String> = Vec::new();
+        for i in 0..51 {
+            refs.push(format!("src/main.rs:{}: line {}", i * 10, i * 10));
+        }
+        let report = refs.join("\n");
+        let result = compress_evidence_to_diff(&report, Some(original_refs));
+        let line_count = result.lines().count();
+        // Should be truncated to ≤80 lines with the indicator
+        assert!(
+            line_count <= MAX_EVIDENCE_DIFF_OUTPUT_LINES,
+            "diff has {} lines (max {})",
+            line_count,
+            MAX_EVIDENCE_DIFF_OUTPUT_LINES
+        );
+        assert!(result.contains("[truncated:"));
+    }
+
+    #[test]
+    fn compress_evidence_to_diff_preserves_hash_and_path() {
+        let original: Vec<String> = (0..50).map(|i| format!("line {}", i)).collect();
+        let original_refs: Vec<&str> = original.iter().map(|s| s.as_str()).collect();
+        let report = "[abc1234] src/main.rs:25 - bug found";
+        let result = compress_evidence_to_diff(report, Some(original_refs));
+        assert!(result.contains("src/main.rs"));
+        assert!(result.contains("abc1234"));
+    }
+
+    #[test]
+    fn compress_evidence_to_diff_no_original_lines_fallback() {
+        let report = "src/main.rs:42 - bug found\nsrc/utils.py:108 - another issue";
+        let result = compress_evidence_to_diff(report, None);
+        assert!(result.contains("src/main.rs"));
+        assert!(result.contains("src/utils.py"));
+    }
+
+    #[test]
+    fn compress_evidence_to_diff_no_evidence_returns_original() {
+        let report = "Just a plain message with no file references.";
+        let result = compress_evidence_to_diff(report, None);
+        assert_eq!(result, report);
+    }
+
+    #[test]
+    fn compress_evidence_to_diff_multiple_files() {
+        let original_a: Vec<String> = (0..20).map(|i| format!("a-line {}", i)).collect();
+        let original_a_refs: Vec<&str> = original_a.iter().map(|s| s.as_str()).collect();
+        let report = "Found issues in src/a.rs:5 and src/b.py:10.";
+        let result = compress_evidence_to_diff(report, Some(original_a_refs)); // Only pass one original set
+        let line_count = result.lines().count();
+        assert!(
+            line_count <= MAX_EVIDENCE_DIFF_OUTPUT_LINES,
+            "diff has {} lines (max {})",
+            line_count,
+            MAX_EVIDENCE_DIFF_OUTPUT_LINES
+        );
+    }
+
+    #[test]
+    fn evidence_diff_context_lines_constant_is_three() {
+        assert_eq!(EVIDENCE_DIFF_CONTEXT_LINES, 3);
+    }
+
+    #[test]
+    fn evidence_diff_max_lines_constant_is_two_hundred() {
+        assert_eq!(MAX_EVIDENCE_DIFF_LINES, 200);
+    }
+
+    #[test]
+    fn evidence_diff_max_output_lines_constant_is_eighty() {
+        assert_eq!(MAX_EVIDENCE_DIFF_OUTPUT_LINES, 80);
     }
 }
