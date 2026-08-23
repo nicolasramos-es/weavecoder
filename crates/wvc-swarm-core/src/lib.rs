@@ -879,7 +879,7 @@ pub fn compress_evidence_to_diff(
         let mut result: Vec<String> = output_lines[..remaining].iter().map(|s| s.to_string()).collect();
         result.push(format!(
             "[truncated: {} total lines, showing last {}]",
-            line_count, remaining
+            line_count, MAX_EVIDENCE_DIFF_LINES
         ));
         result.join("\n")
     } else {
