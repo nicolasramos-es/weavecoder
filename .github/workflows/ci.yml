@@ -51,8 +51,8 @@ jobs:
 
       - name: Run clippy with warnings denied (own crates)
         # Phase 1 ships the Code Knowledge Graph (wvc-code-graph). The rest of
-        # the workspace is inherited from the jcode fork; its lint debt is
-        # tracked separately and must not block Phase 1 delivery.
+        # the workspace inherits fork lint debt that is tracked separately and
+        # must not block Phase 1 delivery.
         run: |
           cargo clippy -p wvc-code-graph --all-targets --all-features -- -D warnings
 

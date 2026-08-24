@@ -84,7 +84,7 @@ pub(crate) struct ResolvedLaunchHotkey {
 fn cd_from_dir_file(dir_file: &str) -> String {
     let escaped = escape_shell_single_quotes(dir_file);
     format!(
-        "__jc_dir=\"$(cat '{escaped}' 2>/dev/null)\"; if [ -n \"$__jc_dir\" ] && [ -d \"$__jc_dir\" ]; then cd \"$__jc_dir\"; else cd \"$HOME\"; fi; "
+        "__wvc_dir=\"$(cat '{escaped}' 2>/dev/null)\"; if [ -n \"$__wvc_dir\" ] && [ -d \"$__wvc_dir\" ]; then cd \"$__wvc_dir\"; else cd \"$HOME\"; fi; "
     )
 }
 
