@@ -349,6 +349,39 @@ pub const OLLAMA_PROFILE: OpenAiCompatibleProfile = OpenAiCompatibleProfile {
     requires_api_key: false,
 };
 
+pub const LLAMACPP_PROFILE: OpenAiCompatibleProfile = OpenAiCompatibleProfile {
+    id: "llamacpp",
+    display_name: "llama.cpp",
+    api_base: "http://localhost:8080/v1",
+    api_key_env: "LLAMACPP_API_KEY",
+    env_file: "llamacpp.env",
+    setup_url: "https://github.com/ggml-org/llama.cpp",
+    default_model: None,
+    requires_api_key: false,
+};
+
+pub const VLLM_PROFILE: OpenAiCompatibleProfile = OpenAiCompatibleProfile {
+    id: "vllm",
+    display_name: "vLLM",
+    api_base: "http://localhost:8000/v1",
+    api_key_env: "VLLM_API_KEY",
+    env_file: "vllm.env",
+    setup_url: "https://docs.vllm.ai",
+    default_model: None,
+    requires_api_key: false,
+};
+
+pub const OMLX_PROFILE: OpenAiCompatibleProfile = OpenAiCompatibleProfile {
+    id: "omlx",
+    display_name: "oMLX",
+    api_base: "http://localhost:8081/v1",
+    api_key_env: "OMLX_API_KEY",
+    env_file: "omlx.env",
+    setup_url: "https://github.com/ml-explore/mlx-examples",
+    default_model: None,
+    requires_api_key: false,
+};
+
 pub const CHUTES_PROFILE: OpenAiCompatibleProfile = OpenAiCompatibleProfile {
     id: "chutes",
     display_name: "Chutes",
@@ -432,7 +465,7 @@ pub const OPENAI_COMPAT_PROFILE: OpenAiCompatibleProfile = OpenAiCompatibleProfi
     requires_api_key: true,
 };
 
-pub(crate) const OPENAI_COMPAT_PROFILES: [OpenAiCompatibleProfile; 37] = [
+pub(crate) const OPENAI_COMPAT_PROFILES: [OpenAiCompatibleProfile; 40] = [
     OPENCODE_PROFILE,
     OPENCODE_GO_PROFILE,
     ZAI_PROFILE,
@@ -469,6 +502,9 @@ pub(crate) const OPENAI_COMPAT_PROFILES: [OpenAiCompatibleProfile; 37] = [
     CELERIS_PROFILE,
     LMSTUDIO_PROFILE,
     OLLAMA_PROFILE,
+    LLAMACPP_PROFILE,
+    VLLM_PROFILE,
+    OMLX_PROFILE,
     OPENAI_COMPAT_PROFILE,
 ];
 
@@ -990,6 +1026,45 @@ pub const OLLAMA_LOGIN_PROVIDER: LoginProviderDescriptor = LoginProviderDescript
     order: LoginProviderSurfaceOrder::new(Some(35), Some(35), Some(35), Some(35), Some(35)),
 };
 
+pub const LLAMACPP_LOGIN_PROVIDER: LoginProviderDescriptor = LoginProviderDescriptor {
+    id: "llamacpp",
+    display_name: "llama.cpp",
+    auth_kind: LoginProviderAuthKind::Local,
+    auth_state_key: LoginProviderAuthStateKey::OpenRouterLike,
+    auth_status_method: "local endpoint",
+    aliases: &["llama-cpp", "llamacpp-server"],
+    menu_detail: "local OpenAI-compatible endpoint",
+    recommended: false,
+    target: LoginProviderTarget::OpenAiCompatible(LLAMACPP_PROFILE),
+    order: LoginProviderSurfaceOrder::new(Some(35), Some(35), Some(35), Some(35), Some(35)),
+};
+
+pub const VLLM_LOGIN_PROVIDER: LoginProviderDescriptor = LoginProviderDescriptor {
+    id: "vllm",
+    display_name: "vLLM",
+    auth_kind: LoginProviderAuthKind::Local,
+    auth_state_key: LoginProviderAuthStateKey::OpenRouterLike,
+    auth_status_method: "local endpoint",
+    aliases: &[],
+    menu_detail: "local OpenAI-compatible endpoint",
+    recommended: false,
+    target: LoginProviderTarget::OpenAiCompatible(VLLM_PROFILE),
+    order: LoginProviderSurfaceOrder::new(Some(35), Some(35), Some(35), Some(35), Some(35)),
+};
+
+pub const OMLX_LOGIN_PROVIDER: LoginProviderDescriptor = LoginProviderDescriptor {
+    id: "omlx",
+    display_name: "oMLX",
+    auth_kind: LoginProviderAuthKind::Local,
+    auth_state_key: LoginProviderAuthStateKey::OpenRouterLike,
+    auth_status_method: "local endpoint",
+    aliases: &[],
+    menu_detail: "local OpenAI-compatible endpoint",
+    recommended: false,
+    target: LoginProviderTarget::OpenAiCompatible(OMLX_PROFILE),
+    order: LoginProviderSurfaceOrder::new(Some(35), Some(35), Some(35), Some(35), Some(35)),
+};
+
 pub const OPENAI_COMPAT_LOGIN_PROVIDER: LoginProviderDescriptor = LoginProviderDescriptor {
     id: "openai-compatible",
     display_name: "OpenAI-compatible",
@@ -1112,7 +1187,7 @@ pub const GOOGLE_LOGIN_PROVIDER: LoginProviderDescriptor = LoginProviderDescript
     order: LoginProviderSurfaceOrder::new(Some(13), None, None, None, None),
 };
 
-pub(crate) const LOGIN_PROVIDERS: [LoginProviderDescriptor; 48] = [
+pub(crate) const LOGIN_PROVIDERS: [LoginProviderDescriptor; 51] = [
     AUTO_IMPORT_LOGIN_PROVIDER,
     CLAUDE_LOGIN_PROVIDER,
     ANTHROPIC_API_LOGIN_PROVIDER,
@@ -1154,6 +1229,9 @@ pub(crate) const LOGIN_PROVIDERS: [LoginProviderDescriptor; 48] = [
     CELERIS_LOGIN_PROVIDER,
     LMSTUDIO_LOGIN_PROVIDER,
     OLLAMA_LOGIN_PROVIDER,
+    LLAMACPP_LOGIN_PROVIDER,
+    VLLM_LOGIN_PROVIDER,
+    OMLX_LOGIN_PROVIDER,
     OPENAI_COMPAT_LOGIN_PROVIDER,
     CURSOR_LOGIN_PROVIDER,
     COPILOT_LOGIN_PROVIDER,

@@ -178,7 +178,18 @@ pub async fn run_login(
                 );
             }
             crate::telemetry::record_setup_step_once("login_picker_opened");
-            let providers = crate::provider_catalog::cli_login_providers();
+            let all_providers = crate::provider_catalog::cli_login_providers();
+            // Only surface local model servers that are actually running, so
+            // the picker does not advertise a dead llama.cpp/vLLM/oMLX/LM
+            // Studio/Ollama endpoint. Cloud providers are always shown.
+            let detected = crate::local_detect::detect_local_providers(
+                crate::local_detect::LOCAL_DETECT_TIMEOUT,
+            )
+            .await;
+            let providers = crate::local_detect::filter_login_providers_by_local_detection(
+                &all_providers,
+                &detected,
+            );
             if !io::stdin().is_terminal() {
                 anyhow::bail!(
                     "`wvc login --provider auto` requires an interactive terminal. Use `wvc login --provider <provider>` in non-interactive mode."

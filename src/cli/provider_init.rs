@@ -99,6 +99,9 @@ pub enum ProviderChoice {
     #[value(alias = "lm-studio")]
     Lmstudio,
     Ollama,
+    Llamacpp,
+    Vllm,
+    Omlx,
     Chutes,
     #[value(alias = "cerebrascode", alias = "cerberascode")]
     Cerebras,
@@ -168,6 +171,9 @@ impl ProviderChoice {
             Self::Celeris => "celeris",
             Self::Lmstudio => "lmstudio",
             Self::Ollama => "ollama",
+            Self::Llamacpp => "llamacpp",
+            Self::Vllm => "vllm",
+            Self::Omlx => "omlx",
             Self::Chutes => "chutes",
             Self::Cerebras => "cerebras",
             Self::AlibabaCodingPlan => "alibaba-coding-plan",
@@ -336,6 +342,18 @@ const PROVIDER_CHOICE_LOGIN_PROVIDERS: &[(ProviderChoice, LoginProviderDescripto
     (
         ProviderChoice::Ollama,
         crate::provider_catalog::OLLAMA_LOGIN_PROVIDER,
+    ),
+    (
+        ProviderChoice::Llamacpp,
+        crate::provider_catalog::LLAMACPP_LOGIN_PROVIDER,
+    ),
+    (
+        ProviderChoice::Vllm,
+        crate::provider_catalog::VLLM_LOGIN_PROVIDER,
+    ),
+    (
+        ProviderChoice::Omlx,
+        crate::provider_catalog::OMLX_LOGIN_PROVIDER,
     ),
     (
         ProviderChoice::Chutes,
@@ -1532,6 +1550,9 @@ async fn init_provider_with_options(
         | ProviderChoice::Celeris
         | ProviderChoice::Lmstudio
         | ProviderChoice::Ollama
+        | ProviderChoice::Llamacpp
+        | ProviderChoice::Vllm
+        | ProviderChoice::Omlx
         | ProviderChoice::Chutes
         | ProviderChoice::Cerebras
         | ProviderChoice::AlibabaCodingPlan
