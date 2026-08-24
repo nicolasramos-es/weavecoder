@@ -7,7 +7,7 @@
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::Mutex;
+use std::sync::{Mutex, OnceLock};
 
 /// Maximum number of entries per cache.
 const MAX_ENTRIES: usize = 50;
@@ -103,7 +103,7 @@ impl<V> LruCache<V> {
 
 // ── Code search cache ───────────────────────────────────────────────────
 
-use wvc_code_graph::{HybridSearch, SearchResult};
+use wvc_code_graph::SearchResult;
 
 /// Cache key for code-search: hash of (query, cwd).
 fn code_search_key(query: &str, cwd: &PathBuf) -> String {
@@ -117,7 +117,7 @@ fn code_search_key(query: &str, cwd: &PathBuf) -> String {
 /// Thread-safe in-memory session cache for code-search results.
 #[derive(Debug)]
 pub struct CodeSearchCache {
-    inner: Mutex<LruCache<SearchResult>>,
+    inner: Mutex<LruCache<Vec<SearchResult>>>,
     /// Current working directory snapshot. Cache invalidates when cwd changes.
     cwd_snapshot: Mutex<PathBuf>,
 }
@@ -131,8 +131,8 @@ impl CodeSearchCache {
         }
     }
 
-    /// Try to get a cached result. Returns Some if cache hit, None if miss.
-    pub fn get(&self, query: &str) -> Option<SearchResult> {
+    /// Try to get cached results. Returns Some if cache hit, None if miss.
+    pub fn get(&self, query: &str) -> Option<Vec<SearchResult>> {
         let cwd = {
             let cwd_guard = self.cwd_snapshot.lock().unwrap();
             cwd_guard.clone()
@@ -143,8 +143,8 @@ impl CodeSearchCache {
         cache.get(&key).cloned()
     }
 
-    /// Insert a result into the cache.
-    pub fn insert(&self, query: &str, result: SearchResult) {
+    /// Insert results into the cache.
+    pub fn insert(&self, query: &str, results: Vec<SearchResult>) {
         let cwd = {
             let cwd_guard = self.cwd_snapshot.lock().unwrap();
             cwd_guard.clone()
@@ -152,7 +152,7 @@ impl CodeSearchCache {
 
         let key = code_search_key(query, &cwd);
         let mut cache = self.inner.lock().unwrap();
-        cache.insert(key, result);
+        cache.insert(key, results);
     }
 
     /// Invalidate the cache when cwd changes. Returns true if invalidated.
@@ -288,6 +288,14 @@ impl Default for SessionCache {
     }
 }
 
+/// Process-wide session cache singleton, so cache state persists across
+/// separate `run_code_search` / chat-call invocations within a single process.
+/// In-memory only; not persisted between sessions (per spec).
+pub fn global_session_cache() -> &'static SessionCache {
+    static SESSION: OnceLock<SessionCache> = OnceLock::new();
+    SESSION.get_or_init(SessionCache::new)
+}
+
 // ── Tests ───────────────────────────────────────────────────────────────
 
 #[cfg(test)]
@@ -324,12 +332,12 @@ mod tests {
             signals: vec![wvc_code_graph::SearchSignal::Fts { score: 0.9 }],
         };
 
-        cache.insert("test query", result.clone());
+        cache.insert("test query", vec![result.clone()]);
 
         // Should hit
         let cached = cache.get("test query");
         assert!(cached.is_some());
-        assert_eq!(cached.unwrap().symbol.name, "test_func");
+        assert_eq!(cached.unwrap()[0].symbol.name, "test_func");
     }
 
     #[test]
@@ -345,7 +353,7 @@ mod tests {
 
         cache.insert(
             "test query",
-            SearchResult {
+            vec![SearchResult {
                 symbol: wvc_code_graph::Symbol {
                     id: 1,
                     name: "test_func".to_string(),
@@ -359,7 +367,7 @@ mod tests {
                 },
                 score: 0.95,
                 signals: vec![wvc_code_graph::SearchSignal::Fts { score: 0.9 }],
-            },
+            }],
         );
 
         // Different query should miss
@@ -381,7 +389,7 @@ mod tests {
 
         cache.insert(
             "test query",
-            SearchResult {
+            vec![SearchResult {
                 symbol: wvc_code_graph::Symbol {
                     id: 1,
                     name: "test_func".to_string(),
@@ -395,7 +403,7 @@ mod tests {
                 },
                 score: 0.95,
                 signals: vec![wvc_code_graph::SearchSignal::Fts { score: 0.9 }],
-            },
+            }],
         );
 
         // Simulate cwd change
@@ -459,7 +467,7 @@ mod tests {
         for i in 0..51 {
             cache.insert(
                 &format!("query {}", i),
-                SearchResult {
+                vec![SearchResult {
                     symbol: wvc_code_graph::Symbol {
                         id: i,
                         name: format!("symbol_{}", i),
@@ -473,7 +481,7 @@ mod tests {
                     },
                     score: 0.95,
                     signals: vec![wvc_code_graph::SearchSignal::Fts { score: 0.9 }],
-                },
+                }],
             );
         }
 
@@ -494,7 +502,7 @@ mod tests {
         // Insert into code search cache
         session.code_search.insert(
             "test",
-            SearchResult {
+            vec![SearchResult {
                 symbol: wvc_code_graph::Symbol {
                     id: 1,
                     name: "test".to_string(),
@@ -508,7 +516,7 @@ mod tests {
                 },
                 score: 0.95,
                 signals: vec![wvc_code_graph::SearchSignal::Fts { score: 0.9 }],
-            },
+            }],
         );
 
         // Insert into chat completion cache
@@ -539,7 +547,7 @@ mod tests {
 
         cache.insert(
             "query",
-            SearchResult {
+            vec![SearchResult {
                 symbol: wvc_code_graph::Symbol {
                     id: 1,
                     name: "test".to_string(),
@@ -553,7 +561,7 @@ mod tests {
                 },
                 score: 0.95,
                 signals: vec![wvc_code_graph::SearchSignal::Fts { score: 0.9 }],
-            },
+            }],
         );
 
         // Change cwd to cwd2

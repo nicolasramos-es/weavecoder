@@ -24,7 +24,7 @@ pub async fn run_code_search(query: &str, db_path: Option<&str>, top_k: usize) -
     }
 
     // Check session cache first (same query + cwd → instant hit).
-    let session = wvc_session_cache::SessionCache::new();
+    let session = wvc_session_cache::global_session_cache();
     if let Some(cached) = session.code_search.get(query) {
         println!("🔎 [CACHE HIT] code graph ({path}) for: {query}");
         if cached.is_empty() {
@@ -65,9 +65,7 @@ pub async fn run_code_search(query: &str, db_path: Option<&str>, top_k: usize) -
 
     // Store in session cache for future hits.
     if !results.is_empty() {
-        for r in &results {
-            session.code_search.insert(query, r.clone());
-        }
+        session.code_search.insert(query, results.clone());
     }
 
     if results.is_empty() {
