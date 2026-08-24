@@ -342,6 +342,52 @@ impl HandoffArtifact {
         }
         body
     }
+
+    /// Render this artifact as a compact one-line dependency summary for a
+    /// downstream worker, used by the minimum-context budget (S1T2).
+    ///
+    /// Format: `task label + confidence + 1 key finding`, single line, so a
+    /// node with N dependencies contributes at most N lines of context instead
+    /// of the full artifact. The full [`render_section`] stays on the gate and
+    /// scheduler paths, which structurally need `what_i_did_not_check`.
+    pub fn render_compact_section(&self, id: &str, kind: &str) -> String {
+        let label = derive_compact_label(id);
+        let mut line = format!("- {label} ({kind})");
+        if let Some(confidence) = self.confidence.as_deref().filter(|c| !c.trim().is_empty()) {
+            line.push_str(&format!(" — confidence {confidence}"));
+        }
+        // Single key finding: first non-empty line of findings, capped at 160 chars.
+        let finding = self
+            .findings
+            .lines()
+            .map(str::trim)
+            .find(|l| !l.is_empty())
+            .unwrap_or_default();
+        let mut finding = finding.to_string();
+        if finding.chars().count() > 160 {
+            finding = finding.chars().take(157).collect::<String>();
+            finding.push_str("...");
+        }
+        if !finding.is_empty() {
+            line.push_str(&format!(" — {finding}"));
+        }
+        line
+    }
+}
+
+/// Compact, stable label for a dependency node, reusing the swarm task-label
+/// rule (first meaningful line, collapsed, capped) without a swarm-core dep.
+fn derive_compact_label(id: &str) -> String {
+    let collapsed: String = id.split_whitespace().collect::<Vec<_>>().join(" ");
+    let mut collapsed = collapsed.trim_matches(['#', '-', '*', '>', ':', ' ']).to_string();
+    if collapsed.is_empty() {
+        collapsed = id.to_string();
+    }
+    if collapsed.chars().count() > 60 {
+        let truncated: String = collapsed.chars().take(59).collect();
+        collapsed = format!("{}…", truncated.trim_end());
+    }
+    collapsed
 }
 
 /// A single task node in the DAG.
