@@ -67,6 +67,7 @@ pub mod prompt;
 pub mod protocol;
 pub mod provider;
 pub mod provider_activity;
+pub mod local_detect;
 pub mod provider_catalog;
 pub mod registry;
 pub mod runtime_memory_log;
