@@ -1,6 +1,6 @@
 //! Shared text renderers for agentgrep results.
 //!
-//! Both the CLI and embedding harnesses (e.g. jcode) should render through
+//! Both the CLI and embedding harnesses should render through
 //! this module so output stays compact and consistent. Every renderer here
 //! is responsible for keeping output bounded: huge single lines are
 //! truncated and low-signal matches are capped.

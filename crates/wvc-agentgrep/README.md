@@ -65,7 +65,7 @@ Current properties:
 
 ## Demo: `rg` vs `agentgrep` navigation race
 
-I ran the same code-navigation task twice in `jcode`:
+I ran the same code-navigation task twice in the Weavecoder repo:
 
 - one agent constrained to **`rg` / ripgrep-style search only**
 - one agent constrained to **`agentgrep` + targeted reads only**
@@ -434,7 +434,7 @@ Today, `auto` is intentionally conservative.
 
 ## Benchmark snapshot
 
-Benchmarks below were run on the `jcode` repo using the release build on:
+Benchmarks below were run on a large Rust codebase using the release build on:
 
 - Linux 6.18
 - Intel Core Ultra 7 256V
@@ -446,12 +446,12 @@ Benchmarks below were run on the `jcode` repo using the release build on:
 
 | Case | Command | Mean time |
 | --- | --- | ---: |
-| Exact literal search | `agentgrep grep --path /home/jeremy/jcode transcription` | **30.9 ms** |
-| Exact literal baseline | `rg -n transcription /home/jeremy/jcode` | **8.2 ms** |
-| Exact regex search | `agentgrep grep --regex --path /home/jeremy/jcode 'transcript|voice|dictation|speech'` | **44.2 ms** |
-| Exact regex baseline | `rg -n -e 'transcript|voice|dictation|speech' /home/jeremy/jcode` | **8.7 ms** |
-| Ranked file discovery | `agentgrep find --path /home/jeremy/jcode transcription transcript voice dictate speech input message` | **6.1 ms** |
-| Structured tracing | `agentgrep trace --path /home/jeremy/jcode subject:TranscriptMode relation:implementation kind:code path:src/tui` | **17.3 ms** |
+| Exact literal search | `agentgrep grep --path /home/jeremy/weavecoder transcription` | **30.9 ms** |
+| Exact literal baseline | `rg -n transcription /home/jeremy/weavecoder` | **8.2 ms** |
+| Exact regex search | `agentgrep grep --regex --path /home/jeremy/weavecoder 'transcript|voice|dictation|speech'` | **44.2 ms** |
+| Exact regex baseline | `rg -n -e 'transcript|voice|dictation|speech' /home/jeremy/weavecoder` | **8.7 ms** |
+| Ranked file discovery | `agentgrep find --path /home/jeremy/weavecoder transcription transcript voice dictate speech input message` | **6.1 ms** |
+| Structured tracing | `agentgrep trace --path /home/jeremy/weavecoder subject:TranscriptMode relation:implementation kind:code path:src/tui` | **17.3 ms** |
 
 ### What those numbers mean
 
@@ -459,7 +459,7 @@ Benchmarks below were run on the `jcode` repo using the release build on:
 - The current `find` and `trace` implementation benefits a lot from metadata-first filtering before reading/parsing files.
 - The interesting tradeoff is whether one `find` or `trace` query saves several follow-up `grep` + `read` steps.
 
-For a representative `jcode` query, rough human-readable output sizes were:
+For a representative query, rough human-readable output sizes were:
 
 - `grep`: 23 lines / 687 bytes
 - `find`: 81 lines / 2754 bytes

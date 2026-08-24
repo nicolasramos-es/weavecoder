@@ -108,7 +108,7 @@ fn public_manage_url(candidate: Option<&str>) -> &str {
                 reqwest::Url::parse(url),
                 Ok(parsed)
                     if parsed.scheme() == "https"
-                        && matches!(parsed.host_str(), Some("wvc.sh" | "www.weavecoder.sh" | "solosystems.dev"))
+                        && matches!(parsed.host_str(), Some("wvc.sh" | "www.weavecoder.sh"))
                         && parsed.username().is_empty()
                         && parsed.password().is_none()
             )

@@ -1240,12 +1240,15 @@ fn frozen_sponsors_optout_recovers_through_a_real_config_file() {
 }
 
 #[test]
-fn legacy_endpoint_optout_is_also_repaired() {
+fn legacy_endpoint_optout_is_respected_as_hand_written() {
+    // The solosystems.dev endpoint belonged to the previous product. It is no
+    // longer recognized as a shipped default, so an opt-out pinned to it is
+    // treated as a hand-written choice and must survive (not be auto-repaired).
     let raw =
         "[sponsors]\nenabled = false\nendpoint = \"https://api.solosystems.dev/v1/discovery\"\n";
     let mut config: Config = toml::from_str(raw).expect("parse");
     config.repair_frozen_sponsors_optout(raw);
-    assert!(config.sponsors.enabled);
+    assert!(!config.sponsors.enabled);
 }
 
 #[test]
