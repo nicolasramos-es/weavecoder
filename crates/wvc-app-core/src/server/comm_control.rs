@@ -414,8 +414,18 @@ async fn task_snapshot_for(
     // Hydrate with forward dataflow from completed upstream dependencies so
     // resume/start/wake re-injects the same artifact context an initial
     // assignment would carry, then attach the deep-mode contract the same way
-    // the initial assignment path does.
-    let hydrated = wvc_plan::bridge::hydrate_assignment(plan, task_id, &item.content);
+    // the initial assignment path does. Workers get compact one-line dependency
+    // summaries (S1T2); gates keep full artifacts to audit what_i_did_not_check.
+    let is_gate = plan
+        .node_meta
+        .get(task_id)
+        .map(|meta| meta.is_gate)
+        .unwrap_or(false);
+    let hydrated = if is_gate {
+        wvc_plan::bridge::hydrate_assignment(plan, task_id, &item.content)
+    } else {
+        wvc_plan::bridge::hydrate_assignment_compact(plan, task_id, &item.content)
+    };
     let is_composite_synthesis = plan
         .node_meta
         .get(task_id)
@@ -1611,7 +1621,19 @@ async fn handle_comm_assign_task_with_mode(
                 .unwrap_or(false);
             let effective_content =
                 composite_synthesis_content(&item_id, &raw_content, is_composite_synthesis);
-            let hydrated = wvc_plan::bridge::hydrate_assignment(plan, &item_id, &effective_content);
+            // Minimum-context budget (S1T2): workers get compact one-line
+            // dependency summaries; gates keep full artifacts because they
+            // must audit what_i_did_not_check.
+            let is_gate = plan
+                .node_meta
+                .get(&item_id)
+                .map(|meta| meta.is_gate)
+                .unwrap_or(false);
+            let hydrated = if is_gate {
+                wvc_plan::bridge::hydrate_assignment(plan, &item_id, &effective_content)
+            } else {
+                wvc_plan::bridge::hydrate_assignment_compact(plan, &item_id, &effective_content)
+            };
             let content =
                 deep_mode_assignment_content(plan, &item_id, is_composite_synthesis, &hydrated);
 

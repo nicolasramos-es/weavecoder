@@ -16,7 +16,8 @@ use std::sync::{Mutex as StdMutex, OnceLock};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use tokio::sync::{Mutex, RwLock, broadcast};
 use wvc_swarm_core::{
-    completion_notification_message, normalize_completion_report, truncate_detail,
+    compress_evidence_to_diff, completion_notification_message, normalize_completion_report,
+    truncate_detail,
 };
 
 fn status_age_secs(last_status_change: Instant) -> u64 {
@@ -1503,8 +1504,18 @@ pub(super) async fn update_member_status_with_report_tldr(
                 let name = agent_name
                     .as_deref()
                     .unwrap_or(&session_id[..8.min(session_id.len())]);
-                let msg =
-                    completion_notification_message(name, status, completion_report.as_deref());
+                // Compress the completion report before sending to coordinator.
+                // When original file content is unavailable, fall back to listing
+                // evidence lines with `+` markers; the output is still truncated to
+                // MAX_EVIDENCE_DIFF_OUTPUT_LINES (criterion 1 of NRA-721).
+                let compressed_report = completion_report.as_ref().map(|report| {
+                    compress_evidence_to_diff(report, None)
+                });
+                let msg = completion_notification_message(
+                    name,
+                    status,
+                    compressed_report.as_deref(),
+                );
                 let _ = fanout_session_event(
                     swarm_members,
                     &recipient_session_id,

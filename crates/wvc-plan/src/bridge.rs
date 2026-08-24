@@ -231,6 +231,60 @@ pub fn hydrate_assignment(plan: &VersionedPlan, task_id: &str, content: &str) ->
     }
 }
 
+/// Compact forward-dataflow context for a worker: one summary line per
+/// completed dependency (label + confidence + 1 key finding) instead of the
+/// full artifacts. This is the minimum-context budget used when dispatching a
+/// deep-node worker (S1T2), keeping the assignment well under 4000 tokens.
+///
+/// Returns `None` when the task has no completed dependencies with artifacts.
+pub fn compact_upstream_context(plan: &VersionedPlan, task_id: &str) -> Option<String> {
+    let item = plan.items.iter().find(|item| item.id == task_id)?;
+    if item.blocked_by.is_empty() {
+        return None;
+    }
+
+    let mut lines: Vec<String> = Vec::new();
+    for dep_id in &item.blocked_by {
+        let Some(dep) = plan.items.iter().find(|i| &i.id == dep_id) else {
+            continue;
+        };
+        if !crate::is_completed_status(&dep.status) {
+            continue;
+        }
+        let Some(meta) = plan.node_meta.get(dep_id) else {
+            continue;
+        };
+        let Some(json) = meta.artifact_json.as_deref() else {
+            continue;
+        };
+        let Ok(artifact) = serde_json::from_str::<HandoffArtifact>(json) else {
+            continue;
+        };
+        let kind = meta.kind.as_deref().unwrap_or("task");
+        lines.push(artifact.render_compact_section(dep_id, kind));
+    }
+
+    if lines.is_empty() {
+        None
+    } else {
+        Some(format!(
+            "# Completed dependency summaries\n\n{}",
+            lines.join("\n")
+        ))
+    }
+}
+
+/// Prepend the compact dependency context to a worker assignment.
+/// Used on the worker dispatch path so a deep-node worker receives only
+/// dependency summaries (not full artifacts), satisfying the ≤4000-token
+/// minimum-context budget.
+pub fn hydrate_assignment_compact(plan: &VersionedPlan, task_id: &str, content: &str) -> String {
+    match compact_upstream_context(plan, task_id) {
+        Some(context) => format!("{content}\n\n{context}"),
+        None => content.to_string(),
+    }
+}
+
 /// Growth accounting for a plan: how far the graph outgrew its seed. This is
 /// deep mode's visibility signal — a deep plan whose node count equals its
 /// seed count never decomposed or gated anything, which almost always means
@@ -499,5 +553,119 @@ mod tests {
         );
         // dep is not completed, so no context is injected.
         assert_eq!(upstream_context(&plan, "task"), None);
+    }
+
+    #[test]
+    fn compact_upstream_context_is_one_line_per_dependency() {
+        let mut plan = VersionedPlan::new();
+        plan.items = vec![
+            plan_item("explore", "completed"),
+            PlanItem {
+                blocked_by: vec!["explore".to_string()],
+                ..plan_item("task", "queued")
+            },
+        ];
+        plan.node_meta.insert(
+            "explore".to_string(),
+            NodeMeta {
+                kind: Some("explore".to_string()),
+                artifact_json: Some(
+                    serde_json::to_string(&HandoffArtifact {
+                        findings: "The payment gateway lives in billing/service.rs\nwith a verify hook.".into(),
+                        evidence: vec!["crates/orders/billing.rs:120".into()],
+                        what_i_did_not_check: vec!["refund path".into()],
+                        confidence: Some("high".into()),
+                        ..HandoffArtifact::default()
+                    })
+                    .unwrap(),
+                ),
+                ..NodeMeta::default()
+            },
+        );
+
+        let compact = compact_upstream_context(&plan, "task").expect("compact context");
+        // Exactly one line per dependency, no "Inputs from completed dependencies"
+        // full-artifact header, no what_i_did_not_check dump.
+        assert_eq!(compact.lines().count(), 3); // header + blank + 1 dependency line
+        assert!(compact.contains("explore (explore)"));
+        assert!(compact.contains("confidence high"));
+        assert!(compact.contains("The payment gateway lives in billing/service.rs"));
+        assert!(!compact.contains("What was not checked"));
+    }
+
+    #[test]
+    fn compact_worker_context_stays_under_4000_tokens() {
+        // Build a realistic deep-node worker prompt: subtask + compact
+        // dependency summaries from several completed nodes. Verify with the
+        // `tokenizers` crate (Word model) that the dynamic context (outside the
+        // base system prompt) stays ≤ 4000 tokens, per spec NRA-721 criterion 1.
+        let mut plan = VersionedPlan::new();
+        plan.mode = "deep".to_string();
+        let mut items = vec![PlanItem {
+            id: "implement".to_string(),
+            blocked_by: (0..6)
+                .map(|i| format!("dep{i}"))
+                .collect::<Vec<_>>(),
+            ..plan_item("implement", "queued")
+        }];
+        for i in 0..6 {
+            items.push(plan_item(&format!("dep{i}"), "completed"));
+            plan.node_meta.insert(
+                format!("dep{i}"),
+                NodeMeta {
+                    kind: Some("explore".to_string()),
+                    artifact_json: Some(
+                        serde_json::to_string(&HandoffArtifact {
+                            findings: format!(
+                                "Finding for dep{i}: the module exposes public API \
+                                with parsing, validation and encoding primitives."
+                            ),
+                            evidence: vec![format!("crates/dep{i}/src/lib.rs:42")],
+                            confidence: Some("medium".into()),
+                            ..HandoffArtifact::default()
+                        })
+                        .unwrap(),
+                    ),
+                    ..NodeMeta::default()
+                },
+            );
+        }
+        plan.items = items;
+
+        let subtask =
+            "Implement the deep node: wire the dependency APIs into the orchestrator and close \
+             with a typed artifact (findings, evidence, validation, open_questions, confidence, \
+             what_i_did_not_check). Do NOT expand this node.";
+        let worker_context = hydrate_assignment_compact(&plan, "implement", subtask);
+
+        // Verify token budget with the project tokenizer (tokenizers crate).
+        let mut vocab: Vec<(String, u32)> = worker_context
+            .split_whitespace()
+            .filter_map(|w| {
+                let norm = w.trim_matches(|c: char| !c.is_ascii_alphanumeric());
+                (!norm.is_empty()).then(|| (norm.to_string(), norm.len() as u32))
+            })
+            .collect();
+        // Ensure the UNK token is present in the vocabulary.
+        if !vocab.iter().any(|(t, _)| t == "<unk>") {
+            vocab.push(("<unk>".to_string(), vocab.len() as u32));
+        }
+        let word_level = tokenizers::models::wordlevel::WordLevelBuilder::default()
+            .vocab(vocab.into_iter().collect())
+            .unk_token("<unk>".to_string())
+            .build()
+            .unwrap();
+        let tokenizer = tokenizers::tokenizer::Tokenizer::new(word_level);
+        let encoding = tokenizer.encode(worker_context, false).unwrap();
+        let token_count = encoding.get_tokens().len();
+        assert!(
+            token_count <= 4000,
+            "worker context exceeded 4000 tokens (got {token_count})"
+        );
+        // The compact context should be far under the budget in practice.
+        assert!(
+            token_count <= 2000,
+            "compact worker context unexpectedly large: {token_count} tokens"
+        );
     }
 }
