@@ -86,6 +86,19 @@ wvc login claude --account work
 wvc login openai-compatible --api-base https://my-gateway.local/v1 --api-key-env MY_API_KEY
 ```
 
+**Local model auto-detection:** in addition to Ollama (port 11434) and
+LM Studio (port 1234), `wvc login` probes local OpenAI-compatible servers and
+lists them as available options when they respond with a valid model catalog:
+
+| Server | Default port | Verification endpoint |
+|--------|--------------|----------------------|
+| llama.cpp | `8080` | `GET /v1/models` |
+| vLLM | `8000` | `GET /v1/models` |
+| oMLX | `8081` | `GET /v1/models` |
+
+Ports are probed with a 2-second timeout. If no local server responds, only
+cloud providers are shown (no regression).
+
 ---
 
 ### `wvc init`
@@ -111,7 +124,10 @@ wvc init ./my-project --db ~/.wvc/codegraph.db
 
 ### `wvc code-search`
 
-Search the Code Knowledge Graph (hybrid: FTS5 + semantic + graph).
+Search the Code Knowledge Graph (hybrid: FTS5 + semantic + graph). Results are
+cached in-memory for the session (LRU, max 50): the same query in the same
+working directory returns instantly from cache on the second call. The cache
+invalidates on `wvc init` (re-indexation) or a change of working directory.
 
 ```bash
 wvc code-search "authentication handler"
@@ -128,6 +144,31 @@ wvc code-search "authentication handler"
 ```bash
 wvc code-search "JWT token validation" --db ~/.wvc/codegraph.db --top-k 20
 ```
+
+---
+
+### `wvc swarm`
+
+Spawn a swarm worker with an optional profile that shapes its behavior. The
+message is sent to the running server over the debug socket as a swarm task
+(requires a running server with `debug_socket` enabled).
+
+```bash
+wvc swarm "investigate how payment retries are scheduled" --worker-profile researcher
+```
+
+| Flag | Description |
+|------|-------------|
+| `<MESSAGE>` | The task description for the spawned worker |
+| `--worker-profile <PROFILE>` | Worker profile defining the system prompt: `coder` (default), `tester`, `reviewer`, `researcher` |
+
+- `coder` — generates code that compiles and passes lint.
+- `tester` — writes and runs tests, reports pass/fail.
+- `reviewer` — reviews code, gives APPROVED/CHANGES/REJECTED verdict.
+- `researcher` — investigates APIs/dependencies, resumes findings.
+
+The default worker model is **local-first** auto-detection (oMLX → Ollama →
+vLLM → cloud fallback).
 
 ---
 

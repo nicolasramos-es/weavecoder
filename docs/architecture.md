@@ -44,6 +44,35 @@ until explicitly stopped. You can replay a whole swarm run in a synchronized
 multi-pane view with `wvc replay --swarm`, and `wvc server stop` warns before
 dropping any in-flight headless/swarm sessions.
 
+### Token efficiency (NRA-721)
+
+Two mechanisms keep worker context small so the swarm runs well on local models
+with limited context windows:
+
+- **Minimum worker context** — when a deep-task-graph worker is dispatched, its
+  dynamic prompt is limited to the subtask plus one-line summaries of its
+  completed dependencies (task label + confidence + one key finding) instead of
+  full artifacts, staying under **4000 tokens** (verified with the `tokenizers`
+  crate). Gates keep the full artifacts so they can audit `what_i_did_not_check`.
+  Implemented in `crates/wvc-plan/src/bridge.rs` (`compact_upstream_context`,
+  `hydrate_assignment_compact`) and `crates/wvc-plan/src/dag/mod.rs`
+  (`render_compact_section`).
+- **Evidence compression** — a worker's completion report compresses file
+  evidence to a unified diff (3 context lines), capped at
+  `MAX_EVIDENCE_DIFF_OUTPUT_LINES` (80) with a `[truncated: N total lines]`
+  indicator. Implemented in `crates/wvc-swarm-core/src/lib.rs`
+  (`compress_evidence_to_diff`, `extract_file_evidence`, `generate_unified_diff`).
+- **Session cache** — `wvc code-search` results and chat completions are cached
+  in-memory (LRU, max 50) for the session; invalidated on `wvc init` or working
+  directory change. Implemented in `crates/wvc-session-cache`.
+
+### Worker profiles (NRA-719)
+
+`wvc swarm` accepts `--worker-profile` to shape a spawned worker's system
+prompt: `coder` (default), `tester`, `reviewer`, or `researcher`. The default
+worker model is local-first auto-detection (oMLX → Ollama → vLLM → cloud
+fallback).
+
 ## Code Knowledge Graph (CKG)
 
 The CKG is an embedded, offline index of your project's source code. It lives

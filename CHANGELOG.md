@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Worker profiles** — `wvc swarm --worker-profile <coder|tester|reviewer|researcher>` shapes a spawned worker's system prompt (NRA-719).
+- **Swarm local-first default** — `swarm_prompt.md` defaults to local-first model auto-detection (oMLX → Ollama → vLLM → cloud fallback) instead of Fable 5 Anthropic (NRA-718).
+- **Local swarm benchmark** — `scripts/benchmark_local_swarm.py` for measuring local-first swarm runs (NRA-720).
+- **Local model auto-detection in `wvc login`** — probes llama.cpp (8080), vLLM (8000) and oMLX (8081) with a 2s timeout and lists them when they respond with a model catalog (NRA-721 S1T4).
+- **Session cache** — `wvc code-search` results and chat completions cached in-memory (LRU, max 50), invalidated on `wvc init` or working-directory change (NRA-721 S1T3).
+
+### Changed
+
+- **Token efficiency (NRA-721)** — deep-task-graph workers receive compact one-line dependency summaries (subtask + ≤4000 tokens) instead of full artifacts (S1T2); completion-report file evidence is compressed to a unified diff capped at 80 lines with a `[truncated]` indicator (S1T1). Gates keep full artifacts to audit `what_i_did_not_check`.
+
 ## [0.67.0] — 2026-08-16
 
 Current development version (`Cargo.toml`). This is the first entry of the
