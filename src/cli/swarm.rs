@@ -15,7 +15,7 @@ use crate::server;
 
 /// Run the swarm command: send a message to the server as a swarm task.
 pub async fn run_swarm_command(
-    provider_choice: &ProviderChoice,
+    _provider_choice: &ProviderChoice,
     message: &str,
     worker_profile: Option<WorkerProfileArg>,
 ) -> Result<()> {
