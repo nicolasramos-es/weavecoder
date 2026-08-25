@@ -8,7 +8,6 @@ use wvc_provider_core::{ActiveProvider, provider_key};
 /// transport, but its runtime identity is still Azure OpenAI.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum RuntimeProviderId {
-    Weavecoder,
     Claude,
     ClaudeApiKey,
     OpenAi,
@@ -27,7 +26,6 @@ pub enum RuntimeProviderId {
 impl RuntimeProviderId {
     pub const fn key(self) -> &'static str {
         match self {
-            Self::Weavecoder => "wvc",
             Self::Claude => "claude",
             Self::ClaudeApiKey => "claude-api",
             Self::OpenAi => "openai",
@@ -46,7 +44,6 @@ impl RuntimeProviderId {
 
     pub const fn label(self) -> &'static str {
         match self {
-            Self::Weavecoder => "Weavecoder Subscription",
             Self::Claude => "Anthropic/Claude",
             Self::ClaudeApiKey => "Anthropic API",
             Self::OpenAi => "OpenAI",
@@ -151,17 +148,9 @@ impl ProviderActivation {
         }
     }
 
-    pub fn wvc_subscription(model: impl Into<String>) -> Self {
-        Self::initial(RuntimeProviderId::Weavecoder, ActiveProvider::OpenRouter)
-            .with_model_hint("WVC_OPENROUTER_MODEL", model)
-    }
-
     pub fn apply_env(&self) -> Result<()> {
         crate::env::set_var("WVC_RUNTIME_PROVIDER", self.runtime_id.key());
         match self.runtime_id {
-            RuntimeProviderId::Weavecoder => {
-                crate::env::set_var("WVC_OPENROUTER_TRANSPORT_STATE", "wvc-subscription")
-            }
             RuntimeProviderId::OpenRouter => {
                 crate::env::set_var("WVC_OPENROUTER_TRANSPORT_STATE", "openrouter-api-key")
             }

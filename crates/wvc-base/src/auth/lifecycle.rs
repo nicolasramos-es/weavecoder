@@ -766,14 +766,6 @@ fn route_matches_activation(route: &ModelRoute, activation: &AuthActivationResul
                 crate::provider::ModelRouteApiMethod::CodeAssistOAuth
             );
         }
-        "wvc" => {
-            // Weavecoder subscription routes deliberately keep their managed public
-            // identity even though the runtime reuses OpenRouter transport code.
-            return matches!(
-                api_method,
-                crate::provider::ModelRouteApiMethod::WeavecoderSubscription
-            );
-        }
         "azure-openai" => {
             // Azure OpenAI reuses the OpenRouter transport (configured via Azure
             // env), so its routes carry the `openrouter` api_method while keeping
@@ -868,7 +860,6 @@ fn normalized_login_provider_id(provider_id: &str) -> Option<&'static str> {
             Some("openai-api")
         }
         "openrouter" => Some("openrouter"),
-        "wvc" | "subscription" | "wvc-subscription" => Some("wvc"),
         "bedrock" | "aws-bedrock" | "aws_bedrock" => Some("bedrock"),
         "cursor" => Some("cursor"),
         "copilot" => Some("copilot"),
@@ -921,16 +912,6 @@ fn api_key_env_bindings_for_provider(provider_id: &str) -> Vec<(String, String)>
             "OPENROUTER_API_KEY".to_string(),
             "openrouter.env".to_string(),
         )],
-        "wvc" => vec![
-            (
-                crate::subscription_catalog::WVC_API_KEY_ENV.to_string(),
-                crate::subscription_catalog::WVC_ENV_FILE.to_string(),
-            ),
-            (
-                crate::subscription_catalog::WVC_API_BASE_ENV.to_string(),
-                crate::subscription_catalog::WVC_ENV_FILE.to_string(),
-            ),
-        ],
         "bedrock" => vec![
             (
                 crate::provider::bedrock::API_KEY_ENV.to_string(),
@@ -1120,7 +1101,6 @@ fn direct_provider_activation(provider_id: &str) -> Option<ProviderActivation> {
         "openai" => (RuntimeProviderId::OpenAi, ActiveProvider::OpenAI),
         "openai-api" => (RuntimeProviderId::OpenAiApiKey, ActiveProvider::OpenAI),
         "openrouter" => (RuntimeProviderId::OpenRouter, ActiveProvider::OpenRouter),
-        "wvc" => (RuntimeProviderId::Weavecoder, ActiveProvider::OpenRouter),
         "bedrock" => (RuntimeProviderId::Bedrock, ActiveProvider::Bedrock),
         "cursor" => (RuntimeProviderId::Cursor, ActiveProvider::Cursor),
         "copilot" => (RuntimeProviderId::Copilot, ActiveProvider::Copilot),
@@ -1361,7 +1341,6 @@ mod tests {
             ("openai", "openai", "OpenAI"),
             ("openai-key", "openai-api", "OpenAI API"),
             ("openrouter", "openrouter", "OpenRouter"),
-            ("subscription", "wvc", "Weavecoder Subscription"),
             ("bedrock", "bedrock", "AWS Bedrock"),
             ("cursor", "cursor", "Cursor"),
             ("copilot", "copilot", "GitHub Copilot"),
@@ -1452,9 +1431,6 @@ mod tests {
         let mut covered = Vec::new();
         for provider in crate::provider_catalog::login_providers() {
             let Some((normalized, runtime, active, switch_prefix)) = (match provider.target {
-                crate::provider_catalog::LoginProviderTarget::Weavecoder => {
-                    Some(("wvc", "wvc", "openrouter", ""))
-                }
                 crate::provider_catalog::LoginProviderTarget::Claude => {
                     Some(("claude", "claude", "claude", "claude-oauth"))
                 }
@@ -1604,44 +1580,6 @@ mod tests {
                 "{provider} auth switch request must route explicitly so duplicate model IDs cannot select the wrong provider"
             );
         }
-    }
-
-    #[test]
-    fn wvc_auth_lifecycle_matches_only_managed_subscription_routes() {
-        let activation = AuthActivationResult {
-            provider_id: Some("wvc".to_string()),
-            provider_label: Some("Weavecoder Subscription".to_string()),
-            activated_model: Some("gpt-5.5".to_string()),
-            expected_runtime: Some("wvc-subscription".to_string()),
-            expected_catalog_namespace: Some("wvc-subscription".to_string()),
-        };
-        let routes = vec![
-            route("gpt-5.5", "OpenRouter", "openrouter", true),
-            route(
-                "gpt-5.5",
-                "Weavecoder Subscription",
-                crate::subscription_catalog::WVC_ROUTE_API_METHOD,
-                true,
-            ),
-        ];
-
-        let report = validate_catalog_invariants(&activation, Some("gpt-5.5"), &routes);
-        assert!(
-            report.ok(),
-            "canonical Weavecoder route should match: {report:?}"
-        );
-        assert_eq!(report.selectable_provider_routes, 1);
-        assert_eq!(
-            report.route_sample,
-            vec![format!(
-                "`gpt-5.5` via {}",
-                crate::subscription_catalog::WVC_ROUTE_API_METHOD
-            )]
-        );
-        assert_eq!(
-            activation.model_switch_request("Weavecoder Subscription", "gpt-5.5"),
-            "gpt-5.5"
-        );
     }
 
     #[test]

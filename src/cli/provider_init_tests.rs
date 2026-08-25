@@ -23,7 +23,6 @@ fn lock_env() -> std::sync::MutexGuard<'static, ()> {
 #[test]
 #[allow(deprecated)]
 fn test_provider_choice_arg_values() {
-    assert_eq!(ProviderChoice::Weavecoder.as_arg_value(), "wvc");
     assert_eq!(ProviderChoice::Claude.as_arg_value(), "claude");
     assert_eq!(ProviderChoice::AnthropicApi.as_arg_value(), "anthropic-api");
     assert_eq!(
@@ -197,59 +196,6 @@ fn test_auto_init_login_selection_preserves_order() {
 }
 
 #[test]
-fn test_init_provider_wvc_delegates_runtime_profile_to_wrapper() {
-    let _guard = lock_env();
-    let _env_guard = crate::storage::lock_test_env();
-    // Sandbox WVC_HOME: with the real home, persisted auth/credential state
-    // (e.g. a pinned anthropic api-key route) re-pins WVC_RUNTIME_PROVIDER
-    // during MultiProvider construction and breaks the assertions below.
-    let dir = TempDir::new().expect("temp dir");
-    let saved_home = std::env::var("WVC_HOME").ok();
-    crate::env::set_var("WVC_HOME", dir.path());
-    crate::subscription_catalog::clear_runtime_env();
-    crate::env::remove_var("WVC_OPENROUTER_MODEL");
-    crate::env::remove_var("WVC_RUNTIME_PROVIDER");
-    crate::env::remove_var("WVC_ACTIVE_PROVIDER");
-    crate::env::remove_var("WVC_INITIAL_PROVIDER_EXPLICIT");
-
-    let runtime = tokio::runtime::Runtime::new().expect("tokio runtime");
-    let provider = runtime
-        .block_on(init_provider(&ProviderChoice::Weavecoder, None))
-        .expect("init wvc provider");
-
-    assert_eq!(provider.name(), "Weavecoder Subscription");
-    assert!(crate::subscription_catalog::is_runtime_mode_enabled());
-    assert_eq!(
-        std::env::var("WVC_OPENROUTER_MODEL").ok().as_deref(),
-        Some(crate::subscription_catalog::default_model().id)
-    );
-    assert_eq!(
-        std::env::var("WVC_ACTIVE_PROVIDER").ok().as_deref(),
-        Some("openrouter")
-    );
-    assert_eq!(
-        std::env::var("WVC_RUNTIME_PROVIDER").ok().as_deref(),
-        Some("wvc")
-    );
-    assert_eq!(
-        std::env::var("WVC_INITIAL_PROVIDER_EXPLICIT")
-            .ok()
-            .as_deref(),
-        Some("1")
-    );
-
-    crate::subscription_catalog::clear_runtime_env();
-    crate::env::remove_var("WVC_OPENROUTER_MODEL");
-    crate::env::remove_var("WVC_RUNTIME_PROVIDER");
-    crate::env::remove_var("WVC_ACTIVE_PROVIDER");
-    crate::env::remove_var("WVC_INITIAL_PROVIDER_EXPLICIT");
-    match saved_home {
-        Some(home) => crate::env::set_var("WVC_HOME", home),
-        None => crate::env::remove_var("WVC_HOME"),
-    }
-}
-
-#[test]
 fn test_openai_compatible_profile_overrides() {
     let _guard = lock_env();
     let keys = [
@@ -403,10 +349,6 @@ fn login_provider_menu_shows_autodetected_auth_and_skip() {
 
 #[test]
 fn choice_for_login_provider_round_trips_core_targets() {
-    assert_eq!(
-        choice_for_login_provider(provider_catalog::WVC_LOGIN_PROVIDER),
-        Some(ProviderChoice::Weavecoder)
-    );
     assert_eq!(
         choice_for_login_provider(provider_catalog::OPENROUTER_LOGIN_PROVIDER),
         Some(ProviderChoice::Openrouter)
@@ -710,7 +652,6 @@ async fn init_provider_for_ollama_reapplies_local_compat_runtime_env_after_disab
     .collect();
 
     crate::env::set_var("WVC_HOME", dir.path());
-    crate::subscription_catalog::apply_runtime_env();
 
     let provider = init_provider_for_validation(&ProviderChoice::Ollama, Some("llama3.2"))
         .await

@@ -943,13 +943,6 @@ fn openrouter_transport_state_distinguishes_runtime_identities() {
     assert!(OpenRouterTransportState::from_current_env(Some("openrouter")).is_real_openrouter());
     wvc_base::env::remove_var("WVC_RUNTIME_PROVIDER");
 
-    wvc_base::env::set_var("WVC_RUNTIME_PROVIDER", "wvc");
-    assert_eq!(
-        OpenRouterTransportState::from_current_env(Some("wvc")),
-        OpenRouterTransportState::WeavecoderSubscription
-    );
-    assert!(!OpenRouterTransportState::from_current_env(Some("wvc")).accrues_user_api_key_cost());
-
     wvc_base::env::set_var("WVC_RUNTIME_PROVIDER", "openai-compatible");
     assert_eq!(
         OpenRouterTransportState::from_current_env(Some("openai-compatible")),
@@ -2302,48 +2295,6 @@ fn runtime_display_name_for_profile_runtime_instance() {
 }
 
 #[test]
-fn wvc_subscription_runtime_has_explicit_display_and_route_identity() {
-    let _lock = ENV_LOCK.lock();
-    let temp = TempDir::new().expect("create temp home");
-    let wvc_home = temp.path().join("wvc-home");
-    let _wvc_home = EnvVarGuard::set("WVC_HOME", &wvc_home);
-    let _home = EnvVarGuard::set("HOME", temp.path());
-    let _appdata = EnvVarGuard::set("APPDATA", temp.path().join("AppData").join("Roaming"));
-    let _env = isolate_openrouter_autodetect_env();
-    let _base = EnvVarGuard::set(
-        "WVC_OPENROUTER_API_BASE",
-        wvc_base::subscription_catalog::DEFAULT_WVC_API_BASE,
-    );
-    let _key_name = EnvVarGuard::set(
-        "WVC_OPENROUTER_API_KEY_NAME",
-        wvc_base::subscription_catalog::WVC_API_KEY_ENV,
-    );
-    let _env_file = EnvVarGuard::set(
-        "WVC_OPENROUTER_ENV_FILE",
-        wvc_base::subscription_catalog::WVC_ENV_FILE,
-    );
-    let _provider_features = EnvVarGuard::set("WVC_OPENROUTER_PROVIDER_FEATURES", "0");
-    let _transport = EnvVarGuard::set("WVC_OPENROUTER_TRANSPORT_STATE", "wvc-subscription");
-    let _key = EnvVarGuard::set(
-        wvc_base::subscription_catalog::WVC_API_KEY_ENV,
-        "wvc_test_subscription_key",
-    );
-
-    let provider = OpenRouterProvider::new().expect("build wvc subscription runtime");
-    assert_eq!(provider.runtime_display_name(), "Weavecoder Subscription");
-    assert_eq!(Provider::display_name(&provider), "Weavecoder Subscription");
-    assert_eq!(Provider::name(&provider), "openrouter");
-    assert_eq!(
-        provider.direct_openai_compatible_route_parts(),
-        Some((
-            "Weavecoder Subscription".to_string(),
-            "wvc-subscription".to_string(),
-            wvc_base::subscription_catalog::DEFAULT_WVC_API_BASE.to_string(),
-        ))
-    );
-}
-
-#[test]
 fn non_subscription_runtimes_keep_existing_display_and_route_identity() {
     let _lock = ENV_LOCK.lock();
     let temp = TempDir::new().expect("create temp home");
@@ -2389,15 +2340,9 @@ fn custom_endpoint_using_wvc_key_name_is_not_a_subscription_runtime() {
     let _appdata = EnvVarGuard::set("APPDATA", temp.path().join("AppData").join("Roaming"));
     let _env = isolate_openrouter_autodetect_env();
     let _base = EnvVarGuard::set("WVC_OPENROUTER_API_BASE", "https://example.com/v1");
-    let _key_name = EnvVarGuard::set(
-        "WVC_OPENROUTER_API_KEY_NAME",
-        wvc_base::subscription_catalog::WVC_API_KEY_ENV,
-    );
+    let _key_name = EnvVarGuard::set("WVC_OPENROUTER_API_KEY_NAME", "WVC_API_KEY");
     let _provider_features = EnvVarGuard::set("WVC_OPENROUTER_PROVIDER_FEATURES", "0");
-    let _key = EnvVarGuard::set(
-        wvc_base::subscription_catalog::WVC_API_KEY_ENV,
-        "custom-endpoint-test-key",
-    );
+    let _key = EnvVarGuard::set("WVC_API_KEY", "custom-endpoint-test-key");
 
     let provider = OpenRouterProvider::new().expect("build custom endpoint runtime");
     assert_eq!(provider.runtime_display_name(), "OpenAI-compatible");

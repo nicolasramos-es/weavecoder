@@ -14,7 +14,6 @@ use super::provider_init::{ProviderChoice, login_provider_for_choice, save_named
 mod existing_key_notice;
 mod next_step;
 mod scriptable;
-mod wvc_device;
 use scriptable::*;
 
 #[derive(Debug, Clone, Default)]
@@ -291,9 +290,6 @@ pub async fn run_login_provider(
                 eprintln!("Imported {} existing auth source(s).", imported);
                 Ok(LoginFlowOutcome::Completed)
             }
-            LoginProviderTarget::Weavecoder => login_wvc_flow(options.no_browser)
-                .await
-                .map(|_| LoginFlowOutcome::Completed),
             LoginProviderTarget::Claude => login_claude_flow(account_label, options.no_browser)
                 .await
                 .map(|_| LoginFlowOutcome::Completed),
@@ -476,16 +472,6 @@ async fn notify_running_server_auth_changed_best_effort(provider: Option<&str>) 
             );
         }
     }
-}
-
-async fn login_wvc_flow(no_browser: bool) -> Result<()> {
-    eprintln!("Starting wvc subscription sign-in...");
-    let _ = wvc_device::login_wvc_device_flow(no_browser).await?;
-    Ok(())
-}
-
-pub(crate) async fn run_wvc_account_login(no_browser: bool) -> Result<()> {
-    login_wvc_flow(no_browser).await
 }
 
 fn login_openai_api_key_flow() -> Result<()> {

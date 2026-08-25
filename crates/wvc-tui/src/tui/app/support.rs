@@ -21,9 +21,6 @@ pub(super) struct SupportDiagnostics {
     pub os: String,
     pub arch: String,
     pub telemetry_id: Option<String>,
-    pub account_id: Option<String>,
-    pub account_email: Option<String>,
-    pub tier: Option<String>,
     pub provider: String,
     pub model: String,
     pub last_error: Option<String>,
@@ -39,15 +36,6 @@ pub(super) fn build_support_body(d: &SupportDiagnostics) -> String {
     body.push_str(&format!("OS/Arch: {}/{}\n", d.os, d.arch));
     if let Some(id) = &d.telemetry_id {
         body.push_str(&format!("Telemetry ID: {}\n", id));
-    }
-    if let Some(id) = &d.account_id {
-        body.push_str(&format!("Account ID: {}\n", id));
-    }
-    if let Some(email) = &d.account_email {
-        body.push_str(&format!("Account email: {}\n", email));
-    }
-    if let Some(tier) = &d.tier {
-        body.push_str(&format!("Tier: {}\n", tier));
     }
     body.push_str(&format!("Provider: {}\n", d.provider));
     body.push_str(&format!("Model: {}\n", d.model));
@@ -96,22 +84,6 @@ fn read_telemetry_id() -> Option<String> {
 }
 
 fn gather_diagnostics(app: &App) -> SupportDiagnostics {
-    use crate::provider_catalog::load_env_value_from_env_or_config;
-    use crate::subscription_catalog as cat;
-
-    // Account identity is only present when a wvc subscription is
-    // configured; skip gracefully otherwise.
-    let has_subscription = cat::has_credentials();
-    let (account_id, account_email, tier) = if has_subscription {
-        (
-            load_env_value_from_env_or_config(cat::WVC_ACCOUNT_ID_ENV, cat::WVC_ENV_FILE),
-            load_env_value_from_env_or_config(cat::WVC_ACCOUNT_EMAIL_ENV, cat::WVC_ENV_FILE),
-            cat::cached_tier().map(|t| t.display_name().to_string()),
-        )
-    } else {
-        (None, None, None)
-    };
-
     let last_error = app
         .display_messages
         .iter()
@@ -133,9 +105,6 @@ fn gather_diagnostics(app: &App) -> SupportDiagnostics {
         os: std::env::consts::OS.to_string(),
         arch: std::env::consts::ARCH.to_string(),
         telemetry_id: read_telemetry_id(),
-        account_id,
-        account_email,
-        tier,
         provider: app.provider_name().to_string(),
         model: app.provider_model(),
         last_error,

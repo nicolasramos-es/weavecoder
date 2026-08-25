@@ -47,38 +47,10 @@ struct PersistedModelCatalogScope {
 
 #[cfg(test)]
 pub(crate) fn filtered_display_models(models: impl IntoIterator<Item = String>) -> Vec<String> {
-    models
-        .into_iter()
-        .filter(|model| {
-            !crate::subscription_catalog::is_runtime_mode_enabled()
-                || crate::subscription_catalog::is_model_allowed_for_current_tier(model)
-        })
-        .collect()
+    models.into_iter().collect()
 }
 
-pub(crate) fn ensure_model_allowed_for_subscription(model: &str) -> Result<()> {
-    if !crate::subscription_catalog::is_runtime_mode_enabled() {
-        return Ok(());
-    }
-    match crate::subscription_catalog::find_curated_model(model) {
-        None => {
-            anyhow::bail!(
-                "Model '{}' is not included in the current wvc subscription catalog",
-                model
-            );
-        }
-        Some(curated) => {
-            let tier = crate::subscription_catalog::effective_tier();
-            if !tier.allows(curated.min_tier) {
-                anyhow::bail!(
-                    "Model '{}' requires the {} tier (current tier: {}). Upgrade your wvc subscription to use it.",
-                    curated.display_name,
-                    curated.min_tier.display_name(),
-                    tier.display_name()
-                );
-            }
-        }
-    }
+pub(crate) fn ensure_model_allowed_for_subscription(_model: &str) -> Result<()> {
     Ok(())
 }
 

@@ -1301,7 +1301,6 @@ pub enum NativeProviderKind {
     Cursor,
     Copilot,
     Bedrock,
-    Weavecoder,
     Azure,
 }
 
@@ -1314,7 +1313,6 @@ impl NativeProviderKind {
             "cursor" => Some(Self::Cursor),
             "copilot" => Some(Self::Copilot),
             "bedrock" => Some(Self::Bedrock),
-            "wvc" => Some(Self::Weavecoder),
             "azure-openai" => Some(Self::Azure),
             _ => None,
         }
@@ -1392,24 +1390,6 @@ impl NativeProviderKind {
                 auth_env_key: Some("AWS_BEARER_TOKEN_BEDROCK"),
                 login_hint: "wvc login --provider bedrock",
             },
-            Self::Weavecoder => NativeProviderSpec {
-                provider_id: "wvc",
-                label: "Weavecoder Subscription",
-                // The transport is OpenAI-compatible internally, but the public
-                // route identity is the managed Weavecoder subscription. Model
-                // switches use a bare model id so they stay on that runtime.
-                contract: WiringContract {
-                    api_method: wvc_base::subscription_catalog::WVC_ROUTE_API_METHOD.to_string(),
-                    route_provider: wvc_base::subscription_catalog::WVC_PROVIDER_DISPLAY_NAME
-                        .to_string(),
-                    expected_runtime: "wvc",
-                    expected_namespace: None,
-                    switch_prefix: String::new(),
-                },
-                auth_source: "Weavecoder subscription API key (WVC_API_KEY)",
-                auth_env_key: Some("WVC_API_KEY"),
-                login_hint: "wvc login --provider wvc",
-            },
             Self::Azure => NativeProviderSpec {
                 provider_id: "azure-openai",
                 label: "Azure OpenAI",
@@ -1479,9 +1459,6 @@ impl NativeProviderKind {
             Self::Bedrock => {
                 std::sync::Arc::new(wvc_base::provider::bedrock::BedrockProvider::new())
             }
-            Self::Weavecoder => {
-                std::sync::Arc::new(wvc_base::provider::wvc::WeavecoderProvider::new())
-            }
             Self::Azure => {
                 // Azure OpenAI is the OpenRouter transport configured via Azure
                 // env; apply that env (endpoint/key/header wiring) before building
@@ -1550,15 +1527,6 @@ impl NativeProviderKind {
                 }
                 Ok("AWS Bedrock credential resolved".to_string())
             }
-            Self::Weavecoder => {
-                if !wvc_base::subscription_catalog::has_credentials() {
-                    anyhow::bail!(
-                        "no Weavecoder subscription credential found (set WVC_API_KEY or run \
-                         `wvc login --provider wvc`)"
-                    );
-                }
-                Ok("Weavecoder subscription credential resolved".to_string())
-            }
             Self::Azure => {
                 if !wvc_base::auth::azure::has_configuration() {
                     anyhow::bail!(
@@ -1589,7 +1557,6 @@ impl NativeProviderKind {
             Self::Cursor => &["composer", "fast", "mini"],
             Self::Copilot => &["mini", "haiku", "flash", "fast"],
             Self::Bedrock => &["haiku", "micro", "lite", "mini", "flash"],
-            Self::Weavecoder => &["mini", "flash", "haiku", "lite", "nano"],
             Self::Azure => &["mini", "nano", "flash", "haiku"],
         };
         for marker in cheap_markers {
@@ -2431,7 +2398,6 @@ mod tests {
             ("cursor", NativeProviderKind::Cursor),
             ("copilot", NativeProviderKind::Copilot),
             ("bedrock", NativeProviderKind::Bedrock),
-            ("wvc", NativeProviderKind::Weavecoder),
             ("azure-openai", NativeProviderKind::Azure),
         ] {
             assert_eq!(NativeProviderKind::from_normalized(id), Some(expected));
@@ -2452,23 +2418,15 @@ mod tests {
             NativeProviderKind::Cursor,
             NativeProviderKind::Copilot,
             NativeProviderKind::Bedrock,
-            NativeProviderKind::Weavecoder,
             NativeProviderKind::Azure,
         ] {
             let spec = kind.spec();
             assert!(!spec.provider_id.is_empty(), "{kind:?} has empty id");
             assert!(!spec.label.is_empty(), "{kind:?} has empty label");
-            if kind == NativeProviderKind::Weavecoder {
-                assert!(
-                    spec.contract.switch_prefix.is_empty(),
-                    "Weavecoder switches must use bare managed model ids"
-                );
-            } else {
-                assert!(
-                    spec.contract.switch_prefix.ends_with(':'),
-                    "{kind:?} switch_prefix must end with ':'"
-                );
-            }
+            assert!(
+                spec.contract.switch_prefix.ends_with(':'),
+                "{kind:?} switch_prefix must end with ':'"
+            );
             // Round-trips through the id map.
             assert_eq!(
                 NativeProviderKind::from_normalized(spec.provider_id),
@@ -2557,7 +2515,6 @@ mod tests {
             NativeProviderKind::Cursor,
             NativeProviderKind::Copilot,
             NativeProviderKind::Bedrock,
-            NativeProviderKind::Weavecoder,
             NativeProviderKind::Azure,
         ] {
             let id = kind.spec().provider_id;
@@ -2582,22 +2539,6 @@ mod tests {
         assert_eq!(contract.expected_runtime, "antigravity");
         assert!(contract.expected_namespace.is_none());
         assert_eq!(contract.switch_prefix, "antigravity:");
-    }
-
-    #[test]
-    fn native_wvc_contract_uses_managed_subscription_identity() {
-        let contract = NativeProviderKind::Weavecoder.spec().contract;
-        assert_eq!(
-            contract.api_method,
-            wvc_base::subscription_catalog::WVC_ROUTE_API_METHOD
-        );
-        assert_eq!(
-            contract.route_provider,
-            wvc_base::subscription_catalog::WVC_PROVIDER_DISPLAY_NAME
-        );
-        assert_eq!(contract.expected_runtime, "wvc");
-        assert!(contract.expected_namespace.is_none());
-        assert!(contract.switch_prefix.is_empty());
     }
 
     #[test]
