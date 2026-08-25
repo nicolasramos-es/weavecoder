@@ -578,59 +578,6 @@ impl App {
         }
     }
 
-    /// Ensure every advertised remote model has at least one picker route.
-    ///
-    /// Detailed route expansion can lag behind the model-name catalog (stale
-    /// disk cache, names-only catalog updates). Without this, newly released
-    /// models are invisible in the picker even though the server lists them.
-    ///
-    /// A model also needs re-synthesis when its persisted routes predate an
-    /// auth method: an older session may have baked an OAuth-only fallback
-    /// route into the cache, which would otherwise permanently hide the
-    /// API-key route for that model.
-    fn append_wvc_subscription_routes_static(
-        remote_available_entries: &[String],
-        routes: &mut Vec<crate::provider::ModelRoute>,
-        require_credentials: bool,
-        require_remote_advertisement: bool,
-    ) {
-        if require_credentials && !crate::subscription_catalog::has_credentials() {
-            return;
-        }
-
-        let tier = crate::subscription_catalog::effective_tier();
-        let existing = routes
-            .iter()
-            .filter(|route| {
-                route
-                    .api_method
-                    .eq_ignore_ascii_case(crate::subscription_catalog::WVC_ROUTE_API_METHOD)
-            })
-            .filter_map(|route| crate::subscription_catalog::canonical_model_id(&route.model))
-            .collect::<HashSet<_>>();
-        for model in crate::subscription_catalog::curated_models()
-            .iter()
-            .filter(|model| {
-                tier.allows(model.min_tier)
-                    && !existing.contains(model.id)
-                    && (!require_remote_advertisement
-                        || remote_available_entries.iter().any(|available| {
-                            crate::subscription_catalog::canonical_model_id(available)
-                                == Some(model.id)
-                        }))
-            })
-        {
-            routes.push(crate::provider::ModelRoute {
-                model: model.id.to_string(),
-                provider: crate::subscription_catalog::WVC_PROVIDER_DISPLAY_NAME.to_string(),
-                api_method: crate::subscription_catalog::WVC_ROUTE_API_METHOD.to_string(),
-                available: true,
-                detail: crate::subscription_catalog::routing_policy_detail(model),
-                cheapness: None,
-            });
-        }
-    }
-
     fn extend_remote_routes_for_uncovered_models(
         &self,
         routes: &mut Vec<crate::provider::ModelRoute>,
@@ -653,45 +600,6 @@ impl App {
         routes: &mut Vec<crate::provider::ModelRoute>,
     ) {
         if remote_available_entries.is_empty() {
-            return;
-        }
-        // Weavecoder subscription routes are a complete, server-managed catalog.
-        // Do not mix in locally configured Anthropic/OpenAI credentials merely
-        // because a curated model also belongs to one of those upstreams.
-        let provider_is_wvc_subscription = remote_provider_name.is_some_and(|name| {
-            name.eq_ignore_ascii_case(crate::subscription_catalog::WVC_PROVIDER_DISPLAY_NAME)
-        });
-        if provider_is_wvc_subscription {
-            routes.clear();
-            Self::append_wvc_subscription_routes_static(
-                remote_available_entries,
-                routes,
-                false,
-                false,
-            );
-            return;
-        }
-        let poisoned_by_wvc_subscription = !routes.is_empty()
-            && routes.iter().all(|route| {
-                route
-                    .api_method
-                    .eq_ignore_ascii_case(crate::subscription_catalog::WVC_ROUTE_API_METHOD)
-            });
-        if poisoned_by_wvc_subscription {
-            // Version 1 could turn a mixed provider catalog into all-Weavecoder rows
-            // after seeing just one managed subscription route. Rebuild ordinary
-            // routes from the names catalog, then append only the current tier's
-            // actual subscription entitlements.
-            *routes = crate::provider::remote_model_routes_fallback(
-                remote_provider_name,
-                remote_available_entries,
-            );
-            Self::append_wvc_subscription_routes_static(
-                remote_available_entries,
-                routes,
-                false,
-                true,
-            );
             return;
         }
         let mut methods_by_model: std::collections::HashMap<&str, HashSet<&str>> =
@@ -750,13 +658,6 @@ impl App {
                 }
             }
         }
-        // Detailed provider hydration describes ordinary configured routes. A
-        // signed-in Weavecoder subscriber still needs the managed route for each
-        // entitled curated model alongside those Anthropic/OpenAI/etc. rows.
-        // The curated client catalog is versioned with the backend and is the
-        // authority for managed subscription entitlements. Do not hide newly
-        // launched subscription models behind a stale remote names snapshot.
-        Self::append_wvc_subscription_routes_static(remote_available_entries, routes, true, false);
     }
 
     fn hydrate_remote_model_catalog_snapshot(

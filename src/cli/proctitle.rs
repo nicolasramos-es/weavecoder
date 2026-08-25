@@ -18,7 +18,6 @@ pub(crate) fn initial_title(args: &Args) -> String {
         Some(Command::ApiBridge { .. }) => "wvc api-bridge".to_string(),
         Some(Command::Run { .. }) => "wvc run".to_string(),
         Some(Command::Login { .. }) => "wvc login".to_string(),
-        Some(Command::Account { .. }) => "wvc account".to_string(),
         Some(Command::Repl) => "wvc repl".to_string(),
         Some(Command::Update) => "wvc update".to_string(),
         Some(Command::Version { .. }) => "wvc version".to_string(),

@@ -401,6 +401,29 @@ impl Registry {
         wvc_tool_types::resolve_tool_name(name)
     }
 
+    /// Resolve the permission gate for a tool based on the user's configured
+    /// `[tools] disk_mode` and `[tools] permissions` settings.
+    fn permission_for(tool_name: &str, _ctx: &ToolContext) -> PermissionCheck {
+        let cfg = crate::config::config();
+        // Per-tool override wins.
+        if let Some(mode) = cfg.tools.permissions.get(tool_name) {
+            match mode.as_str() {
+                "allow" => return PermissionCheck::Allow,
+                "ask" => return PermissionCheck::Ask,
+                "deny" => {
+                    return PermissionCheck::Deny(format!("configured as deny"));
+                }
+                _ => {}
+            }
+        }
+        // Disk mode gate: "ask" surfaces a prompt for write-ish tools; "limited"
+        // is enforced elsewhere; "full" (default) allows everything.
+        match cfg.tools.disk_mode.as_str() {
+            "ask" if is_disk_sensitive_tool(tool_name) => PermissionCheck::Ask,
+            _ => PermissionCheck::Allow,
+        }
+    }
+
     /// Suggest up to 3 available tool names that look similar to `name`.
     /// Uses cheap, dependency-free heuristics: case-insensitive equality,
     /// prefix/substring containment, then bounded edit distance. Helps the
@@ -670,6 +693,31 @@ impl Registry {
                     "Tool call blocked by pre_tool hook: {reason}"
                 ));
             }
+        }
+
+        // Permission gate: consult the user's disk/tool permission settings.
+        // "deny" blocks the tool, "ask" surfaces a permission request, "allow"
+        // (and unlisted tools) execute normally. This applies to normal
+        // sessions too, unlike the ambient-only request_permission tool.
+        match Self::permission_for(resolved_name, &ctx) {
+            PermissionCheck::Deny(reason) => {
+                return Err(anyhow::anyhow!(
+                    "Tool '{resolved_name}' is denied by your permission settings: {reason}"
+                ));
+            }
+            PermissionCheck::Ask => {
+                // Queue a permission request via the shared SafetySystem so the
+                // TUI can approve/deny it, but for a headless/blocking execute
+                // we surface a clear message rather than silently blocking.
+                crate::tool::ambient::note_tool_permission_request(
+                    resolved_name,
+                    "This tool requires your approval under your current permission settings.",
+                );
+                return Err(anyhow::anyhow!(
+                    "Tool '{resolved_name}' requires your approval. Review it in the permission queue and run the command again after approving."
+                ));
+            }
+            PermissionCheck::Allow => {}
         }
 
         crate::logging::event_info(
@@ -1220,3 +1268,18 @@ fn levenshtein(a: &str, b: &str) -> usize {
 
 #[cfg(test)]
 mod tests;
+
+/// Result of the user-permission gate applied before executing a tool.
+enum PermissionCheck {
+    Allow,
+    Ask,
+    Deny(String),
+}
+
+/// Tools that read/write the filesystem and are gated by `disk_mode = "ask"`.
+fn is_disk_sensitive_tool(name: &str) -> bool {
+    matches!(
+        name,
+        "bash" | "write" | "edit" | "multiedit" | "apply_patch" | "patch"
+    )
+}

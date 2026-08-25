@@ -73,15 +73,6 @@ pub(crate) fn handle_auth_command(app: &mut App, trimmed: &str) -> bool {
         return true;
     }
 
-    if trimmed == "/subscription" || trimmed == "/subscription status" {
-        app.show_wvc_subscription_status();
-        return true;
-    }
-
-    if trimmed == "/subscribe" {
-        app.show_subscribe_pitch();
-        return true;
-    }
 
     if let Some(parsed) = parse_account_command(trimmed) {
         match parsed {
@@ -207,9 +198,6 @@ fn parse_account_command(trimmed: &str) -> Option<Result<AccountCommand, String>
             "login" => AccountCommand::Login {
                 provider_id: provider.id.to_string(),
             },
-            "status" if provider.id == "wvc" => AccountCommand::WeavecoderStatus,
-            "manage" if provider.id == "wvc" => AccountCommand::WeavecoderManage,
-            "logout" if provider.id == "wvc" => AccountCommand::WeavecoderLogout,
             "add" => AccountCommand::Add {
                 provider_id: provider.id.to_string(),
                 label: (!value.is_empty()).then(|| value.to_string()),
@@ -389,9 +377,6 @@ pub(crate) fn execute_account_command_local(app: &mut App, command: AccountComma
                 ))),
             }
         }
-        AccountCommand::WeavecoderStatus => app.show_wvc_subscription_status(),
-        AccountCommand::WeavecoderManage => app.open_wvc_account_management(),
-        AccountCommand::WeavecoderLogout => app.start_wvc_account_logout(),
         AccountCommand::Add { provider_id, label } => {
             execute_account_add_local(app, &provider_id, label.as_deref())
         }
@@ -1161,26 +1146,6 @@ mod tests {
         assert!(matches!(
             parse_account_command("/account openai doctor"),
             Some(Ok(AccountCommand::Doctor { provider_id: Some(provider_id) })) if provider_id == "openai"
-        ));
-    }
-
-    #[test]
-    fn parse_native_wvc_account_actions() {
-        assert!(matches!(
-            parse_account_command("/account wvc login"),
-            Some(Ok(AccountCommand::Login { provider_id })) if provider_id == "wvc"
-        ));
-        assert!(matches!(
-            parse_account_command("/account wvc status"),
-            Some(Ok(AccountCommand::WeavecoderStatus))
-        ));
-        assert!(matches!(
-            parse_account_command("/account wvc manage"),
-            Some(Ok(AccountCommand::WeavecoderManage))
-        ));
-        assert!(matches!(
-            parse_account_command("/account wvc logout"),
-            Some(Ok(AccountCommand::WeavecoderLogout))
         ));
     }
 

@@ -99,7 +99,6 @@ impl MultiProvider {
             LoginProviderTarget::Gemini => Some("gemini"),
             LoginProviderTarget::Antigravity => Some("antigravity"),
             LoginProviderTarget::AutoImport
-            | LoginProviderTarget::Weavecoder
             | LoginProviderTarget::Azure
             | LoginProviderTarget::Google => None,
         }
@@ -165,7 +164,6 @@ impl MultiProvider {
         };
 
         let provider_key = match &api_method_kind {
-            ModelRouteApiMethod::WeavecoderSubscription => Some("wvc".to_string()),
             ModelRouteApiMethod::AnthropicApiKey
                 if provider_display == "Anthropic"
                     && crate::provider::provider_for_model(bare_name) == Some("claude") =>
@@ -442,7 +440,6 @@ impl MultiProvider {
             .filter(|api_method| !api_method.is_empty())
         {
             match ModelRouteApiMethod::parse(api_method) {
-                ModelRouteApiMethod::WeavecoderSubscription => return model.to_string(),
                 ModelRouteApiMethod::ClaudeOAuth => return format!("claude-oauth:{model}"),
                 ModelRouteApiMethod::AnthropicApiKey => return format!("claude-api:{model}"),
                 ModelRouteApiMethod::OpenAIOAuth => return format!("openai-oauth:{model}"),

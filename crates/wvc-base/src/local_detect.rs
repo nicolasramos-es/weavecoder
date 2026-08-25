@@ -50,7 +50,7 @@ pub(crate) const LOCAL_SERVERS: &[LocalServer] = &[
         provider: crate::provider_catalog::VLLM_LOGIN_PROVIDER,
     },
     LocalServer {
-        port: 8081,
+        port: 8000,
         path: "/v1/models",
         provider: crate::provider_catalog::OMLX_LOGIN_PROVIDER,
     },

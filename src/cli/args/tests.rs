@@ -505,42 +505,6 @@ fn login_scriptable_flags_parse() {
     }
 }
 
-#[test]
-fn account_subcommands_parse() {
-    let login =
-        Args::try_parse_from(["wvc", "account", "login", "--no-browser"]).expect("account login");
-    assert!(matches!(
-        login.command,
-        Some(Command::Account {
-            action: AccountCommand::Login { no_browser: true }
-        })
-    ));
-
-    let status =
-        Args::try_parse_from(["wvc", "account", "status", "--json"]).expect("account status");
-    assert!(matches!(
-        status.command,
-        Some(Command::Account {
-            action: AccountCommand::Status { json: true }
-        })
-    ));
-
-    let manage = Args::try_parse_from(["wvc", "account", "manage"]).expect("account manage");
-    assert!(matches!(
-        manage.command,
-        Some(Command::Account {
-            action: AccountCommand::Manage
-        })
-    ));
-
-    let logout = Args::try_parse_from(["wvc", "account", "logout"]).expect("account logout");
-    assert!(matches!(
-        logout.command,
-        Some(Command::Account {
-            action: AccountCommand::Logout
-        })
-    ));
-}
 
 #[test]
 fn quiet_global_flag_parses() {

@@ -10,8 +10,6 @@ fn with_clean_provider_test_env<T>(f: impl FnOnce() -> T) -> T {
     register_test_external_runtimes();
     let temp = tempfile::tempdir().expect("tempdir");
     let prev_home = std::env::var_os("WVC_HOME");
-    let prev_subscription =
-        std::env::var_os(crate::subscription_catalog::WVC_SUBSCRIPTION_ACTIVE_ENV);
     let mut profile_env_keys = vec![
         "OPENROUTER_API_KEY",
         "DEEPSEEK_API_KEY",
@@ -55,7 +53,6 @@ fn with_clean_provider_test_env<T>(f: impl FnOnce() -> T) -> T {
     for (key, _) in &saved_profile_env {
         crate::env::remove_var(key);
     }
-    crate::subscription_catalog::clear_runtime_env();
     crate::auth::claude::set_active_account_override(None);
     crate::auth::codex::set_active_account_override(None);
     // The in-memory model catalog services are process-global; earlier tests
@@ -74,14 +71,6 @@ fn with_clean_provider_test_env<T>(f: impl FnOnce() -> T) -> T {
     } else {
         crate::env::remove_var("WVC_HOME");
     }
-    if let Some(prev_subscription) = prev_subscription {
-        crate::env::set_var(
-            crate::subscription_catalog::WVC_SUBSCRIPTION_ACTIVE_ENV,
-            prev_subscription,
-        );
-    } else {
-        crate::env::remove_var(crate::subscription_catalog::WVC_SUBSCRIPTION_ACTIVE_ENV);
-    }
     for (key, value) in saved_profile_env {
         if let Some(value) = value {
             crate::env::set_var(key, value);
@@ -89,7 +78,6 @@ fn with_clean_provider_test_env<T>(f: impl FnOnce() -> T) -> T {
             crate::env::remove_var(key);
         }
     }
-    crate::subscription_catalog::clear_runtime_env();
     result
 }
 

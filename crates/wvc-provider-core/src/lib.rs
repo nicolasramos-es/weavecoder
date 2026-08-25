@@ -693,7 +693,6 @@ pub struct ModelRoute {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(tag = "kind", rename_all = "kebab-case")]
 pub enum RuntimeKey {
-    WeavecoderSubscription,
     ClaudeOAuth,
     AnthropicApiKey,
     OpenAIOAuth,
@@ -717,7 +716,6 @@ pub enum RuntimeKey {
 impl RuntimeKey {
     pub fn from_api_method(api_method: &ModelRouteApiMethod, _provider_label: &str) -> Self {
         match api_method {
-            ModelRouteApiMethod::WeavecoderSubscription => Self::WeavecoderSubscription,
             ModelRouteApiMethod::ClaudeOAuth => Self::ClaudeOAuth,
             ModelRouteApiMethod::AnthropicApiKey => Self::AnthropicApiKey,
             ModelRouteApiMethod::OpenAIOAuth => Self::OpenAIOAuth,
@@ -739,7 +737,6 @@ impl RuntimeKey {
 
     pub fn stable_id(&self) -> String {
         match self {
-            Self::WeavecoderSubscription => "wvc-subscription".to_string(),
             Self::ClaudeOAuth => "claude-oauth".to_string(),
             Self::AnthropicApiKey => "anthropic-api-key".to_string(),
             Self::OpenAIOAuth => "openai-oauth".to_string(),
@@ -801,7 +798,6 @@ impl RouteSelection {
     pub fn routed_model_spec(&self) -> String {
         let model = self.model.trim();
         match &self.runtime_key {
-            RuntimeKey::WeavecoderSubscription => model.to_string(),
             RuntimeKey::ClaudeOAuth => format!("claude-oauth:{model}"),
             RuntimeKey::AnthropicApiKey => format!("claude-api:{model}"),
             RuntimeKey::OpenAIOAuth => format!("openai-oauth:{model}"),
@@ -855,7 +851,6 @@ fn openrouter_catalog_model_id(model: &str) -> String {
 /// module boundaries instead of scattering string comparisons everywhere.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ModelRouteApiMethod {
-    WeavecoderSubscription,
     ClaudeOAuth,
     AnthropicApiKey,
     OpenAIOAuth,
@@ -894,7 +889,6 @@ impl ModelRouteApiMethod {
             return Self::from_auth_route(route);
         }
         match lower.as_str() {
-            "wvc-subscription" => Self::WeavecoderSubscription,
             "openrouter" => Self::OpenRouter,
             "openai-compatible" => Self::OpenAiCompatible { profile_id: None },
             "copilot" => Self::Copilot,
@@ -961,7 +955,6 @@ impl ModelRouteApiMethod {
 
     pub fn display_label(&self) -> String {
         match self {
-            Self::WeavecoderSubscription => "subscription".to_string(),
             Self::ClaudeOAuth | Self::OpenAIOAuth | Self::CodeAssistOAuth => "oauth".to_string(),
             Self::AnthropicApiKey | Self::OpenAIApiKey | Self::OpenAiCompatible { .. } => {
                 "api key".to_string()

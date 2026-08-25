@@ -66,154 +66,6 @@ impl App {
         notices.join("\n")
     }
 
-    pub(super) fn show_wvc_subscription_status(&mut self) {
-        let configured_key = crate::subscription_catalog::configured_api_key().is_some();
-        let configured_base = crate::subscription_catalog::configured_api_base()
-            .unwrap_or_else(|| crate::subscription_catalog::DEFAULT_WVC_API_BASE.to_string());
-        let runtime_mode = crate::subscription_catalog::is_runtime_mode_enabled();
-        let cached_tier = crate::subscription_catalog::cached_tier();
-
-        let mut message = String::from("Weavecoder Subscription Status\n\n");
-        message.push_str(&format!(
-            "  - Credentials: {}\n",
-            if configured_key {
-                "configured"
-            } else {
-                "not configured (/login wvc)"
-            }
-        ));
-        message.push_str(&format!(
-            "  - Router base: {}{}\n",
-            configured_base,
-            if crate::subscription_catalog::has_router_base() {
-                ""
-            } else {
-                " (default)"
-            }
-        ));
-        message.push_str(&format!(
-            "  - Tier: {}\n",
-            cached_tier
-                .map(|tier| tier.display_name().to_string())
-                .unwrap_or_else(|| "unknown (treated as Plus)".to_string())
-        ));
-        message.push_str(&format!(
-            "  - Runtime mode: {}\n\n",
-            if runtime_mode {
-                "active for this session"
-            } else {
-                "inactive for this session"
-            }
-        ));
-
-        message.push_str("Catalog\n\n");
-        for model in crate::subscription_catalog::curated_models() {
-            let default_suffix = if model.default_enabled {
-                " (default)"
-            } else {
-                ""
-            };
-            let tier_suffix = if model.min_tier == crate::subscription_catalog::WeavecoderTier::Plus
-            {
-                String::new()
-            } else {
-                format!(" [{}]", model.min_tier.display_name())
-            };
-            message.push_str(&format!(
-                "  - {} - {}{}{}\n      - {}\n      - {}\n",
-                model.display_name,
-                model.id,
-                default_suffix,
-                tier_suffix,
-                crate::subscription_catalog::routing_policy_detail(model),
-                model.note
-            ));
-        }
-
-        message.push_str("\nTiers\n\n");
-        for tier in crate::subscription_catalog::WeavecoderTier::ALL
-            .iter()
-            .copied()
-        {
-            message.push_str(&format!(
-                "  - {} - ${}/mo retail, about ${:.2} usable inference budget\n",
-                tier.display_name(),
-                tier.retail_price_usd(),
-                tier.usable_budget_usd()
-            ));
-        }
-
-        if configured_key {
-            message.push_str("\nFetching account status...");
-        } else {
-            message.push_str("\nLog in with /login wvc to see account usage and tier.");
-        }
-
-        self.push_display_message(DisplayMessage::system(message));
-
-        // With credentials present, fetch live account status (/v1/me) in the
-        // background and surface it via a UiActivity card. Short timeout keeps
-        // this responsive; offline failures degrade to a quiet log line.
-        if configured_key {
-            let session_id = self.session.id.clone();
-            if let Ok(handle) = tokio::runtime::Handle::try_current() {
-                handle.spawn(async move {
-                    match crate::subscription_api::fetch_subscription_me().await {
-                        Ok(me) => {
-                            let tier_label = me
-                                .parsed_tier()
-                                .map(|tier| tier.display_name().to_string())
-                                .unwrap_or_else(|| me.tier.clone());
-                            let resets = me
-                                .usage
-                                .resets_at
-                                .as_deref()
-                                .map(|at| format!(", resets {}", at))
-                                .unwrap_or_default();
-                            crate::bus::Bus::global().publish(crate::bus::BusEvent::UiActivity(
-                                crate::bus::UiActivity::background(
-                                    Some(session_id),
-                                    format!(
-                                        "Weavecoder Subscription Account\n\n  - Email: {}\n  - Tier: {} ({})\n  - Usage: ${:.2} of ${:.2}{}",
-                                        me.email,
-                                        tier_label,
-                                        me.status,
-                                        me.usage.used_usd,
-                                        me.usage.budget_usd,
-                                        resets
-                                    ),
-                                    Some("Subscription: account status loaded"),
-                                ),
-                            ));
-                        }
-                        Err(error) => {
-                            let message = if error
-                                .downcast_ref::<crate::subscription_api::AccountApiError>()
-                                == Some(&crate::subscription_api::AccountApiError::Unauthorized)
-                            {
-                                let _ = crate::subscription_catalog::clear_account_credentials();
-                                "Weavecoder Account Status\n\nThe saved account key was revoked or expired. Local credentials were cleared. Use /account wvc login to sign in again."
-                                    .to_string()
-                            } else {
-                                format!(
-                                    "Weavecoder Account Status\n\nCould not load /v1/me: {}\n\nThe local credential was retained. Retry /account wvc status, open /account wvc manage, or use /account wvc logout.",
-                                    error
-                                )
-                            };
-                            crate::bus::Bus::global().publish(crate::bus::BusEvent::UiActivity(
-                                crate::bus::UiActivity::background(
-                                    Some(session_id),
-                                    message,
-                                    Some("Weavecoder account status unavailable"),
-                                ),
-                            ));
-                        }
-                    }
-                });
-            }
-        }
-    }
-
     pub(super) fn show_auth_status(&mut self) {
         let status = crate::auth::AuthStatus::check();
         let validation = crate::auth::validation::load_all();
@@ -261,7 +113,7 @@ impl App {
             message.push('\n');
         }
         message.push_str(
-            "\nUse /login <provider> to authenticate. /login wvc is for curated wvc subscription access; /account opens the provider/account management center, /account <provider> settings shows provider-specific controls, and /auth doctor or /account <provider> doctor shows recovery steps.",
+            "\nUse /login <provider> to authenticate. /account opens the provider/account management center, /account <provider> settings shows provider-specific controls, and /auth doctor or /account <provider> doctor shows recovery steps.",
         );
         self.push_display_message(DisplayMessage::system(message));
     }
@@ -283,13 +135,7 @@ impl App {
     ) {
         use crate::provider_catalog::LoginProviderTarget;
 
-        if matches!(provider.target, LoginProviderTarget::Weavecoder) {
-            self.start_wvc_account_logout();
-            return;
-        }
-
         let result: anyhow::Result<String> = (|| match provider.target {
-            LoginProviderTarget::Weavecoder => unreachable!("handled above"),
             LoginProviderTarget::Claude => {
                 let removed = crate::auth::claude::clear_accounts()?;
                 Ok(format!("Logged out of {} Anthropic account(s).", removed))
@@ -382,28 +228,6 @@ impl App {
             Ok(removed) if removed > 0 => summary.push(format!("{} OpenAI account(s)", removed)),
             Ok(_) => {}
             Err(err) => errors.push(format!("OpenAI: {}", err)),
-        }
-
-        Self::clear_api_key_logout_summary(
-            &mut summary,
-            &mut errors,
-            "wvc subscription API key",
-            crate::subscription_catalog::WVC_API_KEY_ENV,
-            crate::subscription_catalog::WVC_ENV_FILE,
-        );
-        for env_key in [
-            crate::subscription_catalog::WVC_API_BASE_ENV,
-            crate::subscription_catalog::WVC_ACCOUNT_ID_ENV,
-            crate::subscription_catalog::WVC_ACCOUNT_EMAIL_ENV,
-            crate::subscription_catalog::WVC_TIER_ENV,
-        ] {
-            if let Err(err) = crate::provider_catalog::save_env_value_to_env_file(
-                env_key,
-                crate::subscription_catalog::WVC_ENV_FILE,
-                None,
-            ) {
-                errors.push(format!("wvc subscription {}: {}", env_key, err));
-            }
         }
 
         Self::clear_api_key_logout_summary(
@@ -558,7 +382,6 @@ impl App {
                     }
                 }
             }
-            crate::provider_catalog::LoginProviderTarget::Weavecoder => self.start_wvc_login(),
             crate::provider_catalog::LoginProviderTarget::Claude => self.start_claude_login(),
             crate::provider_catalog::LoginProviderTarget::ClaudeApiKey => {
                 self.start_anthropic_api_key_login()
@@ -605,260 +428,6 @@ impl App {
         let label = crate::auth::claude::login_target_label(None)
             .unwrap_or_else(|_| crate::auth::claude::primary_account_label());
         self.start_claude_login_for_account(&label);
-    }
-
-    fn start_wvc_login(&mut self) {
-        self.push_display_message(DisplayMessage::system(
-            "Weavecoder Account Login\n\nRequesting a secure browser approval flow. No email or API key will be requested in the terminal."
-                .to_string(),
-        ));
-        self.set_status_notice("Weavecoder account: requesting browser approval");
-        let session_id = self.session.id.clone();
-        let Ok(handle) = tokio::runtime::Handle::try_current() else {
-            self.push_display_message(DisplayMessage::error(
-                "Weavecoder account login requires the async runtime.".to_string(),
-            ));
-            return;
-        };
-        handle.spawn(async move {
-            use crate::subscription_api::{
-                ActivationOutcome, PollingBackoff, TokenPollOutcome,
-            };
-            use std::time::Duration;
-
-            let publish = |message: String, status: &'static str| {
-                crate::bus::Bus::global().publish(crate::bus::BusEvent::UiActivity(
-                    crate::bus::UiActivity::background(
-                        Some(session_id.clone()),
-                        message,
-                        Some(status),
-                    ),
-                ));
-            };
-            let client = crate::provider::shared_http_client();
-            let api_base = crate::subscription_api::configured_api_base();
-            let device = match crate::subscription_api::request_device_authorization(
-                &client,
-                &api_base,
-                Some(crate::subscription_catalog::WeavecoderTier::Pro),
-            )
-            .await
-            {
-                Ok(device) => device,
-                Err(error) => {
-                    publish(
-                        format!(
-                            "Weavecoder Account Login\n\nCould not start browser approval: {}\n\nRetry /account wvc login. No credential was saved.",
-                            error
-                        ),
-                        "Weavecoder account login failed",
-                    );
-                    return;
-                }
-            };
-
-            let opened = App::open_auth_browser(&device.verification_uri_complete);
-            publish(
-                format!(
-                    "Weavecoder Account Login\n\n{}\n\nApprove the request in the same browser. Weavecoder is waiting for the single-use exchange.{}",
-                    device.verification_uri_complete,
-                    if opened {
-                        ""
-                    } else {
-                        "\n\nThe browser could not be opened automatically. Open the public URL above manually."
-                    }
-                ),
-                "Weavecoder account: waiting for browser approval",
-            );
-
-            let approved = {
-                let deadline = tokio::time::Instant::now()
-                    + Duration::from_secs(device.expires_in.max(device.interval));
-                let mut backoff = PollingBackoff::new(Duration::from_secs(device.interval));
-                loop {
-                    let delay = backoff.delay();
-                    if tokio::time::Instant::now() + delay >= deadline {
-                        break Err("Browser approval timed out. No credential was saved.".to_string());
-                    }
-                    tokio::time::sleep(delay).await;
-                    match crate::subscription_api::poll_device_token_once(
-                        &client,
-                        &api_base,
-                        &device.device_code,
-                    )
-                    .await
-                    {
-                        Ok(TokenPollOutcome::Pending) => backoff.on_pending(),
-                        Ok(TokenPollOutcome::SlowDown { retry_after }) => {
-                            backoff.on_slow_down(retry_after)
-                        }
-                        Ok(TokenPollOutcome::Approved(key)) => break Ok(key),
-                        Ok(TokenPollOutcome::Expired) => break Err(
-                            "The browser approval expired or was already exchanged. Start a new login."
-                                .to_string(),
-                        ),
-                        Ok(TokenPollOutcome::Denied) => break Err(
-                            "Weavecoder account login was canceled or denied in the browser."
-                                .to_string(),
-                        ),
-                        Err(error) if error.is_temporary() => backoff.on_offline_error(),
-                        Err(error) => break Err(error.to_string()),
-                    }
-                }
-            };
-            let approved = match approved {
-                Ok(approved) => approved,
-                Err(error) => {
-                    publish(
-                        format!("Weavecoder Account Login\n\n{error}\n\nRetry /account wvc login."),
-                        "Weavecoder account login stopped",
-                    );
-                    return;
-                }
-            };
-
-            if let Err(error) = crate::subscription_catalog::persist_account_credentials(
-                &approved.api_key,
-                Some(&approved.account_id),
-                Some(&approved.email),
-                Some(&approved.tier),
-            ) {
-                publish(
-                    format!("Weavecoder Account Login\n\nBrowser approval succeeded, but secure credential persistence failed: {error}"),
-                    "Weavecoder account credential save failed",
-                );
-                return;
-            }
-            crate::auth::AuthStatus::invalidate_cache();
-            publish(
-                format!(
-                    "Weavecoder Account Approved\n\nSigned in as {}. The key is stored with owner-only permissions. Waiting for an active paid plan on /v1/me...",
-                    approved.email
-                ),
-                "Weavecoder account: waiting for plan activation",
-            );
-
-            match crate::subscription_api::poll_for_paid_activation(
-                &client,
-                &api_base,
-                &approved.api_key,
-                crate::subscription_api::ACTIVATION_TIMEOUT,
-                Duration::from_secs(device.interval.max(2)),
-            )
-            .await
-            {
-                ActivationOutcome::Active(me) => {
-                    let message = format!(
-                        "Weavecoder Account Ready\n\n{} is active for {}. Models are being refreshed automatically.\n\nStatus: /account wvc status\nManage: /account wvc manage\nLogout: /account wvc logout",
-                        me.parsed_tier()
-                            .map(|tier| tier.display_name().to_string())
-                            .unwrap_or(me.tier),
-                        me.email
-                    );
-                    publish(message.clone(), "Weavecoder account plan active");
-
-                    // The device flow used to stop after saving the credential and
-                    // publishing a status message. Unlike every other login flow it
-                    // never told the App that authentication had completed, so the
-                    // running provider retained its pre-login routes until the user
-                    // manually ran /refresh-model-list. Route activation also powers
-                    // model-switch availability checks, which made every newly shown
-                    // subscription model appear unavailable in that stale runtime.
-                    crate::bus::Bus::global().publish(
-                        crate::bus::BusEvent::LoginCompleted(crate::bus::LoginCompleted {
-                            provider: "wvc".to_string(),
-                            success: true,
-                            message,
-                        }),
-                    );
-                }
-                ActivationOutcome::Canceled(_) => publish(
-                    "Weavecoder Account Login\n\nCheckout was canceled. The valid account key remains saved, but no paid plan is active.\n\nStatus: /account wvc status\nManage: /account wvc manage\nLogout: /account wvc logout".to_string(),
-                    "Weavecoder account plan not active",
-                ),
-                ActivationOutcome::TimedOut { last_error_was_offline } => publish(
-                    format!(
-                        "Weavecoder Account Login\n\nPlan activation was not confirmed before timeout{}. The valid account key remains saved.\n\nStatus: /account wvc status\nManage: /account wvc manage\nLogout: /account wvc logout",
-                        if last_error_was_offline { " because the API remained unreachable" } else { "" }
-                    ),
-                    "Weavecoder account activation pending",
-                ),
-                ActivationOutcome::Revoked | ActivationOutcome::Denied => {
-                    let _ = crate::subscription_catalog::clear_account_credentials();
-                    publish(
-                        "Weavecoder Account Login\n\nThe issued key was revoked or denied during activation checks. Local credentials were cleared. Retry /account wvc login.".to_string(),
-                        "Weavecoder account key rejected",
-                    );
-                }
-            }
-        });
-    }
-
-    pub(super) fn open_wvc_account_management(&mut self) {
-        let url = crate::subscription_catalog::WVC_ACCOUNT_URL;
-        let opened = Self::open_auth_browser(url);
-        self.push_display_message(DisplayMessage::system(format!(
-            "Weavecoder Account Management\n\n{}{}",
-            url,
-            if opened {
-                "\n\nOpened in your browser."
-            } else {
-                "\n\nThe browser could not be opened automatically. Open the public URL above manually."
-            }
-        )));
-        self.set_status_notice("Weavecoder account management");
-    }
-
-    pub(super) fn start_wvc_account_logout(&mut self) {
-        self.set_status_notice("Weavecoder account: logging out");
-        let session_id = self.session.id.clone();
-        let Ok(handle) = tokio::runtime::Handle::try_current() else {
-            let result = crate::subscription_catalog::clear_account_credentials();
-            match result {
-                Ok(()) => self.push_display_message(DisplayMessage::system(
-                    "Weavecoder account credentials and cache were cleared locally. Remote revocation could not be attempted without the async runtime."
-                        .to_string(),
-                )),
-                Err(error) => self.push_display_message(DisplayMessage::error(format!(
-                    "Failed to clear local Weavecoder account credentials: {error}"
-                ))),
-            }
-            return;
-        };
-        handle.spawn(async move {
-            let api_key = crate::subscription_catalog::configured_api_key();
-            let remote = if let Some(api_key) = api_key.as_deref() {
-                crate::subscription_api::revoke_current_key(
-                    &crate::provider::shared_http_client(),
-                    &crate::subscription_api::configured_api_base(),
-                    api_key,
-                )
-                .await
-            } else {
-                Ok(())
-            };
-            let local = crate::subscription_catalog::clear_account_credentials();
-            crate::auth::AuthStatus::invalidate_cache();
-            let message = match local {
-                Err(error) => format!(
-                    "Weavecoder Account Logout\n\nFailed to securely clear local credentials: {error}"
-                ),
-                Ok(()) => match (api_key.is_some(), remote) {
-                    (false, _) => "Weavecoder Account Logout\n\nNo local credential was present. Local account cache is clear.".to_string(),
-                    (true, Ok(())) => "Weavecoder Account Logout\n\nThe current key was revoked. Local credentials and account cache were securely cleared.".to_string(),
-                    (true, Err(crate::subscription_api::AccountApiError::Unauthorized)) => "Weavecoder Account Logout\n\nThe key was already revoked. Local credentials and account cache were securely cleared.".to_string(),
-                    (true, Err(crate::subscription_api::AccountApiError::Offline(_))) => "Weavecoder Account Logout\n\nLocal credentials and account cache were securely cleared. The API was offline, so remote revocation could not be confirmed.".to_string(),
-                    (true, Err(error)) => format!("Weavecoder Account Logout\n\nLocal credentials and account cache were securely cleared. Remote revocation could not be confirmed: {error}"),
-                },
-            };
-            crate::bus::Bus::global().publish(crate::bus::BusEvent::UiActivity(
-                crate::bus::UiActivity::background(
-                    Some(session_id),
-                    message,
-                    Some("Weavecoder account logout complete"),
-                ),
-            ));
-        });
     }
 
     pub(super) fn start_claude_login_for_account(&mut self, label: &str) {
@@ -1547,17 +1116,43 @@ impl App {
         &mut self,
         profile: crate::provider_catalog::OpenAiCompatibleProfile,
     ) {
+        // The built-in generic "OpenAI-compatible" provider is now an entry
+        // point for adding arbitrarily many named provider profiles, each
+        // stored as `[providers.<name>]` in config.toml. The first step asks
+        // for a name.
         if profile.id == crate::provider_catalog::OPENAI_COMPAT_PROFILE.id {
-            let resolved = crate::provider_catalog::resolve_openai_compatible_profile(profile);
+            self.push_display_message(DisplayMessage::system(
+                "Add OpenAI-compatible provider\n\n\
+                 Give this provider a name, e.g. my-gateway or my-local-llm.\n\
+                 You can add as many OpenAI-compatible providers as you need.\n\n\
+                 Enter a name below, or type /cancel to abort.",
+            ));
+            self.set_status_notice("Add provider: enter a name");
+            self.pending_login = Some(PendingLogin::OpenAiCompatibleName);
+            return;
+        }
+
+        // Local endpoint providers (Ollama, LM Studio, llama.cpp, vLLM, oMLX)
+        // let the user edit the base URL first (persisted as
+        // WVC_<PROFILE>_API_BASE in the provider's env file), then continue to
+        // the API key step.
+        let resolved = crate::provider_catalog::resolve_openai_compatible_profile(profile);
+        if !profile.requires_api_key && crate::provider_catalog::api_base_uses_localhost(&resolved.api_base) {
+            let current = crate::provider_catalog::load_env_value_from_env_or_config(
+                &format!("WVC_{}_API_BASE", profile.id.to_uppercase()),
+                profile.env_file,
+            )
+            .unwrap_or_else(|| resolved.api_base.clone());
             self.push_display_message(DisplayMessage::system(format!(
-                "{} Endpoint\n\n\
-                 Setup docs: {}\n\
-                 Current API base: {}\n\n\
-                 Paste the API base below. Press Enter to keep the current value, or type /cancel to abort.",
-                resolved.display_name, resolved.setup_url, resolved.api_base
+                "{} Local Endpoint\n\n\
+                 Current base URL: {}\n\n\
+                 Paste a new base URL for this local endpoint, or press Enter to keep the current value.\n\
+                 Type /cancel to abort.",
+                resolved.display_name, current
             )));
-            self.set_status_notice("Login: API base...");
-            self.pending_login = Some(PendingLogin::OpenAiCompatibleApiBase { profile });
+            self.set_status_notice("Login: local endpoint URL");
+            self.pending_login =
+                Some(PendingLogin::OpenAiCompatibleLocalBase { profile });
             return;
         }
 
@@ -1634,7 +1229,6 @@ impl App {
         let provider_id = openai_compatible_profile
             .map(|profile| profile.id.to_string())
             .unwrap_or_else(|| match key_name {
-                crate::subscription_catalog::WVC_API_KEY_ENV => "wvc".to_string(),
                 "OPENROUTER_API_KEY" => "openrouter".to_string(),
                 _ => provider.to_ascii_lowercase().replace(' ', "-"),
             });
@@ -2268,27 +1862,6 @@ impl App {
                                 )
                             }
                         })()
-                    } else if key_name == crate::subscription_catalog::WVC_API_KEY_ENV {
-                        (|| {
-                            let mut content = format!("{}={}\n", key_name, key);
-                            if let Some(base) = crate::subscription_catalog::configured_api_base() {
-                                content.push_str(&format!(
-                                    "{}={}\n",
-                                    crate::subscription_catalog::WVC_API_BASE_ENV,
-                                    base
-                                ));
-                            }
-
-                            let config_dir = crate::storage::app_config_dir()?;
-                            std::fs::create_dir_all(&config_dir)?;
-                            crate::platform::set_directory_permissions_owner_only(&config_dir)?;
-
-                            let file_path = config_dir.join(&env_file);
-                            std::fs::write(&file_path, content)?;
-                            crate::platform::set_permissions_owner_only(&file_path)?;
-                            crate::env::set_var(&key_name, &key);
-                            Ok(())
-                        })()
                     } else if key_name == crate::provider::bedrock::API_KEY_ENV {
                         (|| {
                             Self::save_named_api_key(&env_file, &key_name, &key)?;
@@ -2344,12 +1917,7 @@ impl App {
                         let model_hint = effective_default_model
                             .map(|m| format!("\nSuggested default model: {}", m))
                             .unwrap_or_default();
-                        let guidance = if key_name == crate::subscription_catalog::WVC_API_KEY_ENV {
-                            format!(
-                                "Use /login wvc to access curated models via your router. If the model list looks stale, run /refresh-model-list.\nDocs: {}",
-                                docs_url
-                            )
-                        } else if let Some(resolved) = resolved_openai_compatible.as_ref() {
+                        let guidance = if let Some(resolved) = resolved_openai_compatible.as_ref() {
                             if resolved.requires_api_key {
                                 "Fetching models now. Weavecoder will switch to an accessible model returned by the live catalog and show the catalog diff when discovery finishes. If the model list looks stale, run /refresh-model-list.".to_string()
                             } else {
@@ -2428,7 +1996,7 @@ impl App {
                     }
                 }
             }
-            PendingLogin::OpenAiCompatibleApiBase { profile } => {
+            PendingLogin::OpenAiCompatibleApiBase { profile, profile_name } => {
                 let api_base = input.trim();
                 if !api_base.is_empty() {
                     let normalized = match crate::provider_catalog::normalize_api_base(api_base) {
@@ -2438,11 +2006,50 @@ impl App {
                                 "OpenAI-compatible API base must be https://... or http://localhost."
                                     .to_string(),
                             ));
-                            self.pending_login =
-                                Some(PendingLogin::OpenAiCompatibleApiBase { profile });
+                            self.pending_login = Some(PendingLogin::OpenAiCompatibleApiBase {
+                                profile,
+                                profile_name,
+                            });
                             return;
                         }
                     };
+
+                    // Adding a brand-new named provider: store it as
+                    // `[providers.<name>]` in config.toml and move to the model
+                    // step.
+                    if let Some(name) = profile_name.clone() {
+                        let env_key =
+                            crate::provider_catalog::named_provider_key_env_name(&name);
+                        let env_file = format!("provider-{name}.env");
+                        if let Err(err) = crate::provider_catalog::save_env_value_to_env_file(
+                            &env_key,
+                            &env_file,
+                            Some(&normalized),
+                        ) {
+                            self.push_display_message(DisplayMessage::error(format!(
+                                "Failed to save provider base URL: {}",
+                                err
+                            )));
+                            self.pending_login = Some(PendingLogin::OpenAiCompatibleApiBase {
+                                profile,
+                                profile_name,
+                            });
+                            return;
+                        }
+                        self.push_display_message(DisplayMessage::system(format!(
+                            "Provider '{name}' base URL saved.\n\n\
+                             Now enter the default model for '{name}', e.g. gpt-4.1 or llama3.2.\n\
+                             Press Enter to skip if unsure.",
+                        )));
+                        self.set_status_notice("Add provider: enter model");
+                        self.pending_login = Some(PendingLogin::OpenAiCompatibleModel {
+                            name,
+                            base_url: normalized,
+                        });
+                        return;
+                    }
+
+                    // Legacy path: editing the built-in generic profile's base.
                     if let Err(err) = crate::provider_catalog::save_env_value_to_env_file(
                         "WVC_OPENAI_COMPAT_API_BASE",
                         crate::provider_catalog::OPENAI_COMPAT_PROFILE.env_file,
@@ -2452,11 +2059,133 @@ impl App {
                             "Failed to save OpenAI-compatible API base: {}",
                             err
                         )));
-                        self.pending_login =
-                            Some(PendingLogin::OpenAiCompatibleApiBase { profile });
+                        self.pending_login = Some(PendingLogin::OpenAiCompatibleApiBase {
+                            profile,
+                            profile_name: None,
+                        });
                         return;
                     }
                 }
+                self.start_openai_compatible_key_login(profile);
+            }
+            PendingLogin::OpenAiCompatibleName => {
+                let name = input.trim().to_string();
+                match crate::provider_catalog::validate_named_provider_name(&name) {
+                    Ok(validated) => {
+                        self.push_display_message(DisplayMessage::system(format!(
+                            "Provider '{validated}' is a valid name.\n\n\
+                             Now enter the base URL for '{validated}', e.g. https://llm.example.com/v1 \
+                             or http://localhost:8000/v1.\n\
+                             Type /cancel to abort.",
+                        )));
+                        self.set_status_notice("Add provider: enter base URL");
+                        self.pending_login = Some(PendingLogin::OpenAiCompatibleApiBase {
+                            profile: crate::provider_catalog::OPENAI_COMPAT_PROFILE,
+                            profile_name: Some(validated),
+                        });
+                    }
+                    Err(err) => {
+                        self.push_display_message(DisplayMessage::error(err.to_string()));
+                        self.pending_login = Some(PendingLogin::OpenAiCompatibleName);
+                    }
+                }
+            }
+            PendingLogin::OpenAiCompatibleModel { name, base_url } => {
+                let model = input.trim().to_string();
+                self.push_display_message(DisplayMessage::system(format!(
+                    "Provider '{name}' base URL {base_url}.\n\n\
+                     Now paste the API key for '{name}', or press Enter to skip if \
+                     this local endpoint does not require one.\n\
+                     Type /cancel to abort.",
+                )));
+                self.set_status_notice("Add provider: paste API key");
+                self.pending_login = Some(PendingLogin::OpenAiCompatibleApiKey {
+                    name,
+                    base_url,
+                    model,
+                });
+            }
+            PendingLogin::OpenAiCompatibleApiKey {
+                name,
+                base_url,
+                model,
+            } => {
+                let key = input.trim().to_string();
+                match crate::provider_catalog::add_named_openai_compatible_profile(
+                    &name,
+                    &base_url,
+                    if model.is_empty() { None } else { Some(&model) },
+                    if key.is_empty() { None } else { Some(&key) },
+                ) {
+                    Ok(()) => {
+                        self.push_display_message(DisplayMessage::system(format!(
+                            "✅ Provider '{name}' added.\n\n\
+                             {base_url}\n\
+                             Model: {}\n\
+                             {}\n\n\
+                             Switch to it with /model or use --provider-profile {name}.",
+                            if model.is_empty() {
+                                "(none set)"
+                            } else {
+                                &model
+                            },
+                            if key.is_empty() {
+                                "Auth: no API key (local endpoint)"
+                            } else {
+                                "Auth: API key saved"
+                            },
+                        )));
+                        self.set_status_notice(format!("Provider '{name}' added"));
+                    }
+                    Err(err) => {
+                        self.push_display_message(DisplayMessage::error(format!(
+                            "Failed to add provider '{name}': {err}"
+                        )));
+                        self.pending_login = Some(PendingLogin::OpenAiCompatibleApiKey {
+                            name,
+                            base_url,
+                            model,
+                        });
+                    }
+                }
+            }
+            PendingLogin::OpenAiCompatibleLocalBase { profile } => {
+                let api_base = input.trim();
+                let override_key = format!("WVC_{}_API_BASE", profile.id.to_uppercase());
+                if api_base.is_empty() {
+                    // Keep the current value and move on to the API key step.
+                    self.start_openai_compatible_key_login(profile);
+                    return;
+                }
+                let normalized = match crate::provider_catalog::normalize_api_base(api_base) {
+                    Some(value) => value,
+                    None => {
+                        self.push_display_message(DisplayMessage::error(
+                            "Local endpoint URL must be https://... or http://localhost."
+                                .to_string(),
+                        ));
+                        self.pending_login =
+                            Some(PendingLogin::OpenAiCompatibleLocalBase { profile });
+                        return;
+                    }
+                };
+                if let Err(err) = crate::provider_catalog::save_env_value_to_env_file(
+                    &override_key,
+                    profile.env_file,
+                    Some(&normalized),
+                ) {
+                    self.push_display_message(DisplayMessage::error(format!(
+                        "Failed to save local endpoint URL: {}",
+                        err
+                    )));
+                    self.pending_login =
+                        Some(PendingLogin::OpenAiCompatibleLocalBase { profile });
+                    return;
+                }
+                self.push_display_message(DisplayMessage::system(format!(
+                    "{} base URL updated to {}.",
+                    profile.display_name, normalized
+                )));
                 self.start_openai_compatible_key_login(profile);
             }
             PendingLogin::AzureEndpoint => {

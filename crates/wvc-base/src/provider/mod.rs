@@ -28,7 +28,6 @@ mod selection;
 mod startup;
 mod state;
 mod stream_timeout;
-pub mod wvc;
 
 use crate::auth;
 use crate::message::{Message, ToolDefinition};

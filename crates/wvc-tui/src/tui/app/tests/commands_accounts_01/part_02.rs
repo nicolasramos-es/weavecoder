@@ -213,67 +213,6 @@ fn test_mask_email_censors_local_part() {
 }
 
 #[test]
-fn test_subscription_command_shows_wvc_status_scaffold() {
-    let _guard = crate::storage::lock_test_env();
-    crate::subscription_catalog::clear_runtime_env();
-    crate::env::remove_var(crate::subscription_catalog::WVC_API_KEY_ENV);
-    crate::env::remove_var(crate::subscription_catalog::WVC_API_BASE_ENV);
-
-    let mut app = create_test_app();
-    app.input = "/subscription".to_string();
-    app.submit_input();
-
-    let msg = app
-        .display_messages()
-        .last()
-        .expect("missing /subscription response");
-    assert_eq!(msg.role, "system");
-    assert!(msg.content.contains("Weavecoder Subscription Status"));
-    assert!(msg.content.contains("/login wvc"));
-    assert!(msg.content.contains("Claude Opus 4.8"));
-    assert!(msg.content.contains("GPT-5.5"));
-    assert!(msg.content.contains("Claude Fable 5"));
-    assert!(msg.content.contains("GPT-5.6 Sol"));
-    assert!(msg.content.contains("Plus"));
-    assert!(msg.content.contains("Pro"));
-    assert!(msg.content.contains("Max"));
-    assert!(msg.content.contains("Ultra"));
-    assert!(msg.content.contains("Solo"));
-    assert!(!msg.content.contains("Flagship"));
-    assert!(msg.content.contains("$10/mo"));
-    assert!(msg.content.contains("$20/mo"));
-    assert!(msg.content.contains("$100/mo"));
-    assert!(msg.content.contains("$200/mo"));
-    assert!(msg.content.contains("$1000/mo"));
-    assert!(msg.content.contains("$18.00 usable"));
-    assert!(msg.content.contains("$40.00 usable"));
-    assert!(msg.content.contains("$225.00 usable"));
-    assert!(msg.content.contains("$500.00 usable"));
-    assert!(msg.content.contains("$3000.00 usable"));
-    assert!(!msg.content.contains("GPT-5.6 Sol - gpt-5.6-sol [Solo]"));
-    assert!(msg.content.contains("Claude Fable 5 - claude-fable-5 [Ultra]"));
-}
-
-#[test]
-fn test_subscribe_command_shows_pitch_with_plans_and_next_step() {
-    let mut app = create_test_app();
-    app.input = "/subscribe".to_string();
-    app.submit_input();
-
-    let msg = app
-        .display_messages()
-        .last()
-        .expect("missing /subscribe response");
-    assert_eq!(msg.role, "system");
-    assert!(msg.content.contains("Subscribe to wvc"));
-    assert!(msg.content.contains("Get more tokens"));
-    assert!(msg.content.contains("open source"));
-    assert!(msg.content.contains("/login wvc"));
-    assert!(msg.content.contains("/subscription"));
-    assert!(msg.content.contains("$20/mo"));
-}
-
-#[test]
 fn test_usage_report_shows_no_connected_providers_when_results_empty() {
     let mut app = create_test_app();
     app.handle_usage_report(Vec::new());

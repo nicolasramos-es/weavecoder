@@ -799,7 +799,12 @@ pub(super) fn handle_text_paste(app: &mut App, text: String) {
     ));
 
     let line_count = text.lines().count().max(1);
-    if line_count < 5 {
+    // During a pending login (API key / endpoint / env var entry), a pasted
+    // value must land verbatim in the input so the user can submit it. The
+    // multi-line placeholder path would turn a pasted key into "[pasted N
+    // lines]" which the login flow cannot resolve. Only collapse to a
+    // placeholder for normal chat prompts.
+    if line_count < 5 || app.pending_login.is_some() {
         insert_input_text(app, &text);
     } else {
         app.pasted_contents.push(text);

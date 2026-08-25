@@ -842,23 +842,6 @@ pub fn remote_model_routes_fallback(
     remote_provider_name: Option<&str>,
     remote_available_entries: &[String],
 ) -> Vec<ModelRoute> {
-    if remote_provider_name.is_some_and(|name| {
-        name.eq_ignore_ascii_case(crate::subscription_catalog::WVC_PROVIDER_DISPLAY_NAME)
-    }) {
-        return remote_available_entries
-            .iter()
-            .filter(|model| is_listable_model_name(model))
-            .map(|model| ModelRoute {
-                model: model.clone(),
-                provider: crate::subscription_catalog::WVC_PROVIDER_DISPLAY_NAME.to_string(),
-                api_method: crate::subscription_catalog::WVC_ROUTE_API_METHOD.to_string(),
-                available: true,
-                detail: "wvc subscription routing · managed server-side".to_string(),
-                cheapness: None,
-            })
-            .collect();
-    }
-
     let auth = AuthStatus::check_fast();
     let mut routes = Vec::new();
     for model in remote_available_entries {
@@ -1056,9 +1039,6 @@ pub fn remote_model_routes_lightweight_fallback(
     remote_available_entries: &[String],
     current_model: &str,
 ) -> Vec<ModelRoute> {
-    let is_wvc_subscription = remote_provider_name.is_some_and(|name| {
-        name.eq_ignore_ascii_case(crate::subscription_catalog::WVC_PROVIDER_DISPLAY_NAME)
-    });
     let provider = remote_provider_name
         .map(str::to_string)
         .unwrap_or_else(|| "remote".to_string());
@@ -1070,17 +1050,9 @@ pub fn remote_model_routes_lightweight_fallback(
         routes.push(ModelRoute {
             model: model.clone(),
             provider: provider.clone(),
-            api_method: if is_wvc_subscription {
-                crate::subscription_catalog::WVC_ROUTE_API_METHOD.to_string()
-            } else {
-                "remote-catalog".to_string()
-            },
+            api_method: "remote-catalog".to_string(),
             available: true,
-            detail: if is_wvc_subscription {
-                "wvc subscription routing · managed server-side".to_string()
-            } else {
-                "refreshing route details…".to_string()
-            },
+            detail: "refreshing route details…".to_string(),
             cheapness: None,
         });
     }

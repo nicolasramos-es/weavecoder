@@ -229,9 +229,6 @@ pub enum OpenRouterTransportState {
     /// Real OpenRouter BYOK. The provider implementation is both the runtime identity
     /// and the HTTP transport.
     OpenRouterApiKey,
-    /// Weavecoder subscription access currently reuses the OpenRouter HTTP slot, but is
-    /// not user BYOK/OpenRouter billing.
-    WeavecoderSubscription,
     /// A direct OpenAI-compatible endpoint that needs a user key, Azure credential,
     /// or provider-profile secret while reusing the OpenRouter-compatible transport.
     DirectApiKey,
@@ -248,10 +245,6 @@ impl OpenRouterTransportState {
         let runtime_provider = runtime_provider
             .map(|value| value.trim().to_ascii_lowercase())
             .filter(|value| !value.is_empty());
-
-        if matches!(runtime_provider.as_deref(), Some("wvc")) {
-            return Self::WeavecoderSubscription;
-        }
 
         if matches!(runtime_provider.as_deref(), Some("openrouter")) {
             return Self::OpenRouterApiKey;
@@ -286,7 +279,6 @@ impl OpenRouterTransportState {
             "openrouter" | "openrouter-api-key" | "openrouter_byok" | "openrouter-byok" => {
                 Some(Self::OpenRouterApiKey)
             }
-            "wvc" | "wvc-subscription" | "subscription" => Some(Self::WeavecoderSubscription),
             "direct" | "direct-api-key" | "openai-compatible" | "compatible-api-key" => {
                 Some(Self::DirectApiKey)
             }
