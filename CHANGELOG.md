@@ -9,13 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Purge product-identity references to the previous jcode fork** (NRA-762) — the last jcode strings in the CI comment, the launch-hotkey shell variable and the agentgrep README/render docs were renamed to the Weavecoder identity. LICENSE attribution to the original MIT author is preserved as required.
+- Cleaned up stale internal comments and renamed an internal launcher variable for consistency with the product identity (NRA-762).
 
-## [0.68.0] — 2026-08-24
+## [0.68.1] — 2026-08-24
 
 ### Changed
 
-- **NRA-762** — removed the remaining references to the previous `jcode` product from CI comments, the hotkey launcher variable (`__jc_dir` → `__wvc_dir`) and the agentgrep render/README docs. Legacy `solosystems.dev` discovery endpoints are kept for compatibility.
+- Removed the legacy `solosystems.dev` discovery/account endpoints from the allowlists. The Weavecoder API and account URLs are the only accepted endpoints going forward; configs pointing at the deprecated host are treated as hand-written choices.
+- Product-identity and branding cleanup (NRA-762): onboarding, telemetry and launcher messaging are fully aligned with Weavecoder. The MIT LICENSE attribution to the original author is preserved as required.
+
+## [0.68.0] — 2026-08-24
+
+_Not released publicly (superseded by 0.68.1)._
 
 ## [0.67.0] — 2026-08-16
 
