@@ -134,11 +134,19 @@ fn resolve_configured_theme(query_terminal: bool) -> ThemeMode {
     match configured.trim().to_ascii_lowercase().as_str() {
         "dark" => return ThemeMode::Dark,
         "light" => return ThemeMode::Light,
-        "" | "auto" => {}
+        // The TUI's native palette is dark, and the login/onboarding cards use
+        // fixed dark backgrounds that are illegible when the terminal reports a
+        // light background. Default to dark so the experience is always readable;
+        // a user who wants a light terminal can still opt in with `light` or
+        // `WVC_THEME=light`. `auto` is preserved as an explicit opt-in to the
+        // terminal background query for users who prefer theme-following.
+        "" => return ThemeMode::Dark,
+        "auto" => {}
         other => {
             crate::logging::info(&format!(
-                "Unknown theme '{other}' (expected auto/dark/light); using auto detection"
+                "Unknown theme '{other}' (expected auto/dark/light); using dark theme"
             ));
+            return ThemeMode::Dark;
         }
     }
 
