@@ -659,6 +659,47 @@ fn welcome_body_lines(app: &dyn TuiState) -> Vec<Line<'static>> {
         }
     }
 
+    // Project / memory quick-start tips. These teach the user how to give the
+    // agent durable context for a repository: index it into the Code Knowledge
+    // Graph, enable session memory, and open it so the agent picks up context.
+    lines.push(Line::from(""));
+    lines.push(
+        Line::from(Span::styled(
+            " Get the agent up to speed on a project ",
+            Style::default()
+                .fg(welcome_accent())
+                .add_modifier(Modifier::BOLD),
+        ))
+        .alignment(align),
+    );
+    lines.push(Line::from(""));
+    let tips: &[(&str, &str)] = &[
+        (
+            "wvc init <path>",
+            "index the whole repo into a Code Knowledge Graph",
+        ),
+        (
+            "/memory on",
+            "persist this session's context for later agents",
+        ),
+        (
+            "wvc code-search \"…\"",
+            "query the graph for symbols and relationships",
+        ),
+    ];
+    for (cmd, desc) in tips {
+        lines.push(
+            Line::from(vec![
+                Span::styled(
+                    format!("  {cmd} "),
+                    Style::default().fg(welcome_accent()),
+                ),
+                Span::styled(desc.to_string(), Style::default().fg(dim_color())),
+            ])
+            .alignment(align),
+        );
+    }
+
     lines
 }
 
