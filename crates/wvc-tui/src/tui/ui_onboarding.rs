@@ -353,7 +353,9 @@ fn import_two_column_lines(prompt: &crate::tui::LoginImportPrompt) -> Vec<Line<'
 /// Grayed telemetry notice shown at the very top of the onboarding screen.
 fn telemetry_header_lines(width: u16) -> Vec<Line<'static>> {
     let align = Alignment::Center;
-    let dim = Style::default().fg(dim_color());
+    // dim_color() (rgb(80,80,80)) is nearly invisible on the dark onboarding
+    // background, so use a lighter muted gray for readable text.
+    let dim = Style::default().fg(rgb(146, 153, 168));
     let lines = vec![
         "wvc collects anonymous usage statistics (version, OS, session",
         "activity, and crash reasons). No code, prompts, or personal data.",
@@ -694,7 +696,7 @@ fn welcome_body_lines(app: &dyn TuiState) -> Vec<Line<'static>> {
                     format!("  {cmd} "),
                     Style::default().fg(welcome_accent()),
                 ),
-                Span::styled(desc.to_string(), Style::default().fg(dim_color())),
+                Span::styled(desc.to_string(), Style::default().fg(rgb(146, 153, 168))),
             ])
             .alignment(align),
         );
