@@ -153,9 +153,6 @@ mod tests {
             os: "linux".to_string(),
             arch: "x86_64".to_string(),
             telemetry_id: Some("11111111-2222-3333-4444-555555555555".to_string()),
-            account_id: Some("acct_42".to_string()),
-            account_email: Some("user@example.com".to_string()),
-            tier: Some("$100 Pro".to_string()),
             provider: "anthropic".to_string(),
             model: "claude-opus-4-8".to_string(),
             last_error: Some("request timed out".to_string()),
@@ -171,9 +168,6 @@ mod tests {
         assert!(body.contains("Build channel: release"));
         assert!(body.contains("OS/Arch: linux/x86_64"));
         assert!(body.contains("Telemetry ID: 11111111-2222-3333-4444-555555555555"));
-        assert!(body.contains("Account ID: acct_42"));
-        assert!(body.contains("Account email: user@example.com"));
-        assert!(body.contains("Tier: $100 Pro"));
         assert!(body.contains("Provider: anthropic"));
         assert!(body.contains("Model: claude-opus-4-8"));
         assert!(body.contains("Last error: request timed out"));
@@ -192,9 +186,6 @@ mod tests {
             ..Default::default()
         });
         assert!(!body.contains("Telemetry ID:"));
-        assert!(!body.contains("Account ID:"));
-        assert!(!body.contains("Account email:"));
-        assert!(!body.contains("Tier:"));
         assert!(!body.contains("Last error:"));
         assert!(body.contains("Provider: openai"));
     }
