@@ -41,6 +41,22 @@ pub(crate) enum PendingLogin {
     /// Waiting for the user to paste a custom OpenAI-compatible API base.
     OpenAiCompatibleApiBase {
         profile: crate::provider_catalog::OpenAiCompatibleProfile,
+        /// Name for a new named provider profile, when the user is adding a
+        /// fresh OpenAI-compatible provider (not editing the built-in one).
+        profile_name: Option<String>,
+    },
+    /// Waiting for the user to name a new OpenAI-compatible provider profile.
+    OpenAiCompatibleName,
+    /// Waiting for the user to enter the model for a new named provider.
+    OpenAiCompatibleModel {
+        name: String,
+        base_url: String,
+    },
+    /// Waiting for the user to paste the API key for a new named provider.
+    OpenAiCompatibleApiKey {
+        name: String,
+        base_url: String,
+        model: String,
     },
     /// Waiting for user to paste a Cursor API key.
     CursorApiKey,
@@ -72,7 +88,7 @@ impl PendingLogin {
                 auth_method,
                 ..
             } => Some((provider_id.clone(), auth_method.clone())),
-            Self::OpenAiCompatibleApiBase { profile } => {
+            Self::OpenAiCompatibleApiBase { profile, .. } => {
                 let resolved = crate::provider_catalog::resolve_openai_compatible_profile(*profile);
                 Some((
                     resolved.id,
@@ -90,6 +106,15 @@ impl PendingLogin {
                 Some(("azure".to_string(), "hybrid".to_string()))
             }
             Self::AzureApiKey { .. } => Some(("azure".to_string(), "api_key".to_string())),
+            Self::OpenAiCompatibleName => {
+                Some(("openai-compatible".to_string(), "name".to_string()))
+            }
+            Self::OpenAiCompatibleModel { name, .. } => {
+                Some((name.clone(), "api_key".to_string()))
+            }
+            Self::OpenAiCompatibleApiKey { name, .. } => {
+                Some((name.clone(), "api_key".to_string()))
+            }
         }
     }
 }

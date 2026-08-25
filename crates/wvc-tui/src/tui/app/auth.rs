@@ -1116,17 +1116,19 @@ impl App {
         &mut self,
         profile: crate::provider_catalog::OpenAiCompatibleProfile,
     ) {
+        // The built-in generic "OpenAI-compatible" provider is now an entry
+        // point for adding arbitrarily many named provider profiles, each
+        // stored as `[providers.<name>]` in config.toml. The first step asks
+        // for a name.
         if profile.id == crate::provider_catalog::OPENAI_COMPAT_PROFILE.id {
-            let resolved = crate::provider_catalog::resolve_openai_compatible_profile(profile);
-            self.push_display_message(DisplayMessage::system(format!(
-                "{} Endpoint\n\n\
-                 Setup docs: {}\n\
-                 Current API base: {}\n\n\
-                 Paste the API base below. Press Enter to keep the current value, or type /cancel to abort.",
-                resolved.display_name, resolved.setup_url, resolved.api_base
-            )));
-            self.set_status_notice("Login: API base...");
-            self.pending_login = Some(PendingLogin::OpenAiCompatibleApiBase { profile });
+            self.push_display_message(DisplayMessage::system(
+                "Add OpenAI-compatible provider\n\n\
+                 Give this provider a name, e.g. my-gateway or my-local-llm.\n\
+                 You can add as many OpenAI-compatible providers as you need.\n\n\
+                 Enter a name below, or type /cancel to abort.",
+            ));
+            self.set_status_notice("Add provider: enter a name");
+            self.pending_login = Some(PendingLogin::OpenAiCompatibleName);
             return;
         }
 
@@ -1970,7 +1972,7 @@ impl App {
                     }
                 }
             }
-            PendingLogin::OpenAiCompatibleApiBase { profile } => {
+            PendingLogin::OpenAiCompatibleApiBase { profile, profile_name } => {
                 let api_base = input.trim();
                 if !api_base.is_empty() {
                     let normalized = match crate::provider_catalog::normalize_api_base(api_base) {
@@ -1980,11 +1982,50 @@ impl App {
                                 "OpenAI-compatible API base must be https://... or http://localhost."
                                     .to_string(),
                             ));
-                            self.pending_login =
-                                Some(PendingLogin::OpenAiCompatibleApiBase { profile });
+                            self.pending_login = Some(PendingLogin::OpenAiCompatibleApiBase {
+                                profile,
+                                profile_name,
+                            });
                             return;
                         }
                     };
+
+                    // Adding a brand-new named provider: store it as
+                    // `[providers.<name>]` in config.toml and move to the model
+                    // step.
+                    if let Some(name) = profile_name.clone() {
+                        let env_key =
+                            crate::provider_catalog::named_provider_key_env_name(&name);
+                        let env_file = format!("provider-{name}.env");
+                        if let Err(err) = crate::provider_catalog::save_env_value_to_env_file(
+                            &env_key,
+                            &env_file,
+                            Some(&normalized),
+                        ) {
+                            self.push_display_message(DisplayMessage::error(format!(
+                                "Failed to save provider base URL: {}",
+                                err
+                            )));
+                            self.pending_login = Some(PendingLogin::OpenAiCompatibleApiBase {
+                                profile,
+                                profile_name,
+                            });
+                            return;
+                        }
+                        self.push_display_message(DisplayMessage::system(format!(
+                            "Provider '{name}' base URL saved.\n\n\
+                             Now enter the default model for '{name}', e.g. gpt-4.1 or llama3.2.\n\
+                             Press Enter to skip if unsure.",
+                        )));
+                        self.set_status_notice("Add provider: enter model");
+                        self.pending_login = Some(PendingLogin::OpenAiCompatibleModel {
+                            name,
+                            base_url: normalized,
+                        });
+                        return;
+                    }
+
+                    // Legacy path: editing the built-in generic profile's base.
                     if let Err(err) = crate::provider_catalog::save_env_value_to_env_file(
                         "WVC_OPENAI_COMPAT_API_BASE",
                         crate::provider_catalog::OPENAI_COMPAT_PROFILE.env_file,
@@ -1994,12 +2035,95 @@ impl App {
                             "Failed to save OpenAI-compatible API base: {}",
                             err
                         )));
-                        self.pending_login =
-                            Some(PendingLogin::OpenAiCompatibleApiBase { profile });
+                        self.pending_login = Some(PendingLogin::OpenAiCompatibleApiBase {
+                            profile,
+                            profile_name: None,
+                        });
                         return;
                     }
                 }
                 self.start_openai_compatible_key_login(profile);
+            }
+            PendingLogin::OpenAiCompatibleName => {
+                let name = input.trim().to_string();
+                match crate::provider_catalog::validate_named_provider_name(&name) {
+                    Ok(validated) => {
+                        self.push_display_message(DisplayMessage::system(format!(
+                            "Provider '{validated}' is a valid name.\n\n\
+                             Now enter the base URL for '{validated}', e.g. https://llm.example.com/v1 \
+                             or http://localhost:8000/v1.\n\
+                             Type /cancel to abort.",
+                        )));
+                        self.set_status_notice("Add provider: enter base URL");
+                        self.pending_login = Some(PendingLogin::OpenAiCompatibleApiBase {
+                            profile: crate::provider_catalog::OPENAI_COMPAT_PROFILE,
+                            profile_name: Some(validated),
+                        });
+                    }
+                    Err(err) => {
+                        self.push_display_message(DisplayMessage::error(err.to_string()));
+                        self.pending_login = Some(PendingLogin::OpenAiCompatibleName);
+                    }
+                }
+            }
+            PendingLogin::OpenAiCompatibleModel { name, base_url } => {
+                let model = input.trim().to_string();
+                self.push_display_message(DisplayMessage::system(format!(
+                    "Provider '{name}' base URL {base_url}.\n\n\
+                     Now paste the API key for '{name}', or press Enter to skip if \
+                     this local endpoint does not require one.\n\
+                     Type /cancel to abort.",
+                )));
+                self.set_status_notice("Add provider: paste API key");
+                self.pending_login = Some(PendingLogin::OpenAiCompatibleApiKey {
+                    name,
+                    base_url,
+                    model,
+                });
+            }
+            PendingLogin::OpenAiCompatibleApiKey {
+                name,
+                base_url,
+                model,
+            } => {
+                let key = input.trim().to_string();
+                match crate::provider_catalog::add_named_openai_compatible_profile(
+                    &name,
+                    &base_url,
+                    if model.is_empty() { None } else { Some(&model) },
+                    if key.is_empty() { None } else { Some(&key) },
+                ) {
+                    Ok(()) => {
+                        self.push_display_message(DisplayMessage::system(format!(
+                            "✅ Provider '{name}' added.\n\n\
+                             {base_url}\n\
+                             Model: {}\n\
+                             {}\n\n\
+                             Switch to it with /model or use --provider-profile {name}.",
+                            if model.is_empty() {
+                                "(none set)"
+                            } else {
+                                &model
+                            },
+                            if key.is_empty() {
+                                "Auth: no API key (local endpoint)"
+                            } else {
+                                "Auth: API key saved"
+                            },
+                        )));
+                        self.set_status_notice(format!("Provider '{name}' added"));
+                    }
+                    Err(err) => {
+                        self.push_display_message(DisplayMessage::error(format!(
+                            "Failed to add provider '{name}': {err}"
+                        )));
+                        self.pending_login = Some(PendingLogin::OpenAiCompatibleApiKey {
+                            name,
+                            base_url,
+                            model,
+                        });
+                    }
+                }
             }
             PendingLogin::AzureEndpoint => {
                 let endpoint_raw = input.trim();

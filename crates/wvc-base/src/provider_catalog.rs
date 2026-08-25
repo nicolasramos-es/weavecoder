@@ -967,6 +967,135 @@ fn env_override(name: &str) -> Option<String> {
         .or_else(|| load_env_value_from_env_or_config(name, OPENAI_COMPAT_PROFILE.env_file))
 }
 
+// ---------------------------------------------------------------------------
+// Named OpenAI-compatible provider profiles (used by the TUI add-provider flow)
+// ---------------------------------------------------------------------------
+
+/// Validate a provider profile name for the `[providers.<name>]` config table.
+pub fn validate_named_provider_name(raw: &str) -> anyhow::Result<String> {
+    let name = raw.trim();
+    if name.is_empty() {
+        anyhow::bail!("provider profile name cannot be empty");
+    }
+    if name.len() > 64 {
+        anyhow::bail!("provider profile name must be at most 64 characters");
+    }
+    let Some(first) = name.chars().next() else {
+        anyhow::bail!("provider profile name cannot be empty");
+    };
+    if !first.is_ascii_alphanumeric() {
+        anyhow::bail!("provider profile name must start with a letter or number");
+    }
+    if !name
+        .chars()
+        .all(|ch| ch.is_ascii_alphanumeric() || ch == '-' || ch == '_')
+    {
+        anyhow::bail!(
+            "provider profile name may only contain ASCII letters, numbers, '-' and '_'"
+        );
+    }
+    // Reject reserved built-in provider ids/aliases.
+    const RESERVED: &[&str] = &[
+        "auto",
+        "claude-subprocess",
+        "compat",
+        "custom",
+        "azure-openai",
+        "aoai",
+        "wvc",
+        "subscription",
+    ];
+    if crate::config::Config::path().is_some()
+        && (resolve_login_provider(name).is_some()
+            || RESERVED.iter().any(|r| name.eq_ignore_ascii_case(r)))
+    {
+        anyhow::bail!(
+            "'{}' is a built-in provider id or alias. Choose a non-reserved profile name such as '{}-api'.",
+            name,
+            name
+        );
+    }
+    Ok(name.to_string())
+}
+
+/// Derive the API key env-var name for a named provider profile.
+pub fn named_provider_key_env_name(name: &str) -> String {
+    let suffix = name
+        .chars()
+        .map(|ch| {
+            if ch.is_ascii_alphanumeric() {
+                ch.to_ascii_uppercase()
+            } else {
+                '_'
+            }
+        })
+        .collect::<String>();
+    format!("WVC_PROVIDER_{}_API_KEY", suffix)
+}
+
+/// Add (or update) a named OpenAI-compatible provider profile in `config.toml`,
+/// storing any API key in the derived private env file.
+pub fn add_named_openai_compatible_profile(
+    name: &str,
+    base_url: &str,
+    model: Option<&str>,
+    api_key: Option<&str>,
+) -> anyhow::Result<()> {
+    let name = validate_named_provider_name(name)?;
+    let api_base = normalize_api_base(base_url)
+        .ok_or_else(|| anyhow::anyhow!("Invalid base URL '{base_url}'"))?;
+
+    let mut config = crate::config::Config::load();
+    if config.providers.contains_key(&name) {
+        anyhow::bail!(
+            "Provider profile '{name}' already exists. Remove it from config.toml first."
+        );
+    }
+
+    let env_key = named_provider_key_env_name(&name);
+    let env_file = format!("provider-{name}.env");
+    let requires_auth = api_key.is_some();
+
+    if let Some(key) = api_key {
+        save_env_value_to_env_file(&env_key, &env_file, Some(key))?;
+    }
+
+    let profile = crate::config::NamedProviderConfig {
+        provider_type: crate::config::NamedProviderType::OpenAiCompatible,
+        base_url: api_base.clone(),
+        api: None,
+        auth: if requires_auth {
+            crate::config::NamedProviderAuth::Bearer
+        } else {
+            crate::config::NamedProviderAuth::None
+        },
+        auth_header: None,
+        api_key_env: if requires_auth { Some(env_key) } else { None },
+        api_key: None,
+        env_file: if requires_auth { Some(env_file) } else { None },
+        default_model: model.map(ToString::to_string),
+        requires_api_key: Some(requires_auth),
+        provider_routing: false,
+        model_catalog: false,
+        allow_provider_pinning: false,
+        models: model
+            .map(|m| {
+                vec![crate::config::NamedProviderModelConfig {
+                    id: m.trim().to_string(),
+                    context_window: None,
+                    input: Vec::new(),
+                }]
+            })
+            .unwrap_or_default(),
+        extra_body: None,
+        supports_reasoning_effort: None,
+    };
+
+    config.providers.insert(name.clone(), profile);
+    config.save()?;
+    Ok(())
+}
+
 fn dedup_sources(sources: Vec<(String, String)>) -> Vec<(String, String)> {
     let mut seen = HashSet::new();
     let mut deduped = Vec::with_capacity(sources.len());
