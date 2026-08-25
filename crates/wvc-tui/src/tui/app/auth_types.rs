@@ -58,6 +58,11 @@ pub(crate) enum PendingLogin {
         base_url: String,
         model: String,
     },
+    /// Waiting for the user to paste a custom base URL for a local endpoint
+    /// provider (Ollama, LM Studio, llama.cpp, vLLM, oMLX).
+    OpenAiCompatibleLocalBase {
+        profile: crate::provider_catalog::OpenAiCompatibleProfile,
+    },
     /// Waiting for user to paste a Cursor API key.
     CursorApiKey,
     /// GitHub Copilot device flow in progress (polling in background)
@@ -114,6 +119,9 @@ impl PendingLogin {
             }
             Self::OpenAiCompatibleApiKey { name, .. } => {
                 Some((name.clone(), "api_key".to_string()))
+            }
+            Self::OpenAiCompatibleLocalBase { profile } => {
+                Some((profile.id.to_string(), "local_endpoint".to_string()))
             }
         }
     }

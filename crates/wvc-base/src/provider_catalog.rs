@@ -48,6 +48,28 @@ pub fn resolve_openai_compatible_profile_with_api_key_hint(
     apply_profile_key_based_endpoint_overrides(profile, &mut resolved, api_key_hint);
 
     if profile.id != OPENAI_COMPAT_PROFILE.id {
+        // Local endpoint providers (Ollama, LM Studio, llama.cpp, vLLM, oMLX)
+        // support an editable base URL persisted in their own env file as
+        // WVC_<PROFILE>_API_BASE, so users can point them at a different
+        // machine / port.
+        if profile.requires_api_key == false && api_base_uses_localhost(&resolved.api_base) {
+            let override_key = format!("WVC_{}_API_BASE", profile.id.to_uppercase());
+            if let Some(base) = std::env::var(&override_key)
+                .ok()
+                .map(|v| v.trim().to_string())
+                .filter(|v| !v.is_empty())
+                .or_else(|| load_env_value_from_env_or_config(&override_key, profile.env_file))
+            {
+                if let Some(normalized) = normalize_api_base(&base) {
+                    resolved.api_base = normalized;
+                } else {
+                    eprintln!(
+                        "Warning: ignoring invalid {} '{}'. Use https://... (or http://localhost).",
+                        override_key, base
+                    );
+                }
+            }
+        }
         if let Some(newest_model) =
             newest_released_model_for_resolved_openai_compatible_profile(profile.id, &resolved)
         {

@@ -1132,6 +1132,30 @@ impl App {
             return;
         }
 
+        // Local endpoint providers (Ollama, LM Studio, llama.cpp, vLLM, oMLX)
+        // let the user edit the base URL first (persisted as
+        // WVC_<PROFILE>_API_BASE in the provider's env file), then continue to
+        // the API key step.
+        let resolved = crate::provider_catalog::resolve_openai_compatible_profile(profile);
+        if !profile.requires_api_key && crate::provider_catalog::api_base_uses_localhost(&resolved.api_base) {
+            let current = crate::provider_catalog::load_env_value_from_env_or_config(
+                &format!("WVC_{}_API_BASE", profile.id.to_uppercase()),
+                profile.env_file,
+            )
+            .unwrap_or_else(|| resolved.api_base.clone());
+            self.push_display_message(DisplayMessage::system(format!(
+                "{} Local Endpoint\n\n\
+                 Current base URL: {}\n\n\
+                 Paste a new base URL for this local endpoint, or press Enter to keep the current value.\n\
+                 Type /cancel to abort.",
+                resolved.display_name, current
+            )));
+            self.set_status_notice("Login: local endpoint URL");
+            self.pending_login =
+                Some(PendingLogin::OpenAiCompatibleLocalBase { profile });
+            return;
+        }
+
         self.start_openai_compatible_key_login(profile);
     }
 
@@ -2124,6 +2148,45 @@ impl App {
                         });
                     }
                 }
+            }
+            PendingLogin::OpenAiCompatibleLocalBase { profile } => {
+                let api_base = input.trim();
+                let override_key = format!("WVC_{}_API_BASE", profile.id.to_uppercase());
+                if api_base.is_empty() {
+                    // Keep the current value and move on to the API key step.
+                    self.start_openai_compatible_key_login(profile);
+                    return;
+                }
+                let normalized = match crate::provider_catalog::normalize_api_base(api_base) {
+                    Some(value) => value,
+                    None => {
+                        self.push_display_message(DisplayMessage::error(
+                            "Local endpoint URL must be https://... or http://localhost."
+                                .to_string(),
+                        ));
+                        self.pending_login =
+                            Some(PendingLogin::OpenAiCompatibleLocalBase { profile });
+                        return;
+                    }
+                };
+                if let Err(err) = crate::provider_catalog::save_env_value_to_env_file(
+                    &override_key,
+                    profile.env_file,
+                    Some(&normalized),
+                ) {
+                    self.push_display_message(DisplayMessage::error(format!(
+                        "Failed to save local endpoint URL: {}",
+                        err
+                    )));
+                    self.pending_login =
+                        Some(PendingLogin::OpenAiCompatibleLocalBase { profile });
+                    return;
+                }
+                self.push_display_message(DisplayMessage::system(format!(
+                    "{} base URL updated to {}.",
+                    profile.display_name, normalized
+                )));
+                self.start_openai_compatible_key_login(profile);
             }
             PendingLogin::AzureEndpoint => {
                 let endpoint_raw = input.trim();
