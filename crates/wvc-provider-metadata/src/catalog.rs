@@ -374,7 +374,7 @@ pub const VLLM_PROFILE: OpenAiCompatibleProfile = OpenAiCompatibleProfile {
 pub const OMLX_PROFILE: OpenAiCompatibleProfile = OpenAiCompatibleProfile {
     id: "omlx",
     display_name: "oMLX",
-    api_base: "http://localhost:8081/v1",
+    api_base: "http://localhost:8000/v1",
     api_key_env: "OMLX_API_KEY",
     env_file: "omlx.env",
     setup_url: "https://github.com/ml-explore/mlx-examples",
