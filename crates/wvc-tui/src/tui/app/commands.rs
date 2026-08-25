@@ -3391,6 +3391,99 @@ pub(super) fn handle_config_command(app: &mut App, trimmed: &str) -> bool {
         return true;
     }
 
+    if trimmed == "/permissions" {
+        use crate::config::config;
+        let cfg = config();
+        let perms = if cfg.tools.permissions.is_empty() {
+            "  (none configured — all tools follow the default allow/ask classification)".to_string()
+        } else {
+            let mut lines: Vec<String> = cfg
+                .tools
+                .permissions
+                .iter()
+                .map(|(tool, mode)| format!("  {tool}: {mode}"))
+                .collect();
+            lines.sort();
+            lines.join("\n")
+        };
+        let disk = if cfg.tools.disk_mode.is_empty() {
+            "full".to_string()
+        } else {
+            cfg.tools.disk_mode.clone()
+        };
+        app.push_display_message(DisplayMessage::system(format!(
+            "Permission settings\n\n\
+             Disk access mode: {disk}\n\
+             (full = any path, limited = project + ~/.wvc, ask = prompt before writes)\n\n\
+             Per-tool overrides:\n{perms}\n\n\
+             Change with /permissions disk <full|limited|ask>\n\
+             and /permissions set <tool> <allow|ask|deny>\n\
+             (e.g. /permissions set bash ask)",
+        )));
+        return true;
+    }
+
+    if let Some(rest) = trimmed.strip_prefix("/permissions ") {
+        let args: Vec<&str> = rest.split_whitespace().collect();
+        match args.as_slice() {
+            ["disk", mode] => {
+                let mode = mode.to_ascii_lowercase();
+                if !matches!(mode.as_str(), "full" | "limited" | "ask") {
+                    app.push_display_message(DisplayMessage::error(
+                        "disk mode must be one of: full | limited | ask".to_string(),
+                    ));
+                    return true;
+                }
+                let mut cfg = crate::config::Config::load();
+                cfg.tools.disk_mode = mode;
+                match cfg.save() {
+                    Ok(()) => app.push_display_message(DisplayMessage::system(format!(
+                        "Disk access mode set to '{}'.",
+                        cfg.tools.disk_mode
+                    ))),
+                    Err(e) => {
+                        app.push_display_message(DisplayMessage::error(format!(
+                            "Failed to save config: {e}"
+                        )))
+                    }
+                }
+                return true;
+            }
+            ["set", tool, mode] => {
+                let mode = mode.to_ascii_lowercase();
+                if !matches!(mode.as_str(), "allow" | "ask" | "deny") {
+                    app.push_display_message(DisplayMessage::error(
+                        "permission mode must be one of: allow, ask, deny".to_string(),
+                    ));
+                    return true;
+                }
+                let mut cfg = crate::config::Config::load();
+                cfg.tools
+                    .permissions
+                    .insert(tool.to_string(), mode.to_string());
+                match cfg.save() {
+                    Ok(()) => app.push_display_message(DisplayMessage::system(format!(
+                        "Tool '{tool}' set to {mode}."
+                    ))),
+                    Err(e) => {
+                        app.push_display_message(DisplayMessage::error(format!(
+                            "Failed to save config: {e}"
+                        )))
+                    }
+                }
+                return true;
+            }
+            _ => {
+                app.push_display_message(DisplayMessage::error(
+                    "Usage: /permissions (show), /permissions disk <full|limited|ask>, \
+                     /permissions set <tool> <allow|ask|deny>"
+                        .to_string(),
+                ));
+                return true;
+            }
+        }
+    }
+
     false
 }
 

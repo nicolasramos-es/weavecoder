@@ -83,6 +83,27 @@ pub fn unregister_ambient_session(session_id: &str) {
     }
 }
 
+/// Queue a permission-request notification for a tool that the user's
+/// permission settings flagged as "ask". Unlike the ambient `request_permission`
+/// tool, this is invoked from the normal-session tool gate so the TUI can
+/// surface an approval prompt for tools the user chose to gate.
+pub fn note_tool_permission_request(action: &str, description: &str) {
+    let system = get_safety_system();
+    let request = PermissionRequest {
+        id: safety::new_request_id(),
+        action: action.to_string(),
+        description: description.to_string(),
+        rationale: "Configured as 'ask' in the user's permission settings".to_string(),
+        urgency: Urgency::Normal,
+        wait: false,
+        created_at: chrono::Utc::now(),
+        context: Some(serde_json::json!({
+            "source": "permission_gate",
+        })),
+    };
+    let _ = system.request_permission(request);
+}
+
 fn is_ambient_session_registered(session_id: &str) -> bool {
     ambient_session_ids()
         .lock()

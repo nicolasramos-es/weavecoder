@@ -571,6 +571,29 @@ pub struct ToolConfig {
     pub disabled: Vec<String>,
     /// Disable all built-in tools unless `enabled` is provided.
     pub disable_base_tools: bool,
+    /// Disk-access permission mode: "full" (any path), "limited"
+    /// (project dir + ~/.wvc), or "ask" (prompt before touching paths outside
+    /// the project). Defaults to "full" for backwards compatibility.
+    pub disk_mode: String,
+    /// Per-tool permission overrides: tool name -> "allow" | "ask" | "deny".
+    /// Tools not listed fall back to the built-in AutoAllowed / RequiresPermission
+    /// classification (see SafetySystem::classify).
+    #[serde(default)]
+    pub permissions: std::collections::HashMap<String, String>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum PermissionMode {
+    Allow,
+    Ask,
+    Deny,
+}
+
+impl Default for PermissionMode {
+    fn default() -> Self {
+        Self::Allow
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
