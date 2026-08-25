@@ -11,6 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Cleaned up stale internal comments and renamed an internal launcher variable for consistency with the product identity (NRA-762).
 
+## [0.68.2] — 2026-08-25
+
+### Added
+
+- Multiple OpenAI-compatible providers from the TUI: choosing "OpenAI-compatible" now walks you through name → base URL → model → API key, and each provider is saved as a named `[providers.<name>]` profile so you can add as many as you need (NRA-763).
+- Local endpoint providers (Ollama, LM Studio, llama.cpp, vLLM, oMLX) now let you edit the base URL before the API-key step, persisting the override so you can point a local provider at a different machine or port (NRA-763).
+- Permission selector: `[tools] disk_mode` (`full` / `limited` / `ask`) plus per-tool `allow` / `ask` / `deny` overrides, manageable from the new `/permissions` TUI command. Tools flagged `ask` queue an approval request; `deny` blocks them (NRA-763).
+- Removed the legacy Weavecoder subscription/login flow, which had no backend. The login picker no longer offers a subscription provider.
+
+### Fixed
+
+- Pasting an API key or endpoint during a login could swallow the trailing Enter, leaving the login stuck. A pasted value is now inserted verbatim during a pending login (NRA-763).
+
 ## [0.68.1] — 2026-08-24
 
 ### Changed
