@@ -158,7 +158,7 @@ try {
         Assert-Equal $false (Test-WeavecoderReleaseTag 'latest') 'unversioned release labels should not validate'
         $scriptText = Get-Content -LiteralPath $installScript -Raw
         Assert-NotContains $scriptText 'api.github.com/repos/$Repo/releases/latest' 'installer should not use the rate-limited unauthenticated GitHub API'
-        Assert-Contains $scriptText 'weavecoder.sh/releases' 'installer should include independent static release metadata'
+        Assert-NotContains $scriptText 'weavecoder.sh/releases' 'installer should not depend on any web-domain release metadata'
 
         $script:releaseLookupRequests = @()
         function Invoke-WebRequest {
@@ -169,22 +169,15 @@ try {
                 [string]$OutFile
             )
             $script:releaseLookupRequests += $Uri
-            if ($Uri -eq 'https://weavecoder.sh/releases/latest/version') {
-                return [pscustomobject]@{ Content = "v1.2.3`n" }
-            }
-            if ($Uri -eq 'https://weavecoder.sh/releases/v1.2.3/download-bases') {
-                return [pscustomobject]@{ Content = "https://mirror.example/releases/v1.2.3`n" }
-            }
             if ($Uri -eq 'https://github.com/nicolasramos-es/weavecoder/releases/latest') {
-                throw 'simulated GitHub block'
+                return [pscustomobject]@{ BaseResponse = [pscustomobject]@{ ResponseUri = 'https://github.com/nicolasramos-es/weavecoder/releases/tag/v1.2.3' } }
             }
             throw "unexpected URI: $Uri"
         }
         try {
-            Assert-Equal 'v1.2.3' (Get-LatestWeavecoderReleaseTag) 'static metadata should cover a blocked GitHub release lookup'
+            Assert-Equal 'v1.2.3' (Get-LatestWeavecoderReleaseTag) 'GitHub release redirect should resolve the latest tag'
             $bases = @(Get-WeavecoderReleaseDownloadBases 'v1.2.3')
-            Assert-Equal 'https://mirror.example/releases/v1.2.3' $bases[0] 'configured mirror should be preferred'
-            Assert-Equal 'https://github.com/nicolasramos-es/weavecoder/releases/download/v1.2.3' $bases[1] 'GitHub should remain the final fallback'
+            Assert-Equal 'https://github.com/nicolasramos-es/weavecoder/releases/download/v1.2.3' $bases[0] 'GitHub should be the only download base'
         } finally {
             Remove-Item Function:\Invoke-WebRequest -ErrorAction SilentlyContinue
         }

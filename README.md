@@ -25,7 +25,7 @@
 
 ## Installation
 
-The installer scripts are always fetched from the project repository on GitHub — the single source of truth — never from any web domain.
+The installer scripts, release binaries, and updates are always fetched from the project's **GitHub repository** — the single source of truth. No web domain is used for code, installers, downloads, or updates.
 
 ### macOS & Linux
 

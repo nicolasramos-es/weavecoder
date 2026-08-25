@@ -1,6 +1,6 @@
-# Weavecoder installer — https://weavecoder.sh/install.ps1
+# Weavecoder installer — https://raw.githubusercontent.com/nicolasramos-es/weavecoder/main/install.ps1
 # Downloads the latest wvc binary from GitHub Releases and verifies its SHA-256 checksum.
-# Usage (PowerShell 5.1+):  irm https://weavecoder.sh/install.ps1 | iex
+# Usage (PowerShell 5.1+):  irm https://raw.githubusercontent.com/nicolasramos-es/weavecoder/main/install.ps1 | iex
 
 $ErrorActionPreference = "Stop"
 $Repo = "nicolasramos-es/weavecoder"

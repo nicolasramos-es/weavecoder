@@ -232,7 +232,7 @@ wvc repl
 
 ### `wvc update`
 
-Update wvc to the latest version.
+Update wvc to the latest version. The update is downloaded from the project's **GitHub Releases** — the single source of truth for updates.
 
 ```bash
 wvc update

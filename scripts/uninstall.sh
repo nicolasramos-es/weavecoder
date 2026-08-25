@@ -157,7 +157,7 @@ esac
 
 info "wvc uninstalled."
 if [ "$PURGE" = false ]; then
-  info "Reinstall with: curl -fsSL https://weavecoder.sh/install | bash"
+  info "Reinstall with: curl -fsSL https://raw.githubusercontent.com/nicolasramos-es/weavecoder/main/install.sh | bash"
 else
-  info "All wvc data wiped. Reinstall with: curl -fsSL https://weavecoder.sh/install | bash"
+  info "All wvc data wiped. Reinstall with: curl -fsSL https://raw.githubusercontent.com/nicolasramos-es/weavecoder/main/install.sh | bash"
 fi
