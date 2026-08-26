@@ -403,13 +403,13 @@ impl Registry {
 
     /// Resolve the permission gate for a tool based on the user's configured
     /// `[tools] disk_mode` and `[tools] permissions` settings.
-    fn permission_for(tool_name: &str, _ctx: &ToolContext) -> PermissionCheck {
+    fn permission_for(tool_name: &str, ctx: &ToolContext) -> PermissionCheck {
         let cfg = crate::config::config();
         // Per-tool override wins.
         if let Some(mode) = cfg.tools.permissions.get(tool_name) {
             match mode.as_str() {
                 "allow" => return PermissionCheck::Allow,
-                "ask" => return PermissionCheck::Ask,
+                "ask" => return resolve_ask_in_context(tool_name, ctx),
                 "deny" => {
                     return PermissionCheck::Deny(format!("configured as deny"));
                 }
@@ -419,7 +419,7 @@ impl Registry {
         // Disk mode gate: "ask" surfaces a prompt for write-ish tools; "limited"
         // is enforced elsewhere; "full" (default) allows everything.
         match cfg.tools.disk_mode.as_str() {
-            "ask" if is_disk_sensitive_tool(tool_name) => PermissionCheck::Ask,
+            "ask" if is_disk_sensitive_tool(tool_name) => resolve_ask_in_context(tool_name, ctx),
             _ => PermissionCheck::Allow,
         }
     }
@@ -1282,4 +1282,56 @@ fn is_disk_sensitive_tool(name: &str) -> bool {
         name,
         "bash" | "write" | "edit" | "multiedit" | "apply_patch" | "patch"
     )
+}
+
+/// Resolve an "ask" permission request in context. In a session with an
+/// interactive stdin channel (`ToolContext::stdin_request_tx` is `Some`, e.g.
+/// a TUI the user can approve from), keep `Ask` so the user is prompted. In a
+/// headless session (swarm worker, `wvc run`, server-side agent) there is no
+/// human to approve — treat it as `Allow` so headless work doesn't deadlock on
+/// a permission it can never grant.
+fn resolve_ask_in_context(_tool_name: &str, ctx: &ToolContext) -> PermissionCheck {
+    if ctx.stdin_request_tx.is_some() {
+        PermissionCheck::Ask
+    } else {
+        PermissionCheck::Allow
+    }
+}
+
+#[cfg(test)]
+mod ask_in_context_tests {
+    use super::{PermissionCheck, resolve_ask_in_context};
+    use wvc_tool_core::{ToolContext, ToolExecutionMode};
+
+    fn ctx_with_stdin(has_stdin: bool) -> ToolContext {
+        ToolContext {
+            session_id: "s".into(),
+            message_id: "m".into(),
+            tool_call_id: "t".into(),
+            working_dir: None,
+            stdin_request_tx: if has_stdin {
+                Some(tokio::sync::mpsc::unbounded_channel::<wvc_tool_core::StdinInputRequest>().0)
+            } else {
+                None
+            },
+            graceful_shutdown_signal: None,
+            execution_mode: ToolExecutionMode::AgentTurn,
+        }
+    }
+
+    #[test]
+    fn ask_stays_ask_with_interactive_stdin() {
+        assert!(matches!(
+            resolve_ask_in_context("bash", &ctx_with_stdin(true)),
+            PermissionCheck::Ask
+        ));
+    }
+
+    #[test]
+    fn ask_becomes_allow_in_headless() {
+        assert!(matches!(
+            resolve_ask_in_context("bash", &ctx_with_stdin(false)),
+            PermissionCheck::Allow
+        ));
+    }
 }
