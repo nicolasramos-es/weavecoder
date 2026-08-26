@@ -463,8 +463,8 @@ pub(crate) enum Command {
 
     /// Initialize a Code Knowledge Graph from project source files (scan + AST extraction + SQLite storage).
     Init {
-        /// Project directory to scan.
-        path: String,
+        /// Project directory to scan. Defaults to the current directory when omitted.
+        path: Option<String>,
 
         /// SQLite database path to persist the code graph (defaults to in-memory).
         #[arg(long, value_name = "PATH")]

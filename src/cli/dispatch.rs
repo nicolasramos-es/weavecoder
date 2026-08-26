@@ -502,6 +502,11 @@ pub(crate) async fn run_main(mut args: Args) -> Result<()> {
             .await?;
         }
         Some(Command::Init { path, db }) => {
+            let path = path.unwrap_or_else(|| {
+                std::env::current_dir()
+                    .map(|p| p.to_string_lossy().into_owned())
+                    .unwrap_or_else(|_| ".".to_string())
+            });
             super::init::run_init(&path, db.as_deref()).await?;
         }
         Some(Command::CodeSearch { query, db, top_k }) => {
