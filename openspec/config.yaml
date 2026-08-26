@@ -1,0 +1,32 @@
+schema: spec-driven
+
+# Project context
+context: |
+  Weavecoder (binary `wvc`) is a Rust coding-agent CLI (fork of 1jehuang/jcode, MIT).
+  Product identity: Weavecoder. All code/installer/updates/downloads come ONLY from
+  the GitHub repo (nicolamosramos-es/weavecoder) — never from any web domain.
+  Config lives in ~/.wvc/ (config.toml, data, credentials in ~/.config/wvc/).
+  No subscription system. Telemetry is being removed entirely (no usage telemetry).
+
+  Core strengths:
+  - Agent Swarm: native parallel requests from a single CLI.
+  - Atomic task decomposition: large goals split into a DAG of verified subtasks
+    with critique/verify synthesis gates (crates/wvc-plan).
+  - Local models first: oMLX, Ollama, LM Studio, llama.cpp, vLLM, any OpenAI-compatible
+    endpoint; multiple named providers supported.
+  - Embedded Code Knowledge Graph (tree-sitter): wvc init <path> (defaults to cwd)
+    + wvc code-search; offline, SQLite+FTS5+embeddings+call graph.
+  - Granular permissions: [tools] disk_mode (full/limited/ask) + per-tool
+    allow/ask/deny, /permissions TUI command.
+  - Dark theme by default (black bg / white text).
+
+  Conventions: conventional commits; every code change must update docs (README,
+  docs/, CHANGELOG) — non-negotiable. Releases are built for 4 platforms
+  (macos arm64/x86_64, linux x86_64, windows x86_64) and published to GitHub Releases
+  with SHA256SUMS; the root install.sh verifies against SHA256SUMS.
+
+rules:
+  proposal:
+    - Keep proposals focused on one capability
+  tasks:
+    - Break tasks into chunks of max 2 hours
