@@ -150,7 +150,10 @@ impl Role {
             Role::Ai => (129, 199, 132),
             Role::Tool => (120, 120, 120),
             Role::FileLink => (180, 200, 255),
-            Role::Dim => (80, 80, 80),
+            // Dim text is shown on the dark background (rgb 44-50). rgb(80,80,80)
+            // had ~1.6:1 contrast (nearly invisible); raise it to a clearly
+            // legible light gray (~5:1 on the dark panel).
+            Role::Dim => (168, 172, 185),
             Role::Accent => (186, 139, 255),
             Role::System => (255, 170, 220),
             Role::Queued => (255, 193, 7),
