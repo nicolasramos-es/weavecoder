@@ -12,7 +12,7 @@ fn local_endpoint_troubleshooting_hint(api_base: &str, model: &str) -> &'static 
     }
 
     if lower.contains("localhost") || lower.contains("127.0.0.1") || lower.contains("[::1]") {
-        return "Local endpoint hint: make sure the server is running, the base URL includes /v1, the selected model is loaded, and the server supports streaming POST /chat/completions.";
+        return "Local endpoint hint: make sure the server is running, the base URL includes /v1, the selected model is loaded, and the server supports streaming POST /chat/completions. If you launched many swarm workers against one local model, it may be saturated (a local endpoint often serves one generation at a time): either raise the server's concurrency/parallelism, spread workers across different local models, or increase `[provider] stream_idle_timeout_secs` (default 180) if the model thinks silently before the first token.";
     }
 
     let _ = model;

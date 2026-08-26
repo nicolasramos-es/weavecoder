@@ -162,6 +162,30 @@ Only for cloud providers. Local providers — `ollama`, `lmstudio`,
 `openai-compatible` (oMLX, llama.cpp, custom endpoints) — need no key and no
 cloud account.
 
+**Why does a swarm worker hit "stream timeout" against my local model?**
+A local model endpoint (oMLX, llama.cpp, Ollama) usually serves **one
+generation at a time**. If you launch many swarm workers against the *same*
+local model, they queue up and the later ones wait — and if the model is slow
+to emit its first token (or is saturated by parallel requests), the stream can
+exceed the idle timeout (default `180s`) and abort with
+`OpenAI-compatible stream timeout`.
+
+Three ways to fix it:
+1. **Raise the local server's concurrency/parallelism** if it supports it (e.g.
+   oMLX/vLLM `--parallel`/slots), so it can serve the number of swarm workers
+   you launch.
+2. **Spread workers across different local models/endpoints** instead of
+   hammering one.
+3. **Raise the idle timeout** so slow local models aren't cut off mid-thought:
+   ```toml
+   [provider]
+   stream_idle_timeout_secs = 600
+   ```
+   (or set `WVC_STREAM_IDLE_TIMEOUT_SECS=600` for a single launch).
+
+The timeout is only the symptom of the model being busy/slow; the root cause is
+saturation of a single-request local endpoint by parallel swarm workers.
+
 **Does Weavecoder send my code anywhere?**
 The Code Knowledge Graph, embeddings, and search all run locally on your
 machine. Code leaves your machine only when you explicitly run a request
