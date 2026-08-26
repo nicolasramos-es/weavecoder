@@ -8373,7 +8373,7 @@ dependencies = [
 
 [[package]]
 name = "weavecoder"
-version = "0.68.2"
+version = "0.68.4"
 dependencies = [
  "anyhow",
  "async-stream",
