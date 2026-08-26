@@ -186,6 +186,25 @@ Three ways to fix it:
 The timeout is only the symptom of the model being busy/slow; the root cause is
 saturation of a single-request local endpoint by parallel swarm workers.
 
+**Why does a headless agent get "this command is blocked" or "requires your approval"?**
+A tool whose permission is set to `ask` surfaces an approval prompt for you to
+approve in the TUI. In a **headless** session — a swarm worker, `wvc run`, or a
+server-side agent with no interactive terminal — there is nobody to approve, so
+the tool would deadlock forever.
+
+Since v0.68.8, Weavecoder downgrades `ask` to `allow` **only** in headless
+sessions (detected by the absence of an interactive stdin channel), so headless
+agents can run their tools. In an interactive TUI, `ask` still prompts you as
+before.
+
+The default is already permissive: with no `[tools.permissions]` overrides and
+`disk_mode` unset (or `"full"`), every tool is `allow`. If you *want* a tool
+hard-blocked everywhere, set it to `deny`:
+```toml
+[tools.permissions]
+bash = "deny"   # blocked in both interactive and headless sessions
+```
+
 **Does Weavecoder send my code anywhere?**
 The Code Knowledge Graph, embeddings, and search all run locally on your
 machine. Code leaves your machine only when you explicitly run a request
