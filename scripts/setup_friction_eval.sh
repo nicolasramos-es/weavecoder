@@ -87,10 +87,6 @@ while [ "$#" -gt 0 ]; do
 done
 case "$url" in
   *telemetry.weavecoder.sh*) ;;
-  *weavecoder.sh/releases/latest/version) printf 'v%s\n' "${EVAL_VERSION:-1.2.3}" ;;
-  *weavecoder.sh/releases/v*/download-bases)
-    printf 'https://github.com/nicolasramos-es/weavecoder/releases/download/v%s\n' "${EVAL_VERSION:-1.2.3}"
-    ;;
   *SHA256SUMS)
     # Checksum of the deterministic fake archive written by the tar mock's
     # sibling below (the literal bytes "fake archive").

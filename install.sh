@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Weavecoder installer — https://weavecoder.sh/install
+# Weavecoder installer — https://raw.githubusercontent.com/nicolasramos-es/weavecoder/main/install.sh
 # Downloads the latest wvc binary from GitHub Releases and verifies its SHA-256 checksum.
 set -euo pipefail
 

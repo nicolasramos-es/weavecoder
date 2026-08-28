@@ -31,33 +31,15 @@ done
 [ -z "${DOWNLOAD_URL_LOG:-}" ] || printf '%s\n' "$url" >> "$DOWNLOAD_URL_LOG"
 case "$url" in
   *telemetry.weavecoder.sh*) printf '%s\n' "$payload" >> "$INSTALL_TELEMETRY_LOG" ;;
-  *weavecoder.sh/releases/latest/version)
+  *github.com*/releases/latest)
     [ "${FAIL_RELEASE:-0}" != "1" ] || exit 22
-    [ "${FAIL_METADATA_RELEASE:-0}" != "1" ] || exit 22
-    printf 'v1.2.3\n'
-    ;;
-  *weavecoder.sh/releases/v1.2.3/download-bases)
-    printf 'https://mirror.invalid/releases/v1.2.3\n'
-    printf 'https://github.com/nicolasramos-es/weavecoder/releases/download/v1.2.3\n'
-    ;;
-  *weavecoder.sh/releases/v1.2.3/SHA256SUMS)
-    if [ "${METADATA_CHECKSUM_HTML:-0}" = "1" ]; then
-      printf '<!doctype html><title>fallback page</title>\n'
-      exit 0
-    fi
-    checksum='8d57abb57a0dae3ff23c8f0df1f51951b7772822e0d560e860d6f68c24ef6d3d'
-    [ "${BAD_CHECKSUM:-0}" != "1" ] || checksum='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-    printf '%s  %s\n' "$checksum" "${TEST_CHECKSUM_ASSET:-wvc-linux-x86_64.tar.gz}"
+    [ "${FAIL_GITHUB_RELEASE:-0}" != "1" ] || exit 22
+    printf 'https://github.com/nicolasramos-es/weavecoder/releases/tag/v1.2.3'
     ;;
   *github.com*/releases/download/v1.2.3/SHA256SUMS)
     checksum='8d57abb57a0dae3ff23c8f0df1f51951b7772822e0d560e860d6f68c24ef6d3d'
     [ "${BAD_CHECKSUM:-0}" != "1" ] || checksum='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
     printf '%s  %s\n' "$checksum" "${TEST_CHECKSUM_ASSET:-wvc-linux-x86_64.tar.gz}"
-    ;;
-  *github.com*/releases/latest)
-    [ "${FAIL_RELEASE:-0}" != "1" ] || exit 22
-    [ "${FAIL_GITHUB_RELEASE:-0}" != "1" ] || exit 22
-    printf 'https://github.com/nicolasramos-es/weavecoder/releases/tag/v1.2.3'
     ;;
   *mirror.invalid*) exit 22 ;;
   *github.com*/releases/download/*)
@@ -106,30 +88,6 @@ test "$(cat "$tmp/home/.wvc/install_conversion_id")" = "$conversion_id"
 grep -q '"stage":"installer_start".*"outcome":"success"' "$telemetry_log"
 grep -q '"stage":"installer_finish".*"outcome":"success"' "$telemetry_log"
 test "$(cat "$hotkey_setup_log")" = "setup-hotkey"
-
-# If GitHub's release page is blocked, the static weavecoder.sh version endpoint
-# must keep the complete install path working.
-PATH="$tmp/bin:$PATH" \
-HOME="$tmp/home-metadata-fallback" \
-WVC_HOME="$tmp/home-metadata-fallback/.wvc" \
-WVC_INSTALL_DIR="$tmp/install-metadata-fallback" \
-WVC_SKIP_SERVER_RELOAD=1 \
-WVC_NO_TELEMETRY=1 \
-FAIL_GITHUB_RELEASE=1 \
-bash "$repo_dir/scripts/install.sh" >/dev/null
-test -x "$tmp/install-metadata-fallback/wvc"
-
-# A static host may return its HTML fallback with HTTP 200 for a missing path.
-# Treat that as invalid metadata and continue to GitHub's checksum file.
-PATH="$tmp/bin:$PATH" \
-HOME="$tmp/home-checksum-fallback" \
-WVC_HOME="$tmp/home-checksum-fallback/.wvc" \
-WVC_INSTALL_DIR="$tmp/install-checksum-fallback" \
-WVC_SKIP_SERVER_RELOAD=1 \
-WVC_NO_TELEMETRY=1 \
-METADATA_CHECKSUM_HTML=1 \
-bash "$repo_dir/scripts/install.sh" >/dev/null
-test -x "$tmp/install-checksum-fallback/wvc"
 
 # Git for Windows can be x64-emulated on Windows ARM64. In that case uname -m
 # reports x86_64 while PROCESSOR_ARCHITEW6432 exposes the native ARM64 OS.

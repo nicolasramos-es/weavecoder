@@ -2,9 +2,11 @@
 
 Install **wvc** (Weavecoder CLI) on macOS, Linux, or Windows 11+.
 
+All code, installers, release binaries, and updates come exclusively from the project's **GitHub repository** — the single source of truth. No web domain is used for installation, downloads, or updates.
+
 ## Quick Install (Recommended)
 
-The installer fetches the latest release binary, verifies its SHA-256 checksum against the digest published in the GitHub Release, and aborts with a clear error if verification fails.
+The installer fetches the latest release binary from GitHub Releases, verifies its SHA-256 checksum against the digest published in the GitHub Release, and aborts with a clear error if verification fails.
 
 ### macOS & Linux
 
